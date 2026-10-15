@@ -374,8 +374,6 @@ export default function HomePage() {
           activeTab={activeTab}
           onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
           onResetData={handleResetData}
-          onOpenEditRoleModal={handleOpenEditRole}
-          canEditRole={currentUser?.roleType !== 'operator'}
         />
 
         {/* Scrollable Content Body */}
