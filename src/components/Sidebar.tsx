@@ -144,28 +144,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
-          {/* Action buttons visible to Admins/Directors */}
+          {/* Action button visible to Admins/Directors */}
           {isAdmin && (
-            <div className="flex items-center gap-1">
-              {onOpenEditRoleModal && (
-                <button
-                  onClick={onOpenEditRoleModal}
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-[#152033] text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-[#1f2f4c] border border-slate-300 dark:border-[#243754] transition-colors flex items-center gap-1"
-                  title="Editar cadastro desta cadeira operacional"
-                >
-                  <Pencil className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
-                  <span>Editar</span>
-                </button>
-              )}
-              <button
-                onClick={onOpenCreateRoleModal}
-                className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-[#20324f] border border-blue-200 dark:border-[#29426b] transition-colors flex items-center gap-1"
-                title="Cadastrar nova cadeira operacional"
-              >
-                <Plus className="w-3 h-3" />
-                <span>+ Nova</span>
-              </button>
-            </div>
+            <button
+              onClick={onOpenCreateRoleModal}
+              className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-[#20324f] border border-blue-200 dark:border-[#29426b] transition-colors flex items-center gap-1"
+              title="Cadastrar nova cadeira operacional"
+            >
+              <Plus className="w-3 h-3" />
+              <span>Nova</span>
+            </button>
           )}
         </div>
 
