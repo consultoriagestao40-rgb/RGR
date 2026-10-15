@@ -29,7 +29,11 @@ interface AppStore {
   users: SystemUser[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+// No ambiente serverless da Vercel, o diretório raiz é somente leitura (read-only)
+// Utilizamos /tmp para persistência de sessão e fallback
+const DATA_DIR = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+  ? path.join('/tmp', 'rgr-data')
+  : path.join(process.cwd(), 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
 
 function getInitialStore(): AppStore {
