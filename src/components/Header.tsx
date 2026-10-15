@@ -7,6 +7,7 @@ import {
   FileCheck2, 
   RotateCcw, 
   Building,
+  Pencil
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
 import { ThemeToggle } from './ThemeToggle';
@@ -18,6 +19,8 @@ interface HeaderProps {
   activeTab: string;
   onOpenMinuteModal: () => void;
   onResetData: () => void;
+  onOpenEditRoleModal?: () => void;
+  canEditRole?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,7 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectDate,
   activeTab,
   onOpenMinuteModal,
-  onResetData
+  onResetData,
+  onOpenEditRoleModal,
+  canEditRole = true
 }) => {
   const getTabLabel = (tab: string) => {
     switch (tab) {
@@ -64,6 +69,17 @@ export const Header: React.FC<HeaderProps> = ({
             {currentRole?.code || 'CAD-01'}
           </span>
         </span>
+
+        {currentRole && canEditRole && onOpenEditRoleModal && (
+          <button
+            onClick={onOpenEditRoleModal}
+            className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#162236] hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-300 rounded border border-slate-200 dark:border-[#243754] transition-colors"
+            title="Editar cadastro, código e atribuições desta cadeira"
+          >
+            <Pencil className="w-2.5 h-2.5" />
+            <span>Editar Cadeira</span>
+          </button>
+        )}
       </div>
 
       {/* Right: Date control, Actions, Theme Toggle */}

@@ -47,8 +47,9 @@ export default function HomePage() {
   const [isObsModalOpen, setIsObsModalOpen] = useState(false);
   const [isMinuteModalOpen, setIsMinuteModalOpen] = useState(false);
 
-  // Global Create Role Modal
+  // Global Create / Edit Role Modal
   const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false);
+  const [roleToEdit, setRoleToEdit] = useState<OperationalRole | null>(null);
 
   // Delay Justification Modal
   const [pendingDelayBlock, setPendingDelayBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -142,13 +143,40 @@ export default function HomePage() {
     setActiveTab('admin');
   };
 
-  // Handle Role Created from Modal
-  const handleRoleCreated = (newRole: OperationalRole) => {
-    setRoles(prev => [...prev, newRole]);
-    setSelectedRoleId(newRole.id);
-    loadRoleData(newRole.id, selectedDate);
-    // Switch to admin tab so user can immediately see and add blocks/rites
-    setActiveTab('admin');
+  // Handle Role Created or Updated from Modal
+  const handleRoleSaved = (savedRole: OperationalRole) => {
+    setRoles(prev => {
+      const idx = prev.findIndex(r => r.id === savedRole.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = savedRole;
+        return next;
+      }
+      return [...prev, savedRole];
+    });
+    setSelectedRoleId(savedRole.id);
+    loadRoleData(savedRole.id, selectedDate);
+  };
+
+  const handleRoleDeleted = (deletedId: string) => {
+    setRoles(prev => {
+      const filtered = prev.filter(r => r.id !== deletedId);
+      if (selectedRoleId === deletedId && filtered.length > 0) {
+        setSelectedRoleId(filtered[0].id);
+        loadRoleData(filtered[0].id, selectedDate);
+      }
+      return filtered;
+    });
+  };
+
+  const handleOpenCreateRole = () => {
+    setRoleToEdit(null);
+    setIsCreateRoleModalOpen(true);
+  };
+
+  const handleOpenEditRole = (role?: OperationalRole) => {
+    setRoleToEdit(role || selectedRole);
+    setIsCreateRoleModalOpen(true);
   };
 
   // Core status changer
@@ -323,7 +351,11 @@ export default function HomePage() {
         roles={roles}
         selectedRoleId={selectedRoleId}
         onSelectRole={setSelectedRoleId}
-        onOpenCreateRoleModal={() => setIsCreateRoleModalOpen(true)}
+        onOpenCreateRoleModal={handleOpenCreateRole}
+        onOpenEditRoleModal={handleOpenEditRole}
+        onSelectAdminSection={(section) => {
+          setAdminDefaultSection(section);
+        }}
         completedCount={completedCount}
         totalCount={totalCount}
         currentUser={currentUser}
@@ -342,6 +374,8 @@ export default function HomePage() {
           activeTab={activeTab}
           onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
           onResetData={handleResetData}
+          onOpenEditRoleModal={handleOpenEditRole}
+          canEditRole={currentUser?.roleType !== 'operator'}
         />
 
         {/* Scrollable Content Body */}
@@ -438,12 +472,17 @@ export default function HomePage() {
 
       </div>
 
-      {/* Direct Global Create Role Modal */}
+      {/* Direct Global Create / Edit Role Modal */}
       <CreateRoleModal
         isOpen={isCreateRoleModalOpen}
-        onClose={() => setIsCreateRoleModalOpen(false)}
-        onRoleCreated={handleRoleCreated}
+        onClose={() => {
+          setIsCreateRoleModalOpen(false);
+          setRoleToEdit(null);
+        }}
+        onRoleCreated={handleRoleSaved}
+        onRoleDeleted={handleRoleDeleted}
         existingCount={roles.length}
+        roleToEdit={roleToEdit}
       />
 
       {/* Delay Justification Modal */}

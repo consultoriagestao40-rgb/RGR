@@ -100,6 +100,12 @@ export const AdminTab: React.FC<AdminTabProps> = ({
     }
   }, [triggerNewRoleModal]);
 
+  useEffect(() => {
+    if (defaultSection) {
+      setActiveSection(defaultSection);
+    }
+  }, [defaultSection]);
+
   // Role Actions
   const handleOpenRoleModal = (role?: OperationalRole) => {
     if (role) {

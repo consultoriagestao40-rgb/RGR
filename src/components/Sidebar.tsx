@@ -15,7 +15,9 @@ import {
   Check,
   Key,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Pencil,
+  Briefcase
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 
@@ -26,6 +28,8 @@ interface SidebarProps {
   selectedRoleId: string;
   onSelectRole: (roleId: string) => void;
   onOpenCreateRoleModal: () => void;
+  onOpenEditRoleModal?: () => void;
+  onSelectAdminSection?: (section: 'blocks' | 'rituals' | 'roles' | 'users') => void;
   completedCount: number;
   totalCount: number;
   currentUser?: SystemUser;
@@ -40,6 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedRoleId,
   onSelectRole,
   onOpenCreateRoleModal,
+  onOpenEditRoleModal,
+  onSelectAdminSection,
   completedCount,
   totalCount,
   currentUser,
@@ -92,6 +98,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleSelectChange = (value: string) => {
     if (value === '__CREATE_NEW_ROLE__') {
       onOpenCreateRoleModal();
+    } else if (value === '__EDIT_CURRENT_ROLE__') {
+      if (onOpenEditRoleModal) onOpenEditRoleModal();
     } else {
       onSelectRole(value);
     }
@@ -136,16 +144,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
-          {/* "+ Nova" button is only visible to Admins/Directors */}
+          {/* Action buttons visible to Admins/Directors */}
           {isAdmin && (
-            <button
-              onClick={onOpenCreateRoleModal}
-              className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-[#20324f] border border-blue-200 dark:border-[#29426b] transition-colors flex items-center gap-1"
-              title="Cadastrar nova cadeira operacional"
-            >
-              <Plus className="w-3 h-3" />
-              <span>+ Nova</span>
-            </button>
+            <div className="flex items-center gap-1">
+              {onOpenEditRoleModal && (
+                <button
+                  onClick={onOpenEditRoleModal}
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-[#152033] text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-[#1f2f4c] border border-slate-300 dark:border-[#243754] transition-colors flex items-center gap-1"
+                  title="Editar cadastro desta cadeira operacional"
+                >
+                  <Pencil className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+                  <span>Editar</span>
+                </button>
+              )}
+              <button
+                onClick={onOpenCreateRoleModal}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-[#20324f] border border-blue-200 dark:border-[#29426b] transition-colors flex items-center gap-1"
+                title="Cadastrar nova cadeira operacional"
+              >
+                <Plus className="w-3 h-3" />
+                <span>+ Nova</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -167,6 +187,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </optgroup>
             {isAdmin && (
               <optgroup label="Ações de Governança">
+                <option value="__EDIT_CURRENT_ROLE__" className="text-amber-600 dark:text-amber-400 font-bold dark:bg-slate-900">
+                  ✏️ Editar Cadeira Atual ({currentRole?.code || 'CAD'})
+                </option>
                 <option value="__CREATE_NEW_ROLE__" className="text-blue-600 font-bold dark:bg-slate-900">
                   ➕ + Cadastrar Nova Cadeira...
                 </option>
@@ -279,7 +302,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-0.5">
               
               <button
-                onClick={() => onSelectTab('admin')}
+                onClick={() => {
+                  if (onSelectAdminSection) onSelectAdminSection('roles');
+                  onSelectTab('admin');
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Briefcase className="w-4 h-4 text-slate-400" />
+                  <span>Cadeiras & Governança</span>
+                </div>
+                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {roles.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (onSelectAdminSection) onSelectAdminSection('blocks');
+                  onSelectTab('admin');
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-all ${
                   activeTab === 'admin'
                     ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
@@ -288,7 +330,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <Sliders className={`w-4 h-4 ${activeTab === 'admin' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
-                  <span>Matriz de Cadeiras & POPs</span>
+                  <span>Matriz de POPs & Ritos</span>
                 </div>
               </button>
 
