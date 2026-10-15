@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 generator client {
@@ -21,6 +22,7 @@ enum ExecutionStatus {
 
 model OperationalRole {
   id          String   @id @default(uuid())
+  code        String?
   title       String
   department  String
   description String
@@ -33,17 +35,20 @@ model OperationalRole {
 }
 
 model RoutineBlock {
-  id           String    @id @default(uuid())
-  roleId       String    @map("role_id")
-  timeWindow   String    @map("time_window")
-  title        String
-  deliverable  String
-  sopMarkdown  String    @db.Text @map("sop_markdown")
-  frequency    Frequency @default(daily)
-  dayOfWeek    Int?      @map("day_of_week")
-  dayOfMonth   Int?      @map("day_of_month")
-  orderIndex   Int       @default(0) @map("order_index")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id            String    @id @default(uuid())
+  roleId        String    @map("role_id")
+  code          String?
+  version       String?   @default("v1.0")
+  homologatedBy String?   @map("homologated_by")
+  timeWindow    String    @map("time_window")
+  title         String
+  deliverable   String
+  sopMarkdown   String    @db.Text @map("sop_markdown")
+  frequency     Frequency @default(daily)
+  dayOfWeek     Int?      @map("day_of_week")
+  dayOfMonth    Int?      @map("day_of_month")
+  orderIndex    Int       @default(0) @map("order_index")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   role         OperationalRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
   executions   RoutineExecution[]
@@ -54,9 +59,16 @@ model RoutineBlock {
 model DailyRitual {
   id              String   @id @default(uuid())
   roleId          String   @map("role_id")
+  code            String?
   timeSlot        String   @map("time_slot")
   title           String
   durationMinutes Int      @default(15) @map("duration_minutes")
+  type            String?  @default("operational_cadence")
+  frequency       String?  @default("daily")
+  weekDays        Json?    @map("week_days")
+  includeWeekends Boolean? @default(false) @map("include_weekends")
+  monthDay        Int?     @map("month_day")
+  monthlyType     String?  @map("monthly_type")
   agendaItems     Json     @map("agenda_items")
   createdAt       DateTime @default(now()) @map("created_at")
 
@@ -68,13 +80,66 @@ model DailyRitual {
 model RoutineExecution {
   id             String          @id @default(uuid())
   routineBlockId String          @map("routine_block_id")
-  date           DateTime        @db.Date
+  date           String          // Formato YYYY-MM-DD
   status         ExecutionStatus @default(pending)
   observation    String?         @db.Text
   completedAt    DateTime?       @map("completed_at")
+  verifiedBy     String?         @map("verified_by")
+  isDelayed      Boolean?        @default(false) @map("is_delayed")
+  delayMinutes   Int?            @default(0) @map("delay_minutes")
+  delayReason    String?         @map("delay_reason")
+  delayCategory  String?         @map("delay_category")
+  createdAt      DateTime        @default(now()) @map("created_at")
 
   routineBlock   RoutineBlock    @relation(fields: [routineBlockId], references: [id], onDelete: Cascade)
 
   @@unique([routineBlockId, date])
   @@map("routine_executions")
+}
+
+model GovernanceMinute {
+  id                 String   @id @default(uuid())
+  ritualId           String?  @map("ritual_id")
+  roleId             String?  @map("role_id")
+  date               String
+  title              String
+  deliberations      String   @db.Text
+  agendaCheckedCount Int?     @default(0) @map("agenda_checked_count")
+  agendaTotalCount   Int?     @default(0) @map("agenda_total_count")
+  signedBy           String   @map("signed_by")
+  signedAt           String   @map("signed_at")
+  participants       Json
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("governance_minutes")
+}
+
+model SystemUser {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  roleType       String   @default("operator") @map("role_type")
+  jobTitle       String   @default("") @map("job_title")
+  department     String   @default("")
+  allowedRoleIds Json     @map("allowed_role_ids")
+  defaultRoleId  String?  @map("default_role_id")
+  active         Boolean  @default(true)
+  avatarColor    String?  @map("avatar_color")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("system_users")
+}
+
+model DispatchState {
+  id              String   @id // ritualId_date
+  ritualId        String   @map("ritual_id")
+  date            String
+  notes           String   @db.Text
+  checklist       Json
+  boardVotes      Json?    @map("board_votes")
+  resolutionNotes Json?    @map("resolution_notes")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([ritualId, date])
+  @@map("dispatch_states")
 }

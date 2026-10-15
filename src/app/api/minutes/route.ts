@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       agendaCheckedCount: body.agendaCheckedCount || 0,
       agendaTotalCount: body.agendaTotalCount || 0,
       signedBy: body.signedBy || 'Diretoria Executiva',
+      signedAt: body.signedAt || new Date().toISOString(),
       participants: Array.isArray(body.participants) ? body.participants : ['Diretoria Executiva', 'Liderança de Cadeira']
     });
 
