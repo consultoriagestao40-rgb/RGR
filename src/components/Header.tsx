@@ -4,6 +4,7 @@ import React from 'react';
 import { 
   Calendar, 
   ChevronRight, 
+  ChevronLeft,
   FileCheck2, 
   RotateCcw, 
   Building,
@@ -44,6 +45,22 @@ export const Header: React.FC<HeaderProps> = ({
     onSelectDate(new Date().toISOString().split('T')[0]);
   };
 
+  const handlePrevDay = () => {
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() - 1);
+    const prevStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    onSelectDate(prevStr);
+  };
+
+  const handleNextDay = () => {
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + 1);
+    const nextStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    onSelectDate(nextStr);
+  };
+
   return (
     <header className="h-16 bg-white dark:bg-[#0f1726] border-b border-slate-200 dark:border-[#1a2333] px-6 flex items-center justify-between shrink-0 select-none transition-colors">
       
@@ -69,20 +86,40 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right: Date control, Actions, Theme Toggle */}
       <div className="flex items-center gap-2.5">
         
-        {/* Date Selector */}
-        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#141d2e] border border-slate-300 dark:border-[#223048] rounded-md px-2.5 py-1.5 shrink-0">
-          <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => onSelectDate(e.target.value)}
-            className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
-          />
+        {/* Date Selector with Previous/Next Arrows */}
+        <div className="flex items-center bg-slate-50 dark:bg-[#141d2e] border border-slate-300 dark:border-[#223048] rounded-md shrink-0 shadow-sm overflow-hidden">
           <button
-            onClick={handleSetToday}
-            className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:underline ml-1 pl-1.5 border-l border-slate-300 dark:border-slate-700"
+            type="button"
+            onClick={handlePrevDay}
+            className="px-2 py-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-[#1a2638] transition-colors border-r border-slate-200 dark:border-[#1f2c42]"
+            title="Voltar 1 dia (D-1)"
           >
-            Hoje
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="flex items-center gap-1.5 px-2.5 py-1">
+            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => onSelectDate(e.target.value)}
+              className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+            />
+            <button
+              onClick={handleSetToday}
+              className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:underline ml-1 pl-1.5 border-l border-slate-300 dark:border-slate-700"
+            >
+              Hoje
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleNextDay}
+            className="px-2 py-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-[#1a2638] transition-colors border-l border-slate-200 dark:border-[#1f2c42]"
+            title="Avançar 1 dia (D+1)"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
