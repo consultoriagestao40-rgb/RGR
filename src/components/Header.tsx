@@ -10,6 +10,7 @@ import {
   Building,
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
+import { SYSTEM_START_DATE } from '@/lib/frequency';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
@@ -41,15 +42,23 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const isAtMinDate = selectedDate <= SYSTEM_START_DATE;
+
   const handleSetToday = () => {
-    onSelectDate(new Date().toISOString().split('T')[0]);
+    const todayStr = new Date().toISOString().split('T')[0];
+    onSelectDate(todayStr < SYSTEM_START_DATE ? SYSTEM_START_DATE : todayStr);
   };
 
   const handlePrevDay = () => {
+    if (selectedDate <= SYSTEM_START_DATE) return;
     const [year, month, day] = selectedDate.split('-').map(Number);
     const d = new Date(year, month - 1, day);
     d.setDate(d.getDate() - 1);
     const prevStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (prevStr < SYSTEM_START_DATE) {
+      onSelectDate(SYSTEM_START_DATE);
+      return;
+    }
     onSelectDate(prevStr);
   };
 
@@ -91,8 +100,13 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={handlePrevDay}
-            className="px-2 py-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-[#1a2638] transition-colors border-r border-slate-200 dark:border-[#1f2c42]"
-            title="Voltar 1 dia (D-1)"
+            disabled={isAtMinDate}
+            className={`px-2 py-1.5 transition-colors border-r border-slate-200 dark:border-[#1f2c42] ${
+              isAtMinDate
+                ? 'opacity-30 cursor-not-allowed text-slate-300 dark:text-slate-600'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-[#1a2638]'
+            }`}
+            title={isAtMinDate ? "Início da plataforma em 15/10/2026 (sem registros retroativos)" : "Voltar 1 dia (D-1)"}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -101,8 +115,17 @@ export const Header: React.FC<HeaderProps> = ({
             <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <input
               type="date"
+              min={SYSTEM_START_DATE}
               value={selectedDate}
-              onChange={(e) => onSelectDate(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                if (val < SYSTEM_START_DATE) {
+                  onSelectDate(SYSTEM_START_DATE);
+                } else {
+                  onSelectDate(val);
+                }
+              }}
               className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
             />
             <button

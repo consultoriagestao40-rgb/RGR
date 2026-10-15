@@ -11,6 +11,16 @@ export const WEEK_DAYS = [
 ];
 
 /**
+ * Data oficial de implantação/lançamento da plataforma RGR.
+ * Por protocolo de governança, nenhuma rotina, rito ou penalidade existe retroativamente antes desta data.
+ */
+export const SYSTEM_START_DATE = '2026-10-15';
+
+export function isBeforeSystemStart(dateStr: string): boolean {
+  return dateStr < SYSTEM_START_DATE;
+}
+
+/**
  * Converte string 'YYYY-MM-DD' em Date local sem distorção de fuso horário.
  */
 export function parseLocalDate(dateStr: string): Date {
@@ -78,6 +88,11 @@ export function isLastBusinessDayOfMonth(date: Date): boolean {
  * Regra de Ouro: Avalia se um rito deve ser executado na data específica.
  */
 export function isRitualScheduledForDate(ritual: DailyRitual, dateStr: string): boolean {
+  // Não existem ritos agendados retroativamente antes da criação da plataforma
+  if (isBeforeSystemStart(dateStr)) {
+    return false;
+  }
+
   const date = parseLocalDate(dateStr);
   const dow = date.getDay(); // 0 a 6
   const isWeekendDay = dow === 0 || dow === 6;

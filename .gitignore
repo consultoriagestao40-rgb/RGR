@@ -10,3 +10,5 @@ data/store.json
 *.log
 tsconfig.tsbuildinfo
 
+.vercel
+.env*

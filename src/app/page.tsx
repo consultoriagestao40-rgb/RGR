@@ -14,9 +14,11 @@ import { ObservationModal } from '@/components/ObservationModal';
 import { MinuteDraftModal } from '@/components/MinuteDraftModal';
 import { CreateRoleModal } from '@/components/CreateRoleModal';
 import { DelayJustificationModal } from '@/components/DelayJustificationModal';
+import { AddAgendaModal } from '@/components/AddAgendaModal';
 import { OperationalRole, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
+import { SYSTEM_START_DATE } from '@/lib/frequency';
 
 export default function HomePage() {
   const [roles, setRoles] = useState<OperationalRole[]>(INITIAL_ROLES);
@@ -28,7 +30,8 @@ export default function HomePage() {
   const [adminDefaultSection, setAdminDefaultSection] = useState<'blocks' | 'rituals' | 'roles' | 'users'>('blocks');
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    return today < SYSTEM_START_DATE ? SYSTEM_START_DATE : today;
   });
 
   const [blocks, setBlocks] = useState<RoutineBlockWithExecution[]>(() => {
@@ -55,6 +58,10 @@ export default function HomePage() {
   const [pendingDelayBlock, setPendingDelayBlock] = useState<RoutineBlockWithExecution | null>(null);
   const [pendingDelayInfo, setPendingDelayInfo] = useState<{ delayMinutes: number; deadlineStr: string } | null>(null);
   const [isDelayModalOpen, setIsDelayModalOpen] = useState(false);
+
+  // Agenda for CEO / Boardroom Modal
+  const [isAddAgendaModalOpen, setIsAddAgendaModalOpen] = useState(false);
+  const [targetAgendaRitual, setTargetAgendaRitual] = useState<DailyRitual | null>(null);
 
   // Fetch users
   const loadUsers = useCallback(async () => {
@@ -287,6 +294,50 @@ export default function HomePage() {
     setPendingDelayInfo(null);
   };
 
+  // Save agenda item for CEO meeting / ritual
+  const handleSaveAgendaItem = async (ritualId: string, newAgendaTitle: string) => {
+    const target = rituals.find(r => r.id === ritualId);
+    if (!target) return;
+    const currentAgenda = Array.isArray(target.agendaItems) ? target.agendaItems : [];
+    const updatedAgenda = [...currentAgenda, newAgendaTitle];
+
+    try {
+      const res = await fetch(`/api/rituals/${ritualId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agendaItems: updatedAgenda })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setRituals(prev => prev.map(r => r.id === ritualId ? { ...r, agendaItems: saved.agendaItems } : r));
+      }
+    } catch (err) {
+      console.error('Error saving agenda item:', err);
+    }
+  };
+
+  // Remove agenda item
+  const handleRemoveAgendaItem = async (ritualId: string, indexToRemove: number) => {
+    const target = rituals.find(r => r.id === ritualId);
+    if (!target) return;
+    const currentAgenda = Array.isArray(target.agendaItems) ? target.agendaItems : [];
+    const updatedAgenda = currentAgenda.filter((_, idx) => idx !== indexToRemove);
+
+    try {
+      const res = await fetch(`/api/rituals/${ritualId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agendaItems: updatedAgenda })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setRituals(prev => prev.map(r => r.id === ritualId ? { ...r, agendaItems: saved.agendaItems } : r));
+      }
+    } catch (err) {
+      console.error('Error removing agenda item:', err);
+    }
+  };
+
   // Save observation
   const handleSaveObservation = async (blockId: string, status: ExecutionStatus, observation: string) => {
     setBlocks(prev => prev.map(b => {
@@ -384,6 +435,7 @@ export default function HomePage() {
               blocks={blocks}
               rituals={rituals}
               selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
               onOpenSop={(block) => {
                 setActiveSopBlock(block);
                 setIsSopDrawerOpen(true);
@@ -393,6 +445,11 @@ export default function HomePage() {
                 setActiveObsBlock(block);
                 setIsObsModalOpen(true);
               }}
+              onOpenAddAgendaModal={(targetRitual) => {
+                setTargetAgendaRitual(targetRitual || null);
+                setIsAddAgendaModalOpen(true);
+              }}
+              onGoToDispatchRoom={() => setActiveTab('dispatch')}
             />
           )}
 
@@ -532,6 +589,21 @@ export default function HomePage() {
         onSuccess={() => {
           setActiveTab('minutes');
         }}
+      />
+
+      {/* Add Agenda Item for CEO Meeting Modal */}
+      <AddAgendaModal
+        isOpen={isAddAgendaModalOpen}
+        onClose={() => {
+          setIsAddAgendaModalOpen(false);
+          setTargetAgendaRitual(null);
+        }}
+        rituals={targetAgendaRitual ? [targetAgendaRitual] : rituals}
+        currentRole={selectedRole}
+        selectedDate={selectedDate}
+        onSaveAgendaItem={handleSaveAgendaItem}
+        onRemoveAgendaItem={handleRemoveAgendaItem}
+        onNavigateToDispatch={() => setActiveTab('dispatch')}
       />
 
     </div>
