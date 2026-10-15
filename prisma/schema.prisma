@@ -1,0 +1,80 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Frequency {
+  daily
+  weekly
+  monthly
+}
+
+enum ExecutionStatus {
+  pending
+  completed
+  blocked
+}
+
+model OperationalRole {
+  id          String   @id @default(uuid())
+  title       String
+  department  String
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  routineBlocks RoutineBlock[]
+  dailyRituals  DailyRitual[]
+
+  @@map("operational_roles")
+}
+
+model RoutineBlock {
+  id           String    @id @default(uuid())
+  roleId       String    @map("role_id")
+  timeWindow   String    @map("time_window")
+  title        String
+  deliverable  String
+  sopMarkdown  String    @db.Text @map("sop_markdown")
+  frequency    Frequency @default(daily)
+  dayOfWeek    Int?      @map("day_of_week")
+  dayOfMonth   Int?      @map("day_of_month")
+  orderIndex   Int       @default(0) @map("order_index")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  role         OperationalRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  executions   RoutineExecution[]
+
+  @@map("routine_blocks")
+}
+
+model DailyRitual {
+  id              String   @id @default(uuid())
+  roleId          String   @map("role_id")
+  timeSlot        String   @map("time_slot")
+  title           String
+  durationMinutes Int      @default(15) @map("duration_minutes")
+  agendaItems     Json     @map("agenda_items")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  role            OperationalRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("daily_rituals")
+}
+
+model RoutineExecution {
+  id             String          @id @default(uuid())
+  routineBlockId String          @map("routine_block_id")
+  date           DateTime        @db.Date
+  status         ExecutionStatus @default(pending)
+  observation    String?         @db.Text
+  completedAt    DateTime?       @map("completed_at")
+
+  routineBlock   RoutineBlock    @relation(fields: [routineBlockId], references: [id], onDelete: Cascade)
+
+  @@unique([routineBlockId, date])
+  @@map("routine_executions")
+}
