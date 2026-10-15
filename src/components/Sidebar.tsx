@@ -96,13 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [roles, currentUser, currentRole]);
 
   const handleSelectChange = (value: string) => {
-    if (value === '__CREATE_NEW_ROLE__') {
-      onOpenCreateRoleModal();
-    } else if (value === '__EDIT_CURRENT_ROLE__') {
-      if (onOpenEditRoleModal) onOpenEditRoleModal();
-    } else {
-      onSelectRole(value);
-    }
+    onSelectRole(value);
   };
 
   return (
@@ -166,23 +160,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               isOperator && allowedRoles.length <= 1 ? 'opacity-85 cursor-not-allowed' : ''
             }`}
           >
-            <optgroup label="Cadeiras Autorizadas">
-              {allowedRoles.map(r => (
-                <option key={r.id} value={r.id} className="text-slate-900 dark:text-white dark:bg-slate-900">
-                  {r.title} ({r.code || 'CAD'})
-                </option>
-              ))}
-            </optgroup>
-            {isAdmin && (
-              <optgroup label="Ações de Governança">
-                <option value="__EDIT_CURRENT_ROLE__" className="text-amber-600 dark:text-amber-400 font-bold dark:bg-slate-900">
-                  ✏️ Editar Cadeira Atual ({currentRole?.code || 'CAD'})
-                </option>
-                <option value="__CREATE_NEW_ROLE__" className="text-blue-600 font-bold dark:bg-slate-900">
-                  ➕ + Cadastrar Nova Cadeira...
-                </option>
-              </optgroup>
-            )}
+            {allowedRoles.map(r => (
+              <option key={r.id} value={r.id} className="text-slate-900 dark:text-white dark:bg-slate-900">
+                {r.title} ({r.code || 'CAD'})
+              </option>
+            ))}
           </select>
           {!(isOperator && allowedRoles.length <= 1) && (
             <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-500 dark:text-slate-400 text-xs">
