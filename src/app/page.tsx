@@ -72,6 +72,24 @@ export default function HomePage() {
   // Password change modal (voluntary)
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
+  // Sidebar collapsed state with localStorage persistence
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('rgr_sidebar_collapsed') === 'true';
+    }
+    return false;
+  });
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('rgr_sidebar_collapsed', String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
   // Restore session from localStorage on mount
   useEffect(() => {
     try {
@@ -482,6 +500,8 @@ export default function HomePage() {
         onSelectUser={handleSelectUser}
         onLogout={handleLogout}
         onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
       />
 
       {/* Main Panel */}
@@ -496,6 +516,8 @@ export default function HomePage() {
           onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
           onResetData={handleResetData}
           onLogout={handleLogout}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={handleToggleSidebar}
         />
 
         {/* Scrollable Content Body */}
