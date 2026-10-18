@@ -15,6 +15,7 @@ import { MinuteDraftModal } from '@/components/MinuteDraftModal';
 import { CreateRoleModal } from '@/components/CreateRoleModal';
 import { DelayJustificationModal } from '@/components/DelayJustificationModal';
 import { AddAgendaModal } from '@/components/AddAgendaModal';
+import { LoginScreen } from '@/components/LoginScreen';
 import { OperationalRole, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
@@ -28,6 +29,10 @@ export default function HomePage() {
   const [users, setUsers] = useState<SystemUser[]>(INITIAL_USERS);
   const [currentUser, setCurrentUser] = useState<SystemUser>(INITIAL_USERS[0]);
   const [adminDefaultSection, setAdminDefaultSection] = useState<'blocks' | 'rituals' | 'roles' | 'users'>('blocks');
+
+  // Authentication & Session Persistence
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isSessionLoaded, setIsSessionLoaded] = useState<boolean>(false);
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -63,6 +68,25 @@ export default function HomePage() {
   const [isAddAgendaModalOpen, setIsAddAgendaModalOpen] = useState(false);
   const [targetAgendaRitual, setTargetAgendaRitual] = useState<DailyRitual | null>(null);
 
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('rgr_session_user');
+      if (stored) {
+        const parsed = JSON.parse(stored) as SystemUser;
+        setCurrentUser(parsed);
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (e) {
+      console.error('Error loading session from localStorage:', e);
+      setIsAuthenticated(false);
+    } finally {
+      setIsSessionLoaded(true);
+    }
+  }, []);
+
   // Fetch users
   const loadUsers = useCallback(async () => {
     try {
@@ -77,6 +101,31 @@ export default function HomePage() {
       console.error('Error fetching users:', err);
     }
   }, []);
+
+  // Login handler
+  const handleLogin = (user: SystemUser) => {
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('rgr_session_user', JSON.stringify(user));
+    } catch (e) {}
+
+    // Adjust selected role based on user permissions
+    if (user.defaultRoleId && roles.some(r => r.id === user.defaultRoleId)) {
+      setSelectedRoleId(user.defaultRoleId);
+    } else if (!user.allowedRoleIds.includes('*') && user.allowedRoleIds.length > 0) {
+      const firstValid = roles.find(r => user.allowedRoleIds.includes(r.id));
+      if (firstValid) setSelectedRoleId(firstValid.id);
+    }
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('rgr_session_user');
+    } catch (e) {}
+    setIsAuthenticated(false);
+  };
 
   // Fetch roles
   const loadRoles = useCallback(async () => {
@@ -392,6 +441,21 @@ export default function HomePage() {
   const completedCount = blocks.filter(b => b.execution?.status === 'completed').length;
   const totalCount = blocks.length;
 
+  if (!isSessionLoaded) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-slate-400">Iniciando Governança RGR...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen users={users} onLogin={handleLogin} />;
+  }
+
   return (
     <div className="flex h-screen bg-slate-100 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors">
       
@@ -412,6 +476,7 @@ export default function HomePage() {
         currentUser={currentUser}
         users={users}
         onSelectUser={handleSelectUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Panel */}
@@ -425,6 +490,7 @@ export default function HomePage() {
           activeTab={activeTab}
           onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
           onResetData={handleResetData}
+          onLogout={handleLogout}
         />
 
         {/* Scrollable Content Body */}

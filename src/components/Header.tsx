@@ -8,6 +8,7 @@ import {
   FileCheck2, 
   RotateCcw, 
   Building,
+  LogOut
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
 import { SYSTEM_START_DATE } from '@/lib/frequency';
@@ -20,6 +21,7 @@ interface HeaderProps {
   activeTab: string;
   onOpenMinuteModal: () => void;
   onResetData: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,7 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectDate,
   activeTab,
   onOpenMinuteModal,
-  onResetData
+  onResetData,
+  onLogout
 }) => {
   const getTabLabel = (tab: string) => {
     switch (tab) {
@@ -166,6 +169,18 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
+
+        {/* Logout button */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            title="Encerrar sessão e sair da plataforma"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-300 dark:border-[#223048] hover:border-rose-300 dark:hover:border-rose-800 rounded-md transition-colors shrink-0 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
+        )}
 
       </div>
 

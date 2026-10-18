@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   UserCheck,
   Pencil,
-  Briefcase
+  Briefcase,
+  LogOut
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 
@@ -35,6 +36,7 @@ interface SidebarProps {
   currentUser?: SystemUser;
   users?: SystemUser[];
   onSelectUser?: (user: SystemUser) => void;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -50,7 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalCount,
   currentUser,
   users = [],
-  onSelectUser
+  onSelectUser,
+  onLogout
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
   const complianceRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -355,39 +358,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {currentUser && (
         <div className="p-3 border-t border-slate-200 dark:border-[#1a2333] bg-white/80 dark:bg-[#0a0f1a] relative" ref={userMenuRef}>
           
-          <button
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#151f30] transition-colors text-left border border-slate-200 dark:border-[#1e2a3f] group shadow-sm"
-            title="Alternar perfil de acesso"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${currentUser.avatarColor || 'bg-blue-600 text-white'}`}>
-                {getInitials(currentUser.name)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1">
-                  <span className="font-semibold text-xs text-slate-900 dark:text-white truncate block">
-                    {currentUser.name}
-                  </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex-1 flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#151f30] transition-colors text-left border border-slate-200 dark:border-[#1e2a3f] group shadow-sm min-w-0"
+              title="Alternar perfil de acesso"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${currentUser.avatarColor || 'bg-blue-600 text-white'}`}>
+                  {getInitials(currentUser.name)}
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`text-[8px] font-bold uppercase tracking-wider px-1 rounded border ${
-                    currentUser.roleType === 'admin' 
-                      ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
-                      : currentUser.roleType === 'manager'
-                      ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                      : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                  }`}>
-                    {currentUser.roleType === 'admin' ? 'Diretoria' : currentUser.roleType === 'manager' ? 'Gestor' : 'Operador'}
-                  </span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate block">
-                    {currentUser.jobTitle}
-                  </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <span className="font-semibold text-xs text-slate-900 dark:text-white truncate block">
+                      {currentUser.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`text-[8px] font-bold uppercase tracking-wider px-1 rounded border ${
+                      currentUser.roleType === 'admin' 
+                        ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                        : currentUser.roleType === 'manager'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                        : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    }`}>
+                      {currentUser.roleType === 'admin' ? 'Diretoria' : currentUser.roleType === 'manager' ? 'Gestor' : 'Operador'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate block">
+                      {currentUser.jobTitle}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 shrink-0 ml-1 transition-transform" />
-          </button>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 shrink-0 ml-1 transition-transform" />
+            </button>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Encerrar sessão (Sair)"
+                className="p-2.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-[#1e2a3f] hover:border-rose-300 dark:hover:border-rose-800 transition-colors shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
           {/* Upward Dropdown Menu */}
           {isUserMenuOpen && (
@@ -486,6 +502,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   >
                     <Users className="w-3.5 h-3.5" />
                     <span>Gerenciar Usuários & Cadeiras (IAM)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Logout button in dropdown */}
+              {onLogout && (
+                <div className="p-1.5 bg-slate-50 dark:bg-[#0a0f1a] border-t border-slate-200 dark:border-[#1a2333]">
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full text-center py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Encerrar Sessão (Sair)</span>
                   </button>
                 </div>
               )}
