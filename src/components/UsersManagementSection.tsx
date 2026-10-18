@@ -14,6 +14,7 @@ import {
   X, 
   Search,
   Key,
+  KeyRound,
   Building
 } from 'lucide-react';
 import { SystemUser, OperationalRole, UserAccessRole } from '@/lib/types';
@@ -42,6 +43,7 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
   const [allowedRoleIds, setAllowedRoleIds] = useState<string[]>([]);
   const [defaultRoleId, setDefaultRoleId] = useState<string>('');
   const [hasAllAccess, setHasAllAccess] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenModal = (user?: SystemUser) => {
@@ -56,6 +58,7 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
       setHasAllAccess(allAccess);
       setAllowedRoleIds(allAccess ? [] : user.allowedRoleIds);
       setDefaultRoleId(user.defaultRoleId || (roles[0]?.id || ''));
+      setMustChangePassword(user.mustChangePassword !== false);
     } else {
       setEditingUser(null);
       setName('');
@@ -66,8 +69,37 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
       setHasAllAccess(false);
       setAllowedRoleIds(roles[0] ? [roles[0].id] : []);
       setDefaultRoleId(roles[0]?.id || '');
+      setMustChangePassword(true);
     }
     setIsModalOpen(true);
+  };
+
+  const handleResetUserPassword = async (user: SystemUser) => {
+    if (!confirm(`Deseja resetar a senha do usuário "${user.name}" para a senha inicial "123456"?\nO usuário será obrigado a cadastrar uma nova senha no próximo login.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: user.id,
+          password: '123456',
+          mustChangePassword: true
+        })
+      });
+
+      if (res.ok) {
+        alert(`Senha do usuário ${user.name} resetada com sucesso para 123456. Troca obrigatória ativada.`);
+        onRefreshUsers();
+      } else {
+        alert('Falha ao resetar senha do usuário.');
+      }
+    } catch (err) {
+      console.error('Error resetting user password:', err);
+      alert('Erro de conexão ao resetar senha.');
+    }
   };
 
   const handleToggleRoleSelection = (roleId: string) => {
@@ -111,7 +143,8 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
             department: department.trim(),
             roleType,
             allowedRoleIds: finalAllowedRoles,
-            defaultRoleId: defaultRoleId || finalAllowedRoles[0] || ''
+            defaultRoleId: defaultRoleId || finalAllowedRoles[0] || '',
+            mustChangePassword
           })
         });
       } else {
@@ -126,7 +159,9 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
             department: department.trim() || 'Operações',
             roleType,
             allowedRoleIds: finalAllowedRoles,
-            defaultRoleId: defaultRoleId || finalAllowedRoles[0] || ''
+            defaultRoleId: defaultRoleId || finalAllowedRoles[0] || '',
+            mustChangePassword: true,
+            password: '123456'
           })
         });
       }
@@ -303,9 +338,19 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                           {getInitials(user.name)}
                         </div>
                         <div>
-                          <span className="font-semibold text-slate-900 dark:text-white block">
-                            {user.name}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-900 dark:text-white block">
+                              {user.name}
+                            </span>
+                            {user.mustChangePassword !== false && (
+                              <span 
+                                className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                                title="Usuário precisa alterar a senha inicial no próximo acesso"
+                              >
+                                1º Acesso Pendente
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                             {user.email}
                           </span>
@@ -361,6 +406,13 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                     {/* Actions */}
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => handleResetUserPassword(user)}
+                          className="p-1.5 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-[#1a253a] rounded transition-colors"
+                          title="Redefinir senha para 123456 (obriga troca no próximo acesso)"
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => handleOpenModal(user)}
                           className="p-1.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-[#1a253a] rounded transition-colors"
@@ -621,6 +673,29 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                     Este usuário possui perfil de <strong>Diretoria / Administrador</strong> e tem acesso irrestrito para alternar e auditar todas as cadeiras do sistema.
                   </div>
                 )}
+              </div>
+
+              {/* Opções de Segurança e Acesso */}
+              <div className="pt-2 border-t border-slate-200 dark:border-[#1f293d]">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d]">
+                  <div className="flex items-center gap-2.5">
+                    <KeyRound className="w-4 h-4 text-blue-500 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                        Exigir troca de senha no próximo acesso
+                      </span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
+                        Obriga o usuário a cadastrar uma nova senha corporativa confidencial ao fazer login.
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={mustChangePassword}
+                    onChange={(e) => setMustChangePassword(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer"
+                  />
+                </div>
               </div>
 
               {/* Actions Footer */}

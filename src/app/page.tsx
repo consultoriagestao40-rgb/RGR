@@ -16,6 +16,7 @@ import { CreateRoleModal } from '@/components/CreateRoleModal';
 import { DelayJustificationModal } from '@/components/DelayJustificationModal';
 import { AddAgendaModal } from '@/components/AddAgendaModal';
 import { LoginScreen } from '@/components/LoginScreen';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { OperationalRole, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
@@ -67,6 +68,9 @@ export default function HomePage() {
   // Agenda for CEO / Boardroom Modal
   const [isAddAgendaModalOpen, setIsAddAgendaModalOpen] = useState(false);
   const [targetAgendaRitual, setTargetAgendaRitual] = useState<DailyRitual | null>(null);
+
+  // Password change modal (voluntary)
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -477,6 +481,7 @@ export default function HomePage() {
         users={users}
         onSelectUser={handleSelectUser}
         onLogout={handleLogout}
+        onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
       />
 
       {/* Main Panel */}
@@ -670,6 +675,19 @@ export default function HomePage() {
         onSaveAgendaItem={handleSaveAgendaItem}
         onRemoveAgendaItem={handleRemoveAgendaItem}
         onNavigateToDispatch={() => setActiveTab('dispatch')}
+      />
+
+      {/* Change Password Modal (Mandatory on First Access or Voluntary via Profile) */}
+      <ChangePasswordModal
+        isOpen={Boolean(currentUser?.mustChangePassword) || isChangePasswordModalOpen}
+        isFirstAccess={Boolean(currentUser?.mustChangePassword)}
+        currentUser={currentUser}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        onSuccess={(updatedUser) => {
+          setCurrentUser(updatedUser);
+          setIsChangePasswordModalOpen(false);
+          loadUsers();
+        }}
       />
 
     </div>

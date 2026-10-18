@@ -115,6 +115,8 @@ export interface SystemUser {
   id: string;
   name: string;
   email: string;
+  password?: string;
+  mustChangePassword?: boolean;
   roleType: UserAccessRole; // 'admin' (Diretoria/Audit), 'manager' (Coordenação), 'operator' (Operador da Cadeira)
   jobTitle: string; // Ex: "Diretoria Executiva / CEO", "Auxiliar Financeiro", etc.
   department: string;

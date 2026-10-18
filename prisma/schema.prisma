@@ -115,17 +115,19 @@ model GovernanceMinute {
 }
 
 model SystemUser {
-  id             String   @id @default(uuid())
-  name           String
-  email          String   @unique
-  roleType       String   @default("operator") @map("role_type")
-  jobTitle       String   @default("") @map("job_title")
-  department     String   @default("")
-  allowedRoleIds Json     @map("allowed_role_ids")
-  defaultRoleId  String?  @map("default_role_id")
-  active         Boolean  @default(true)
-  avatarColor    String?  @map("avatar_color")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  password           String?  @default("123456")
+  mustChangePassword Boolean? @default(true) @map("must_change_password")
+  roleType           String   @default("operator") @map("role_type")
+  jobTitle           String   @default("") @map("job_title")
+  department         String   @default("")
+  allowedRoleIds     Json     @map("allowed_role_ids")
+  defaultRoleId      String?  @map("default_role_id")
+  active             Boolean  @default(true)
+  avatarColor        String?  @map("avatar_color")
+  createdAt          DateTime @default(now()) @map("created_at")
 
   @@map("system_users")
 }

@@ -18,7 +18,8 @@ import {
   UserCheck,
   Pencil,
   Briefcase,
-  LogOut
+  LogOut,
+  KeyRound
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 
@@ -37,6 +38,7 @@ interface SidebarProps {
   users?: SystemUser[];
   onSelectUser?: (user: SystemUser) => void;
   onLogout?: () => void;
+  onOpenChangePassword?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -53,7 +55,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
   users = [],
   onSelectUser,
-  onLogout
+  onLogout,
+  onOpenChangePassword
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
   const complianceRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -502,6 +505,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   >
                     <Users className="w-3.5 h-3.5" />
                     <span>Gerenciar Usuários & Cadeiras (IAM)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Change Password button */}
+              {onOpenChangePassword && (
+                <div className="p-1.5 bg-slate-50 dark:bg-[#0a0f1a] border-t border-slate-200 dark:border-[#1a2333]">
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onOpenChangePassword();
+                    }}
+                    className="w-full text-center py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#151f30] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Alterar Minha Senha</span>
                   </button>
                 </div>
               )}

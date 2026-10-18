@@ -947,6 +947,8 @@ export async function getUsers(): Promise<SystemUser[]> {
           id: u.id,
           name: u.name,
           email: u.email,
+          password: (u as any).password || '123456',
+          mustChangePassword: (u as any).mustChangePassword !== undefined ? (u as any).mustChangePassword : true,
           roleType: u.roleType as any,
           jobTitle: u.jobTitle || '',
           department: u.department || '',
@@ -973,6 +975,8 @@ export async function createUser(data: Omit<SystemUser, 'id' | 'createdAt'>): Pr
         data: {
           name: data.name,
           email: data.email,
+          password: data.password || '123456',
+          mustChangePassword: data.mustChangePassword !== undefined ? data.mustChangePassword : true,
           roleType: data.roleType,
           jobTitle: data.jobTitle || '',
           department: data.department || '',
@@ -980,12 +984,14 @@ export async function createUser(data: Omit<SystemUser, 'id' | 'createdAt'>): Pr
           defaultRoleId: data.defaultRoleId || null,
           active: data.active !== undefined ? data.active : true,
           avatarColor: data.avatarColor || null
-        }
+        } as any
       });
       return {
         id: created.id,
         name: created.name,
         email: created.email,
+        password: (created as any).password || '123456',
+        mustChangePassword: (created as any).mustChangePassword !== undefined ? (created as any).mustChangePassword : true,
         roleType: created.roleType as any,
         jobTitle: created.jobTitle || '',
         department: created.department || '',
@@ -1004,6 +1010,8 @@ export async function createUser(data: Omit<SystemUser, 'id' | 'createdAt'>): Pr
   if (!store.users) store.users = INITIAL_USERS;
   const newUser: SystemUser = {
     id: `user-${Date.now()}`,
+    password: data.password || '123456',
+    mustChangePassword: data.mustChangePassword !== undefined ? data.mustChangePassword : true,
     ...data,
     createdAt: new Date().toISOString()
   };
@@ -1015,24 +1023,30 @@ export async function createUser(data: Omit<SystemUser, 'id' | 'createdAt'>): Pr
 export async function updateUser(id: string, data: Partial<SystemUser>): Promise<SystemUser | null> {
   if (isDbConfigured) {
     try {
+      const updatePayload: any = {
+        name: data.name,
+        email: data.email,
+        roleType: data.roleType,
+        jobTitle: data.jobTitle,
+        department: data.department,
+        allowedRoleIds: data.allowedRoleIds !== undefined ? (data.allowedRoleIds as any) : undefined,
+        defaultRoleId: data.defaultRoleId,
+        active: data.active,
+        avatarColor: data.avatarColor
+      };
+      if (data.password !== undefined) updatePayload.password = data.password;
+      if (data.mustChangePassword !== undefined) updatePayload.mustChangePassword = data.mustChangePassword;
+
       const updated = await prisma.systemUser.update({
         where: { id },
-        data: {
-          name: data.name,
-          email: data.email,
-          roleType: data.roleType,
-          jobTitle: data.jobTitle,
-          department: data.department,
-          allowedRoleIds: data.allowedRoleIds !== undefined ? (data.allowedRoleIds as any) : undefined,
-          defaultRoleId: data.defaultRoleId,
-          active: data.active,
-          avatarColor: data.avatarColor
-        }
+        data: updatePayload
       });
       return {
         id: updated.id,
         name: updated.name,
         email: updated.email,
+        password: (updated as any).password || '123456',
+        mustChangePassword: (updated as any).mustChangePassword !== undefined ? (updated as any).mustChangePassword : false,
         roleType: updated.roleType as any,
         jobTitle: updated.jobTitle || '',
         department: updated.department || '',

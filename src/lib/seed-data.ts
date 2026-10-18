@@ -423,6 +423,8 @@ export const INITIAL_USERS: SystemUser[] = [
     department: "Governança & Presidência",
     allowedRoleIds: ["*"], // Acesso total a todas as cadeiras
     defaultRoleId: "role-fin-01",
+    password: "123456",
+    mustChangePassword: true,
     active: true,
     avatarColor: "bg-blue-600 text-white",
     createdAt: new Date().toISOString()
@@ -436,6 +438,8 @@ export const INITIAL_USERS: SystemUser[] = [
     department: "Controladoria & Finanças",
     allowedRoleIds: ["role-fin-01"], // Restrito estritamente à cadeira Financeira
     defaultRoleId: "role-fin-01",
+    password: "123456",
+    mustChangePassword: true,
     active: true,
     avatarColor: "bg-emerald-600 text-white",
     createdAt: new Date().toISOString()
@@ -449,6 +453,8 @@ export const INITIAL_USERS: SystemUser[] = [
     department: "Recursos Humanos & Departamento Pessoal",
     allowedRoleIds: ["role-rh-02"], // Restrito estritamente à cadeira de RH/DP
     defaultRoleId: "role-rh-02",
+    password: "123456",
+    mustChangePassword: true,
     active: true,
     avatarColor: "bg-amber-600 text-white",
     createdAt: new Date().toISOString()
@@ -462,6 +468,8 @@ export const INITIAL_USERS: SystemUser[] = [
     department: "Operações & Facilities",
     allowedRoleIds: ["role-ops-03", "role-rh-02"], // Acesso a Operações e interface com RH
     defaultRoleId: "role-ops-03",
+    password: "123456",
+    mustChangePassword: true,
     active: true,
     avatarColor: "bg-indigo-600 text-white",
     createdAt: new Date().toISOString()

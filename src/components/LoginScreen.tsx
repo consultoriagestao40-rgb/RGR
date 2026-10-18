@@ -43,27 +43,30 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
 
     setTimeout(() => {
       const normalizedEmail = email.trim().toLowerCase();
-      const foundUser = activeUsers.find(
+      const targetUser = activeUsers.find(
         u => u.email.toLowerCase() === normalizedEmail
+      ) || activeUsers.find(
+        u => u.name.toLowerCase().includes(normalizedEmail)
       );
 
-      if (!foundUser) {
-        const foundByName = activeUsers.find(
-          u => u.name.toLowerCase().includes(normalizedEmail)
-        );
-
-        if (foundByName) {
-          onLogin(foundByName);
-          setIsLoading(false);
-          return;
-        }
-
-        setError('Credenciais corporativas inválidas. Verifique seu e-mail e senha.');
+      if (!targetUser) {
+        setError('Credenciais corporativas inválidas. Usuário não localizado.');
         setIsLoading(false);
         return;
       }
 
-      onLogin(foundUser);
+      const expectedPassword = targetUser.password || '123456';
+      if (password !== expectedPassword) {
+        setError(
+          targetUser.mustChangePassword !== false
+            ? 'Senha incorreta. Para o primeiro acesso, utilize a senha padrão inicial: 123456'
+            : 'Senha incorreta. Verifique a senha informada ou solicite a redefinição ao administrador.'
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      onLogin(targetUser);
       setIsLoading(false);
     }, 400);
   };
