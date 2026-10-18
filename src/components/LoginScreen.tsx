@@ -10,8 +10,7 @@ import {
   EyeOff, 
   ArrowRight, 
   KeyRound, 
-  AlertCircle,
-  Users
+  AlertCircle
 } from 'lucide-react';
 import { SystemUser } from '@/lib/types';
 import { ThemeToggle } from './ThemeToggle';
@@ -59,7 +58,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
           return;
         }
 
-        setError('Credenciais não localizadas no IAM. Verifique seu e-mail ou utilize o Acesso Rápido abaixo.');
+        setError('Credenciais corporativas inválidas. Verifique seu e-mail e senha.');
         setIsLoading(false);
         return;
       }
@@ -67,24 +66,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
       onLogin(foundUser);
       setIsLoading(false);
     }, 400);
-  };
-
-  const handleQuickLogin = (user: SystemUser) => {
-    setEmail(user.email);
-    setPassword('••••••••');
-    setError(null);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      onLogin(user);
-      setIsLoading(false);
-    }, 300);
-  };
-
-  const getInitials = (name: string) => {
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    return name.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -234,51 +215,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
               </button>
 
             </form>
-
-            {/* Quick Login / RBAC Profiles Selector */}
-            <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Users className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                  Acesso Rápido por Perfil (1 Clique):
-                </span>
-                <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">IAM / RBAC</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {activeUsers.slice(0, 4).map((u) => (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => handleQuickLogin(u)}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/60 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800/80 hover:border-blue-400 dark:hover:border-blue-500/40 text-left transition-all group cursor-pointer shadow-xs"
-                  >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${u.avatarColor || 'bg-blue-600 text-white'}`}>
-                      {getInitials(u.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-300 truncate block">
-                          {u.name.split(' ')[0]}
-                        </span>
-                        <span className={`text-[8px] font-mono px-1 py-0.2 rounded font-semibold ${
-                          u.roleType === 'admin'
-                            ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300'
-                            : u.roleType === 'manager'
-                            ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300'
-                            : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-                        }`}>
-                          {u.roleType === 'admin' ? 'CEO' : u.roleType === 'manager' ? 'Gestor' : 'Op'}
-                        </span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 dark:text-slate-400 truncate block leading-tight">
-                        {u.jobTitle}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
 
           </div>
 
