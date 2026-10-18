@@ -20,7 +20,7 @@ import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { OperationalRole, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
-import { SYSTEM_START_DATE } from '@/lib/frequency';
+import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
 
 export default function HomePage() {
   const [roles, setRoles] = useState<OperationalRole[]>(INITIAL_ROLES);
@@ -459,9 +459,10 @@ export default function HomePage() {
     }
   };
 
+  const isCurrentWeekend = isWeekend(selectedDate);
   const selectedRole = roles.find(r => r.id === selectedRoleId) || roles[0];
-  const completedCount = blocks.filter(b => b.execution?.status === 'completed').length;
-  const totalCount = blocks.length;
+  const completedCount = isCurrentWeekend ? 0 : blocks.filter(b => b.execution?.status === 'completed').length;
+  const totalCount = isCurrentWeekend ? 0 : blocks.length;
 
   if (!isSessionLoaded) {
     return (
@@ -502,6 +503,7 @@ export default function HomePage() {
         onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
+        isWeekend={isCurrentWeekend}
       />
 
       {/* Main Panel */}

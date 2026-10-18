@@ -1,4 +1,5 @@
 import { RoutineBlockWithExecution, RolePerformanceStats } from './types';
+import { isWeekend } from './frequency';
 
 /**
  * Extracts the deadline time string ("HH:MM") from a timeWindow string (e.g., "08:00 - 08:30" -> "08:30")
@@ -30,6 +31,7 @@ export function parseDateTime(dateStr?: string, timeStr?: string): Date {
 
 /**
  * Evaluates whether an activity is delayed and calculates the delay in minutes.
+ * On weekends, corporate routine is closed so delay is always false.
  * @param timeWindow e.g. "08:00 - 08:30"
  * @param executionDate e.g. "2026-10-15"
  * @param completionDate Date object of completion or current time
@@ -44,6 +46,12 @@ export function evaluateDelay(
   }
 
   const deadlineStr = extractWindowDeadline(timeWindow);
+
+  // Nos finais de semana não há contagem de atraso nem janela de entrega
+  if (executionDate && isWeekend(executionDate)) {
+    return { isDelayed: false, delayMinutes: 0, deadlineStr };
+  }
+
   const deadlineDate = parseDateTime(executionDate, deadlineStr);
 
   const diffMs = completionDate.getTime() - deadlineDate.getTime();
@@ -62,7 +70,21 @@ export function evaluateDelay(
 /**
  * Calculates real-time Chair Performance Stats
  */
-export function calculateRolePerformance(blocks: RoutineBlockWithExecution[]): RolePerformanceStats {
+export function calculateRolePerformance(blocks: RoutineBlockWithExecution[], isWeekendDay: boolean = false): RolePerformanceStats {
+  if (isWeekendDay) {
+    return {
+      totalBlocks: 0,
+      completedBlocks: 0,
+      onTimeBlocks: 0,
+      delayedBlocks: 0,
+      blockedBlocks: 0,
+      completionRate: 100,
+      punctualityRate: 100,
+      governanceScore: 100,
+      ratingTier: 'EXCELLENT'
+    };
+  }
+
   const totalBlocks = blocks.length;
   if (totalBlocks === 0) {
     return {

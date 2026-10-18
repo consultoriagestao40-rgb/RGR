@@ -13,7 +13,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
-import { SYSTEM_START_DATE } from '@/lib/frequency';
+import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
@@ -166,6 +166,13 @@ export const Header: React.FC<HeaderProps> = ({
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Weekend Badge */}
+        {isWeekend(selectedDate) && (
+          <span className="hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+            Fim de Semana (Pausa)
+          </span>
+        )}
 
         {/* Action Button: Formal Meeting Minute */}
         <button

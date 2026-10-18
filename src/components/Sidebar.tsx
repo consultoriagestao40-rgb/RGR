@@ -43,6 +43,7 @@ interface SidebarProps {
   onOpenChangePassword?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isWeekend?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -62,10 +63,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   onOpenChangePassword,
   isCollapsed: propIsCollapsed,
-  onToggleCollapse
+  onToggleCollapse,
+  isWeekend = false
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
-  const complianceRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const complianceRate = isWeekend ? 100 : (totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0);
   
   // Collapse state with persistence in localStorage
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(() => {
@@ -279,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Timeline */}
             <button
               onClick={() => onSelectTab('timeline')}
-              title={isCollapsed ? `Meu Dia (Timeline) • ${totalCount} entregas` : undefined}
+              title={isCollapsed ? (isWeekend ? 'Meu Dia (Timeline) • Fim de Semana (Pausa de Rotina)' : `Meu Dia (Timeline) • ${totalCount} entregas`) : undefined}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all relative ${
                 activeTab === 'timeline'
                   ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
@@ -292,10 +294,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               {!isCollapsed ? (
                 <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  {totalCount}
+                  {isWeekend ? '—' : totalCount}
                 </span>
               ) : (
-                totalCount > 0 && (
+                !isWeekend && totalCount > 0 && (
                   <span className="absolute top-1 right-1 font-mono text-[8px] w-3.5 h-3.5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
                     {totalCount > 9 ? '9+' : totalCount}
                   </span>
@@ -453,7 +455,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {!isCollapsed ? (
         <div className="p-4 border-t border-slate-200 dark:border-[#1a2333] bg-slate-100/80 dark:bg-[#0c121e]">
           <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-slate-600 dark:text-slate-400 font-medium">Compliance do Dia</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">
+              {isWeekend ? 'Pausa de Fim de Semana' : 'Compliance do Dia'}
+            </span>
             <span className={`font-mono font-bold ${complianceRate === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
               {complianceRate}%
             </span>
@@ -467,7 +471,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <span>{completedCount} de {totalCount} entregues</span>
+            <span>{isWeekend ? 'Sem rotina aos sábados e domingos' : `${completedCount} de ${totalCount} entregues`}</span>
             <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
               <Shield className="w-3 h-3" /> Auditado
             </span>
@@ -476,14 +480,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ) : (
         <div 
           className="p-2 border-t border-slate-200 dark:border-[#1a2333] bg-slate-100/80 dark:bg-[#0c121e] flex flex-col items-center justify-center cursor-pointer"
-          title={`Compliance do Dia: ${complianceRate}% (${completedCount}/${totalCount} entregas homologadas)`}
+          title={isWeekend ? 'Fim de Semana: Rotina em pausa (Segunda a Sexta)' : `Compliance do Dia: ${complianceRate}% (${completedCount}/${totalCount} entregas homologadas)`}
         >
           <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-mono font-bold ${
             complianceRate === 100 
               ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' 
               : 'border-blue-500 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
           }`}>
-            {complianceRate}%
+            {isWeekend ? '100%' : `${complianceRate}%`}
           </div>
         </div>
       )}
