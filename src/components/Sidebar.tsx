@@ -141,44 +141,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out`}>
       
-      {/* Top Brand: RGR - Gerenciamento da Rotina & Toggle Button */}
-      <div className={`p-4 border-b border-slate-200 dark:border-[#1a2333] flex items-center ${isCollapsed ? 'flex-col gap-2 px-2' : 'justify-between'}`}>
-        <div className="flex items-center gap-3 min-w-0">
-          <div 
-            onClick={isCollapsed ? handleToggleCollapse : undefined}
-            className={`h-9 w-9 rounded-xl bg-blue-600 dark:bg-[#1e2d42] border border-blue-500 dark:border-[#2c3e59] flex items-center justify-center text-white dark:text-slate-100 font-black text-sm tracking-wider shadow-sm shrink-0 ${isCollapsed ? 'cursor-pointer hover:opacity-90' : ''}`}
-            title={isCollapsed ? 'Clique para expandir o menu' : 'RGR Governança Operacional'}
+      {/* Top Brand: RGR - Gerenciamento da Rotina & Single Encased Toggle Button */}
+      <div className={`h-16 border-b border-slate-200 dark:border-[#1a2333] flex items-center transition-colors shrink-0 bg-white dark:bg-[#0c121e] ${
+        isCollapsed ? 'justify-center px-2' : 'justify-between px-3.5'
+      }`}>
+        {isCollapsed ? (
+          <button
+            onClick={handleToggleCollapse}
+            className="w-10 h-10 rounded-xl border border-slate-200 dark:border-[#1e2c42] bg-slate-50 dark:bg-[#121c2e] hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 dark:hover:border-blue-800 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 flex items-center justify-center transition-all shadow-xs cursor-pointer group"
+            title="Expandir menu lateral"
+            aria-label="Expandir menu lateral"
           >
-            RGR
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans">
-                  RGR <span className="text-blue-600 dark:text-[#3b82f6] font-semibold">Rotina</span>
-                </span>
-                <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#1a2638] text-slate-700 dark:text-slate-300 font-semibold border border-slate-300 dark:border-[#263750]">
-                  Operacional
-                </span>
+            <PanelLeftOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform group-hover:scale-110" />
+          </button>
+        ) : (
+          <>
+            <div className="flex items-center gap-2.5 min-w-0 pr-1">
+              <div 
+                className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-600 dark:to-blue-800 border border-blue-500/40 dark:border-blue-500/20 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-xs shrink-0"
+                title="RGR Governança Operacional"
+              >
+                RGR
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[150px]">
-                Gerenciamento da Rotina
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans">
+                    RGR <span className="text-blue-600 dark:text-[#3b82f6] font-semibold">Rotina</span>
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#162235] text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-[#22334e]">
+                    Operacional
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                  Gerenciamento da Rotina
+                </p>
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Toggle Button */}
-        <button
-          onClick={handleToggleCollapse}
-          className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#18263d] transition-colors cursor-pointer ${
-            isCollapsed ? 'w-full flex items-center justify-center' : 'shrink-0'
-          }`}
-          title={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-          aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-        >
-          {isCollapsed ? <PanelLeftOpen className="w-4 h-4 text-blue-500" /> : <PanelLeftClose className="w-4 h-4" />}
-        </button>
+            {/* Encased Single Toggle Button */}
+            <button
+              onClick={handleToggleCollapse}
+              className="w-8 h-8 rounded-lg border border-slate-200 dark:border-[#1e2c42] bg-slate-50 dark:bg-[#121c2e] hover:bg-slate-100 dark:hover:bg-[#1a2638] hover:border-slate-300 dark:hover:border-[#2a3c5a] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer"
+              title="Recolher menu lateral"
+              aria-label="Recolher menu lateral"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Cadeira Ativa com Limitação de Acesso por Usuário */}

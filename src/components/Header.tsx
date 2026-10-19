@@ -8,9 +8,7 @@ import {
   FileCheck2, 
   RotateCcw, 
   Building,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen
+  LogOut
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
 import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
@@ -24,8 +22,6 @@ interface HeaderProps {
   onOpenMinuteModal: () => void;
   onResetData: () => void;
   onLogout?: () => void;
-  isSidebarCollapsed?: boolean;
-  onToggleSidebar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,9 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onOpenMinuteModal,
   onResetData,
-  onLogout,
-  isSidebarCollapsed,
-  onToggleSidebar
+  onLogout
 }) => {
   const getTabLabel = (tab: string) => {
     switch (tab) {
@@ -84,18 +78,6 @@ export const Header: React.FC<HeaderProps> = ({
       
       {/* Left: Formal Corporate Breadcrumbs */}
       <div className="flex items-center gap-2 text-xs">
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-1 cursor-pointer"
-            title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-            aria-label={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-          >
-            {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" /> : <PanelLeftClose className="w-4 h-4" />}
-          </button>
-        )}
-
         <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
           <Building className="w-3.5 h-3.5 text-blue-600 dark:text-slate-400" />
           Governança Operacional
