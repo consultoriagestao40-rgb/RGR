@@ -24,6 +24,14 @@ export const INITIAL_ROLES: OperationalRole[] = [
     department: "Diretoria de Operações & Facilities",
     description: "Cadeira de supervisão técnica com foco em conformidade operacional dos postos de trabalho, auditorias de qualidade in loco com checklist fotográfico e gestão de suprimentos e equipamentos químicos.",
     createdAt: new Date().toISOString()
+  },
+  {
+    id: "role-1792084692479",
+    code: "CAD-OPE-04",
+    title: "Head de Operações",
+    department: "Operações",
+    description: "Liderar estrategicamente a operação de facilities, garantindo 100% de cobertura dos postos, cumprimento rigoroso de SLAs e retenção dos contratos. Atuação fundamental porta fora com visitas executivas a clientes, gestão de coordenadores de campo e controle do DRE operacional.",
+    createdAt: new Date().toISOString()
   }
 ];
 
@@ -296,6 +304,65 @@ Auditoria física de áreas nobres: pisos tratados, sanitários higienizados, su
 **Cadeira:** Coordenador de Operações | **Versão:** 1.7
 
 Análise técnica do consumo de produtos químicos diluíveis e insumos descartáveis, prevenindo desperdícios e garantindo abastecimento tempestivo.`
+  },
+
+  // --- HEAD DE OPERAÇÕES ---
+  {
+    id: "block-head-01",
+    roleId: "role-1792084692479",
+    code: "POP-OPE-001",
+    version: "v1.0",
+    homologatedBy: "CEO / Conselho Diretor",
+    timeWindow: "08:30 - 12:00",
+    title: "Roteiro Presencial de Visitas Executivas a Contratos & Síndicos",
+    deliverable: "Relatório fotográfico de auditoria e termo de alinhamento com cliente validado in loco",
+    frequency: "daily",
+    orderIndex: 1,
+    sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-001
+**Cadeira:** Head de Operações | **Versão:** 1.0 | **Homologado por:** CEO
+
+---
+
+#### 1. Diretriz Estratégica Porta Fora
+O Head de Operações atua presencialmente na linha de frente dos contratos corporativos, fortalecendo a confiança dos tomadores de serviço e blindando contratos contra perda de qualidade ou cancelamento.
+
+#### 2. Protocolo de Visita Presencial
+1. Inspecionar apresentação pessoal, uniformes e postura dos colaboradores no posto.
+2. Vistoriar áreas nobres, depósitos de limpeza (DML) e estado dos equipamentos.
+3. Realizar reunião de 15 minutos com o síndico profissional, gestor predial ou gerente de facilities do cliente.
+4. Coletar assinatura no checklist de qualidade e registrar percepção de valor.`
+  },
+  {
+    id: "block-head-02",
+    roleId: "role-1792084692479",
+    code: "POP-OPE-002",
+    version: "v1.0",
+    homologatedBy: "Diretoria de Operações",
+    timeWindow: "13:30 - 15:30",
+    title: "Auditoria de SLA, Resolução de Não Conformidades e Blindagem Contratual",
+    deliverable: "Plano de ação corretivo pactuado com cliente para eliminação de pendências e glosas",
+    frequency: "daily",
+    orderIndex: 2,
+    sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-002
+**Cadeira:** Head de Operações | **Versão:** 1.0
+
+Intervenção tempestiva em contratos com apontamento de falha ou reclamação, instaurando plano de ação corretivo de 48h junto aos Coordenadores de Campo para estancar reatividade operacional.`
+  },
+  {
+    id: "block-head-03",
+    roleId: "role-1792084692479",
+    code: "POP-OPE-003",
+    version: "v1.0",
+    homologatedBy: "Controladoria & Diretoria Executiva",
+    timeWindow: "16:00 - 17:30",
+    title: "Gestão de DRE Operacional, Auditoria de Horas Extras e Insumos",
+    deliverable: "Painel de margem operacional dos postos atualizado com plano de redução de custos excedentes",
+    frequency: "daily",
+    orderIndex: 3,
+    sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-003
+**Cadeira:** Head de Operações | **Versão:** 1.0
+
+Auditoria do custo direto de cada posto de serviço (horas extras, substituições de diaristas e consumo de produtos químicos diluíveis), garantindo a margem de contribuição contratual acordada.`
   }
 ];
 
@@ -393,6 +460,63 @@ export const INITIAL_RITUALS: DailyRitual[] = [
       "Aprovação do Novo Regulamento Interno de Escalas, Benefícios e Banco de Horas",
       "Deliberação sobre Aporte de Capital para Aquisição de Lavadoras e Enceradeiras Industriais",
       "Aprovação da Rescisão Contratual e Substituição de Fornecedor de Uniformes em Atraso"
+    ]
+  },
+
+  // --- HEAD DE OPERAÇÕES (PORTA FORA / CLIENTES) ---
+  {
+    id: "ritual-head-01",
+    roleId: "role-1792084692479",
+    code: "RIT-HEAD-01",
+    timeSlot: "08:00",
+    title: "Briefing Tático & Planejamento de Rotas a Clientes (Porta Fora)",
+    durationMinutes: 20,
+    type: "operational_cadence",
+    frequency: "daily",
+    weekDays: [1, 2, 3, 4, 5],
+    includeWeekends: false,
+    agendaItems: [
+      "Mapear contratos com ocorrências abertas nas últimas 24h ou risco de notificação/glosa",
+      "Definir roteiro presencial de visitas do dia aos síndicos, gerentes prediais e gestores de facilities",
+      "Validar alinhamento com Coordenadores de Campo sobre pontos críticos a serem inspecionados in loco",
+      "Sinalizar à Diretoria Executiva a agenda externa e clientes prioritários a serem visitados"
+    ]
+  },
+  {
+    id: "ritual-head-02",
+    roleId: "role-1792084692479",
+    code: "RIT-HEAD-02",
+    timeSlot: "11:00",
+    title: "Alinhamento Executivo Presencial com Contratantes & Síndicos",
+    durationMinutes: 30,
+    type: "board_council",
+    frequency: "weekly",
+    weekDays: [2, 4],
+    includeWeekends: false,
+    agendaItems: [
+      "Apresentar Relatório Executivo Mensal de SLA, assiduidade e auditoria de qualidade in loco",
+      "Coletar percepção de valor do tomador do serviço (NPS qualitativo e expectativas da gestão)",
+      "Tratar e pactuar planos de ação para demandas extraordinárias, eventos e adequação de escopo",
+      "Identificar oportunidades de expansão de serviços (aditivos contratuais, tratamento de piso, vitrificação)",
+      "Formalizar ata de alinhamento com visto e aceite do representante legal do cliente"
+    ]
+  },
+  {
+    id: "ritual-head-03",
+    roleId: "role-1792084692479",
+    code: "RIT-HEAD-03",
+    timeSlot: "16:30",
+    title: "Debriefing de Campo, Retenção de Contratos & DRE Operacional",
+    durationMinutes: 30,
+    type: "operational_cadence",
+    frequency: "weekly",
+    weekDays: [5],
+    includeWeekends: false,
+    agendaItems: [
+      "Consolidar termômetro dos clientes visitados na semana e notas de satisfação dos síndicos",
+      "Sinalizar contratos em zona de risco de cancelamento/rescisão e ações preventivas de blindagem",
+      "Auditar horas extras de campo, consumo excessivo de químicos e eventuais glosas aplicadas",
+      "Apresentar previsão de novos aditivos comerciais e cronograma de implantação de novos contratos"
     ]
   }
 ];
