@@ -93,31 +93,36 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   const getTierBadge = (tier: string) => {
     if (isCurrentWeekend) {
       return {
-        label: 'Pausa Semanal • Final de Semana',
-        className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-400/30'
+        label: 'Pausa de Fim de Semana',
+        className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+        dotColor: 'bg-blue-500'
       };
     }
     switch (tier) {
       case 'EXCELLENT':
         return {
           label: 'Faixa Ouro • Alta Governança',
-          className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-400/30'
+          className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+          dotColor: 'bg-emerald-500'
         };
       case 'STABLE':
         return {
-          label: 'Conforme • Estável',
-          className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-400/30'
+          label: 'Operação Estável',
+          className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+          dotColor: 'bg-blue-500'
         };
       case 'ATTENTION':
         return {
-          label: 'Atenção • Desvios Recorrentes',
-          className: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-400/30'
+          label: 'Atenção Operacional',
+          className: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+          dotColor: 'bg-amber-500'
         };
       case 'CRITICAL':
       default:
         return {
-          label: 'Crítico • Inadimplência de Rotina',
-          className: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-400/30'
+          label: 'Inadimplência de Rotina',
+          className: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800/60',
+          dotColor: 'bg-rose-500'
         };
     }
   };
@@ -125,64 +130,70 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   const tierInfo = getTierBadge(stats.ratingTier);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-5 max-w-5xl mx-auto">
       
       {/* Performance & Punctuality Scoreboard (Atlas Governance / RGR Score) */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-xl p-5 shadow-sm transition-colors">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1f293d] rounded-xl p-5 shadow-xs transition-colors">
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1c2638]">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-[#172338] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#233552]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-4 border-b border-slate-100 dark:border-[#1c2638]">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 {role.code || 'CAD-01'}
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {role.department}
               </span>
-              <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded border ${tierInfo.className}`}>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${tierInfo.className}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${tierInfo.dotColor}`} />
                 {tierInfo.label}
               </span>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
               {role.title}
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
               {role.description}
             </p>
           </div>
 
           {/* KPI Dashboard */}
-          <div className="grid grid-cols-3 gap-3 border-l border-slate-200 dark:border-[#1f293d] pl-5 self-start md:self-auto">
+          <div className="grid grid-cols-3 gap-6 border-l border-slate-100 dark:border-[#1f293d] pl-6 self-start md:self-auto shrink-0">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
                 Score RGR
               </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className={`text-2xl font-mono font-black ${
-                  isCurrentWeekend ? 'text-blue-600 dark:text-blue-400' : stats.governanceScore >= 85 ? 'text-emerald-600 dark:text-emerald-400' : stats.governanceScore >= 70 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-500'
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className={`text-2xl font-semibold tracking-tight font-sans ${
+                  isCurrentWeekend ? 'text-blue-600 dark:text-blue-400' : stats.governanceScore >= 85 ? 'text-emerald-600 dark:text-emerald-400' : stats.governanceScore >= 70 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'
                 }`}>
                   {isCurrentWeekend ? 100 : stats.governanceScore}
                 </span>
-                <span className="text-xs text-slate-400 font-semibold">/100</span>
+                <span className="text-xs text-slate-400 font-normal">/ 100</span>
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
                 Pontualidade
               </span>
-              <span className="text-2xl font-mono font-black text-slate-900 dark:text-white mt-0.5 block">
+              <span className="text-2xl font-semibold tracking-tight font-sans text-slate-900 dark:text-white mt-1 block">
                 {isCurrentWeekend ? '100%' : `${stats.punctualityRate}%`}
               </span>
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
                 Entregas
               </span>
-              <span className="text-2xl font-mono font-black text-slate-900 dark:text-white mt-0.5 block">
-                {isCurrentWeekend ? '0/0' : `${stats.completedBlocks}/${stats.totalBlocks}`}
-              </span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl font-semibold tracking-tight font-sans text-slate-900 dark:text-white block">
+                  {isCurrentWeekend ? '0' : stats.completedBlocks}
+                </span>
+                <span className="text-xs text-slate-400 font-normal">
+                  / {isCurrentWeekend ? '0' : stats.totalBlocks}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -191,28 +202,28 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
         {/* Detailed stats pills */}
         <div className="pt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
           {isCurrentWeekend ? (
-            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-semibold">
+            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
               <Coffee className="w-4 h-4 text-blue-500 shrink-0" />
-              <span>Fim de semana: Cadência de POPs corporativos suspensa aos sábados e domingos. Nenhuma entrega obrigatória hoje.</span>
+              <span>Rotina em pausa de final de semana. Nenhuma entrega exigida hoje.</span>
             </div>
           ) : (
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <div className="flex items-center gap-5">
+              <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 {stats.onTimeBlocks} No Prazo
               </span>
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">
+              <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
                 {stats.delayedBlocks} Com Atraso Justificado
               </span>
-              <span className="flex items-center gap-1.5 text-slate-500">
+              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
                 <span className="w-2 h-2 rounded-full bg-slate-400" />
                 {stats.totalBlocks - stats.completedBlocks} Pendentes
               </span>
             </div>
           )}
 
-          <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">
             Cadência auditada em tempo real com registro de justificativas
           </span>
         </div>
@@ -220,22 +231,22 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
       </div>
 
       {/* Executive Banner: Despacho & Pautas com o CEO */}
-      <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/80 dark:from-[#0f1b2e] dark:to-[#111c33] border border-blue-200/80 dark:border-[#1d3558] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-            <Briefcase className="w-4 h-4" />
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
+            <Briefcase className="w-4 h-4 text-slate-600 dark:text-slate-300" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-200">
-                Pautas para Reunião com o CEO / Diretoria
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+                Pautas para Despacho com a Diretoria
               </h4>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700">
                 {rituals.filter(r => isRitualScheduledForDate(r, selectedDate)).length} Ritos Agendados Hoje
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              Tem um impedimento, verba emergencial ou alinhamento prioritário? Inclua pautas diretamente na Mesa de Despacho com o CEO.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Impedimentos, solicitações emergenciais ou alinhamentos prioritários para deliberação na Mesa de Despacho.
             </p>
           </div>
         </div>
@@ -245,20 +256,20 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
             <button
               type="button"
               onClick={() => onOpenAddAgendaModal()}
-              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Adicionar Pauta p/ CEO</span>
+              <span>Adicionar Pauta</span>
             </button>
           )}
           {onGoToDispatchRoom && (
             <button
               type="button"
               onClick={onGoToDispatchRoom}
-              className="px-3 py-1.5 rounded-lg border border-blue-300 dark:border-[#2b4c7c] bg-white dark:bg-[#132238] hover:bg-blue-50 dark:hover:bg-[#1a2e4d] text-blue-700 dark:text-blue-300 text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>Mesa de Despacho</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
           )}
         </div>
@@ -344,22 +355,20 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
             );
             const isRitualBlock = Boolean(matchedRitual);
 
+            // Left-border status accent class
+            const getBorderAccent = () => {
+              if (isDone && block.execution?.isDelayed) return 'border-l-amber-500';
+              if (isDone) return 'border-l-emerald-500';
+              if (isCurrentlyOverdue) return 'border-l-rose-500';
+              if (isPastUncompleted) return 'border-l-slate-400 dark:border-l-slate-600';
+              if (isBlocked) return 'border-l-rose-500';
+              return 'border-l-slate-300 dark:border-l-slate-700';
+            };
+
             return (
               <div
                 key={block.id}
-                className={`bg-white dark:bg-[#111827] border rounded-lg transition-all shadow-sm ${
-                  isDone && block.execution?.isDelayed
-                    ? 'border-amber-300 dark:border-amber-600/40 bg-amber-50/20 dark:bg-amber-950/10'
-                    : isDone
-                    ? 'border-emerald-300 dark:border-[#1b3a2f] bg-emerald-50/20 dark:bg-[#0d161a]/60' 
-                    : isCurrentlyOverdue
-                    ? 'border-rose-300 dark:border-rose-800/60 bg-rose-50/20 dark:bg-rose-950/10 ring-1 ring-rose-500/20'
-                    : isPastUncompleted
-                    ? 'border-slate-300 dark:border-slate-700/60 bg-slate-50/40 dark:bg-slate-900/30'
-                    : isBlocked
-                    ? 'border-rose-300 dark:border-[#3f1c1c] bg-rose-50/20 dark:bg-[#1a0f0f]/60'
-                    : 'border-slate-200 dark:border-[#1f293d] hover:border-slate-300 dark:hover:border-[#2b3952]'
-                }`}
+                className={`bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl border-l-[3.5px] ${getBorderAccent()} shadow-xs transition-all`}
               >
                 {/* Card Top Row */}
                 <div className="p-4 sm:p-5">
@@ -367,13 +376,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                     
                     {/* Left: Time and Code */}
                     <div className="flex items-center gap-2">
-                      <span className={`font-mono text-xs font-semibold px-2 py-0.5 rounded border ${
-                        isCurrentlyOverdue
-                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700 animate-pulse'
-                          : isPastUncompleted
-                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
-                          : 'bg-slate-100 dark:bg-[#172033] text-slate-800 dark:text-slate-200 border-slate-200 dark:border-[#223048]'
-                      }`}>
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                         {block.timeWindow}
                       </span>
                       <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
@@ -387,13 +390,13 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                         <button
                           type="button"
                           onClick={() => onOpenAddAgendaModal?.(matchedRitual)}
-                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 dark:bg-[#1c2a42] dark:hover:bg-[#253959] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#273a5a] flex items-center gap-1 transition-colors cursor-pointer"
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
                           title="Clique para ver ou adicionar pautas a este despacho com a Diretoria/CEO"
                         >
-                          <Briefcase className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                          <span>Rito com Diretoria</span>
-                          <span className="font-mono text-[9px] bg-blue-200/60 dark:bg-blue-900/60 px-1 rounded ml-0.5">
-                            {Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0} pautas
+                          <Briefcase className="w-3 h-3 text-slate-500" />
+                          <span>Rito de Despacho</span>
+                          <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-0.5">
+                            {Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0}
                           </span>
                         </button>
                       )}
@@ -402,18 +405,18 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                     {/* Right: Formal Status Tag with Delay Information */}
                     <div>
                       {isDone && block.execution?.isDelayed && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                          Concluído com Atraso (+{block.execution.delayMinutes} min)
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span>Concluído com Atraso (+{block.execution.delayMinutes} min)</span>
                         </span>
                       )}
 
                       {isDone && !block.execution?.isDelayed && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80">
-                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          Pontual / No Prazo
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span>Pontual / No Prazo</span>
                           {block.execution?.completedAt && (
-                            <span className="font-mono text-[10px] opacity-75 ml-1">
+                            <span className="font-mono text-[10px] text-emerald-600/70 dark:text-emerald-400/70 ml-0.5">
                               {new Date(block.execution.completedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
@@ -421,159 +424,155 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                       )}
 
                       {isCurrentWeekend && !isDone && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                          <Coffee className="w-3.5 h-3.5 text-blue-500" />
-                          Pausa Semanal (Modo Leitura)
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          <Coffee className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Pausa Semanal (Modo Leitura)</span>
                         </span>
                       )}
 
                       {!isCurrentWeekend && isCurrentlyOverdue && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700 animate-pulse">
-                          <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                          Janela Expirada (+{delayCheck.delayMinutes} min de atraso)
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span>Janela Expirada (+{delayCheck.delayMinutes} min de atraso)</span>
                         </span>
                       )}
 
                       {!isCurrentWeekend && isPastUncompleted && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
-                          <Clock className="w-3 h-3 text-slate-400" />
-                          Não Realizado no Prazo
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          <span>Não Realizado no Prazo</span>
                         </span>
                       )}
 
                       {!isCurrentWeekend && isFuture && !isDone && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-[#162033] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-[#243350]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           <Clock className="w-3 h-3 text-slate-400" />
-                          Programado
+                          <span>Programado</span>
                         </span>
                       )}
 
                       {!isCurrentWeekend && isToday && !isDone && !isCurrentlyOverdue && !isBlocked && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-[#162033] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#243350]">
-                          <Clock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                          Dentro do Horário
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <Clock className="w-3 h-3 text-slate-500" />
+                          <span>Dentro do Horário</span>
                         </span>
                       )}
 
                       {isBlocked && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800/80">
-                          <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                          Bloqueado
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span>Bloqueado</span>
                         </span>
                       )}
                     </div>
                   </div>
 
-                {/* Macroprocess Title */}
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
-                  {block.title}
-                </h3>
+                  {/* Macroprocess Title */}
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
+                    {block.title}
+                  </h3>
 
-                {/* Deliverable Box */}
-                <div className={`mt-3 p-3 rounded-md border text-xs flex items-start justify-between gap-3 ${
-                  isDone 
-                    ? 'bg-emerald-50 dark:bg-[#0b1717] border-emerald-200 dark:border-[#18392b] text-emerald-900 dark:text-emerald-200' 
-                    : isCurrentlyOverdue
-                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40 text-rose-900 dark:text-rose-200'
-                    : 'bg-slate-50 dark:bg-[#0d1422] border-slate-200 dark:border-[#1a2538] text-slate-700 dark:text-slate-300'
-                }`}>
-                  <div className="flex-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
-                      Entregável Obrigatório (Critério de Aceite):
-                    </span>
-                    <p className="font-medium leading-relaxed">
-                      {block.deliverable}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => onRequestToggleStatus(block)}
-                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 shadow-sm ${
-                      isDone
-                        ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-900/40 dark:hover:bg-emerald-900/60 text-white dark:text-emerald-300 border border-emerald-600 dark:border-emerald-700/60'
-                        : isCurrentlyOverdue
-                        ? 'bg-amber-600 hover:bg-amber-700 text-white border border-amber-700'
-                        : isPastUncompleted
-                        ? 'bg-slate-600 hover:bg-slate-700 text-white border border-slate-700'
-                        : 'bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] text-white dark:text-blue-100 border border-blue-700 dark:border-[#2d558b]'
-                    }`}
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    {isDone 
-                      ? 'Concluído' 
-                      : isCurrentlyOverdue 
-                      ? 'Protocolar c/ Justificativa' 
-                      : isPastUncompleted 
-                      ? 'Registrar c/ Justificativa' 
-                      : 'Protocolar Entrega'}
-                  </button>
-                </div>
-
-                {/* Justification of Delay if present */}
-                {block.execution?.delayReason && (
-                  <div className="mt-2.5 p-3 rounded bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold">Motivo do Atraso ({block.execution.delayCategory}):</span>
-                        <span className="font-mono text-[10px] bg-amber-200/50 dark:bg-amber-900/50 px-1.5 py-0.2 rounded font-semibold">
-                          +{block.execution.delayMinutes} min
-                        </span>
-                      </div>
-                      <p className="leading-relaxed">{block.execution.delayReason}</p>
+                  {/* Deliverable Box */}
+                  <div className="mt-3.5 p-3.5 rounded-lg bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 text-xs flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                        Entregável Obrigatório (Critério de Aceite)
+                      </span>
+                      <p className="font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+                        {block.deliverable}
+                      </p>
                     </div>
-                  </div>
-                )}
 
-                {/* General observation if present */}
-                {block.execution?.observation && !block.execution?.delayReason && (
-                  <div className="mt-2.5 p-2.5 rounded bg-blue-50 dark:bg-[#101726] border border-blue-200 dark:border-[#1d293d] text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-                    <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <span className="font-semibold text-slate-900 dark:text-slate-200">Nota de Auditoria / Evidência: </span>
-                      <span>{block.execution.observation}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Bar */}
-              <div className="px-4 sm:px-5 py-2.5 bg-slate-50 dark:bg-[#0e1420] border-t border-slate-200 dark:border-[#1a2333] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => onOpenObservationModal(block)}
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1.5 transition-colors"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                    <span>{block.execution?.observation ? 'Editar Nota de Auditoria' : 'Adicionar Evidência / Glosa'}</span>
-                  </button>
-
-                  {isRitualBlock && onOpenAddAgendaModal && (
                     <button
-                      type="button"
-                      onClick={() => onOpenAddAgendaModal(matchedRitual)}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors"
+                      onClick={() => onRequestToggleStatus(block)}
+                      className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                        isDone
+                          ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : isCurrentlyOverdue
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                          : isPastUncompleted
+                          ? 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
+                          : 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-blue-600 dark:hover:bg-blue-500'
+                      }`}
                     >
-                      <Briefcase className="w-3.5 h-3.5" />
-                      <span>Pautar c/ CEO ({Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0})</span>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>
+                        {isDone 
+                          ? 'Concluído' 
+                          : isCurrentlyOverdue 
+                          ? 'Protocolar c/ Justificativa' 
+                          : isPastUncompleted 
+                          ? 'Registrar c/ Justificativa' 
+                          : 'Protocolar Entrega'}
+                      </span>
                     </button>
+                  </div>
+
+                  {/* Justification of Delay if present */}
+                  {block.execution?.delayReason && (
+                    <div className="mt-3 p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="flex-1 space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-900 dark:text-white">Motivo do Atraso ({block.execution.delayCategory}):</span>
+                          <span className="font-mono text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded font-medium">
+                            +{block.execution.delayMinutes} min
+                          </span>
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{block.execution.delayReason}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* General observation if present */}
+                  {block.execution?.observation && !block.execution?.delayReason && (
+                    <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2.5">
+                      <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <span className="font-medium text-slate-900 dark:text-white">Nota de Auditoria: </span>
+                        <span className="text-slate-600 dark:text-slate-400">{block.execution.observation}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                <button
-                  onClick={() => onOpenSop(block)}
-                  className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center gap-1 transition-colors"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Manual de Instrução (POP)</span>
-                  <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                </button>
-              </div>
+                {/* Action Bar */}
+                <div className="px-4 sm:px-5 py-2.5 bg-slate-50/60 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => onOpenObservationModal(block)}
+                      className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{block.execution?.observation ? 'Editar Nota de Auditoria' : 'Adicionar Evidência / Glosa'}</span>
+                    </button>
 
-            </div>
-          );
-        })}
-      </div>
+                    {isRitualBlock && onOpenAddAgendaModal && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenAddAgendaModal(matchedRitual)}
+                        className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Pautar c/ CEO ({Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0})</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => onOpenSop(block)}
+                    className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Manual de Instrução (POP)</span>
+                    <ChevronRight className="w-3 h-3 text-slate-400" />
+                  </button>
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
       )}
 
     </div>
