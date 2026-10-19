@@ -33,12 +33,10 @@ interface SidebarProps {
   onSelectRole: (roleId: string) => void;
   onOpenCreateRoleModal: () => void;
   onOpenEditRoleModal?: () => void;
-  onSelectAdminSection?: (section: 'blocks' | 'rituals' | 'roles' | 'users') => void;
+  onSelectAdminSection?: (section: 'blocks' | 'rituals' | 'roles') => void;
   completedCount: number;
   totalCount: number;
-  currentUser?: SystemUser;
-  users?: SystemUser[];
-  onSelectUser?: (user: SystemUser) => void;
+  currentUser?: SystemUser | null;
   onLogout?: () => void;
   onOpenChangePassword?: () => void;
   isCollapsed?: boolean;
@@ -58,8 +56,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   completedCount,
   totalCount,
   currentUser,
-  users = [],
-  onSelectUser,
   onLogout,
   onOpenChangePassword,
   isCollapsed: propIsCollapsed,
@@ -604,45 +600,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* List to Switch */}
-              <div className="p-1.5 max-h-56 overflow-y-auto space-y-1">
-                <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                  Simular Acesso Como:
-                </span>
-                {users.map(u => {
-                  const isActive = u.id === currentUser.id;
-                  return (
-                    <button
-                      key={u.id}
-                      onClick={() => {
-                        if (onSelectUser) onSelectUser(u);
-                        setIsUserMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between p-1.5 rounded-lg text-left text-xs transition-colors ${
-                        isActive 
-                          ? 'bg-blue-50 dark:bg-[#18263d] text-blue-900 dark:text-white font-medium border border-blue-200 dark:border-[#273a5a]'
-                          : 'hover:bg-slate-100 dark:hover:bg-[#151f30] text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${u.avatarColor || 'bg-slate-500 text-white'}`}>
-                          {getInitials(u.name)}
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-semibold block truncate text-[11px] leading-tight">
-                            {u.name}
-                          </span>
-                          <span className="text-[9px] text-slate-400 block truncate">
-                            {u.jobTitle}
-                          </span>
-                        </div>
-                      </div>
-                      {isActive && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 ml-1" />}
-                    </button>
-                  );
-                })}
               </div>
 
               {/* IAM Management button */}

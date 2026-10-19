@@ -29,7 +29,7 @@ export default function HomePage() {
   // Users & RBAC Session State
   const [users, setUsers] = useState<SystemUser[]>(INITIAL_USERS);
   const [currentUser, setCurrentUser] = useState<SystemUser>(INITIAL_USERS[0]);
-  const [adminDefaultSection, setAdminDefaultSection] = useState<'blocks' | 'rituals' | 'roles' | 'users'>('blocks');
+  const [adminDefaultSection, setAdminDefaultSection] = useState<'blocks' | 'rituals' | 'roles'>('blocks');
 
   // Authentication & Session Persistence
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -217,8 +217,7 @@ export default function HomePage() {
   };
 
   const handleOpenUserManagement = () => {
-    setAdminDefaultSection('users');
-    setActiveTab('admin');
+    setActiveTab('users');
   };
 
   // Handle Role Created or Updated from Modal
@@ -497,8 +496,6 @@ export default function HomePage() {
         completedCount={completedCount}
         totalCount={totalCount}
         currentUser={currentUser}
-        users={users}
-        onSelectUser={handleSelectUser}
         onLogout={handleLogout}
         onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
         isCollapsed={isSidebarCollapsed}
@@ -584,8 +581,6 @@ export default function HomePage() {
                 loadRoleData(selectedRoleId, selectedDate);
               }}
               onSelectRole={setSelectedRoleId}
-              users={users}
-              onRefreshUsers={loadUsers}
               defaultSection={adminDefaultSection}
             />
           )}

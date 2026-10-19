@@ -12,7 +12,6 @@ import {
   Clock
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, DailyRitual, SystemUser, RitualType, RitualFrequency, MonthlyScheduleType } from '@/lib/types';
-import { UsersManagementSection } from './UsersManagementSection';
 import { WEEK_DAYS, formatRitualFrequency } from '@/lib/frequency';
 
 interface AdminTabProps {
@@ -24,9 +23,7 @@ interface AdminTabProps {
   onSelectRole: (roleId: string) => void;
   triggerNewRoleModal?: boolean;
   onResetTrigger?: () => void;
-  users?: SystemUser[];
-  onRefreshUsers?: () => void;
-  defaultSection?: 'blocks' | 'rituals' | 'roles' | 'users';
+  defaultSection?: 'blocks' | 'rituals' | 'roles';
 }
 
 export const AdminTab: React.FC<AdminTabProps> = ({
@@ -38,12 +35,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onSelectRole,
   triggerNewRoleModal,
   onResetTrigger,
-  users,
-  onRefreshUsers,
   defaultSection
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
-  const [activeSection, setActiveSection] = useState<'blocks' | 'rituals' | 'roles' | 'users'>(defaultSection || 'blocks');
+  const [activeSection, setActiveSection] = useState<'blocks' | 'rituals' | 'roles'>(defaultSection || 'blocks');
 
   // Role form
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -367,16 +362,6 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           >
             Cadeiras ({roles.length})
           </button>
-          <button
-            onClick={() => setActiveSection('users')}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
-              activeSection === 'users'
-                ? 'bg-blue-600 dark:bg-[#1e3a5f] text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Usuários & IAM ({users?.length || 0})
-          </button>
         </div>
       </div>
 
@@ -574,15 +559,6 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             ))}
           </div>
         </div>
-      )}
-
-      {/* SECTION: USERS & IAM */}
-      {activeSection === 'users' && (
-        <UsersManagementSection
-          users={users || []}
-          roles={roles}
-          onRefreshUsers={onRefreshUsers || onRefreshData}
-        />
       )}
 
       {/* Role Modal */}
