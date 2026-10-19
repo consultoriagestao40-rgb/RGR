@@ -311,58 +311,89 @@ Análise técnica do consumo de produtos químicos diluíveis e insumos descart�
     id: "block-head-01",
     roleId: "role-1792084692479",
     code: "POP-OPE-001",
-    version: "v1.0",
-    homologatedBy: "CEO / Conselho Diretor",
-    timeWindow: "08:30 - 12:00",
-    title: "Roteiro Presencial de Visitas Executivas a Contratos & Síndicos",
-    deliverable: "Relatório fotográfico de auditoria e termo de alinhamento com cliente validado in loco",
+    version: "v1.1",
+    homologatedBy: "Diretoria Executiva / CEO",
+    timeWindow: "07:30 - 08:15",
+    title: "Mesa de Operações: Fechamento de Escala & Garantia de 100% dos Postos Cobertos",
+    deliverable: "Painel de postos 100% preenchido com diaristas de reserva alocados antes das 08h e zero clientes desassistidos",
     frequency: "daily",
     orderIndex: 1,
     sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-001
-**Cadeira:** Head de Operações | **Versão:** 1.0 | **Homologado por:** CEO
+**Cadeira:** Head de Operações | **Versão:** 1.1 | **Homologado por:** CEO
 
 ---
 
-#### 1. Diretriz Estratégica Porta Fora
-O Head de Operações atua presencialmente na linha de frente dos contratos corporativos, fortalecendo a confiança dos tomadores de serviço e blindando contratos contra perda de qualidade ou cancelamento.
+#### 1. Diretriz de Cobertura Crítica Matinal
+O Head de Operações inicia o dia na Mesa de Operações assegurando que nenhum posto de cliente (limpeza, portaria, recepção ou liderança de campo) fique desfalqueado por faltas não cobertas.
 
-#### 2. Protocolo de Visita Presencial
-1. Inspecionar apresentação pessoal, uniformes e postura dos colaboradores no posto.
-2. Vistoriar áreas nobres, depósitos de limpeza (DML) e estado dos equipamentos.
-3. Realizar reunião de 15 minutos com o síndico profissional, gestor predial ou gerente de facilities do cliente.
-4. Coletar assinatura no checklist de qualidade e registrar percepção de valor.`
+#### 2. Protocolo de Checagem (07:30 às 08:15)
+1. Acessar o sistema de ponto e espelho de presença em tempo real.
+2. Identificar postos com colaboradores que não registraram entrada até 07:45.
+3. Acionar os Coordenadores de Campo e o RH/DP para despacho imediato da equipe de volantes e diaristas reservas.
+4. Validar que 100% das substituições estão a caminho com confirmação de previsão de chegada antes de liberar a equipe para visitas de campo.`
   },
   {
     id: "block-head-02",
     roleId: "role-1792084692479",
     code: "POP-OPE-002",
-    version: "v1.0",
-    homologatedBy: "Diretoria de Operações",
-    timeWindow: "13:30 - 15:30",
-    title: "Auditoria de SLA, Resolução de Não Conformidades e Blindagem Contratual",
-    deliverable: "Plano de ação corretivo pactuado com cliente para eliminação de pendências e glosas",
+    version: "v1.1",
+    homologatedBy: "Conselho Diretor",
+    timeWindow: "08:45 - 12:30",
+    title: "Roteiro Presencial Porta Fora: Visitas Executivas aos Contratos & Síndicos",
+    deliverable: "Relatório fotográfico de auditoria e termos de alinhamento com clientes/síndicos validados in loco",
     frequency: "daily",
     orderIndex: 2,
     sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-002
-**Cadeira:** Head de Operações | **Versão:** 1.0
+**Cadeira:** Head de Operações | **Versão:** 1.1
 
-Intervenção tempestiva em contratos com apontamento de falha ou reclamação, instaurando plano de ação corretivo de 48h junto aos Coordenadores de Campo para estancar reatividade operacional.`
+---
+
+#### 1. Atuação Porta Fora de Alto Impacto
+Com a mesa de operações estabilizada, o Head atua fisicamente nos contratos corporativos, fortalecendo a relação de confiança com síndicos e gestores de facilities.
+
+#### 2. Roteiro da Visita Executiva
+1. Inspecionar apresentação pessoal, uniformes e postura dos colaboradores no posto.
+2. Vistoriar áreas nobres, DMLs, conservação de maquinários e padrão técnico de higienização.
+3. Reunião de alinhamento com o síndico ou tomador do serviço para coleta de percepção de valor (NPS).
+4. Registro de oportunidade de melhoria ou aditivos de escopo.`
   },
   {
     id: "block-head-03",
     roleId: "role-1792084692479",
     code: "POP-OPE-003",
-    version: "v1.0",
-    homologatedBy: "Controladoria & Diretoria Executiva",
-    timeWindow: "16:00 - 17:30",
-    title: "Gestão de DRE Operacional, Auditoria de Horas Extras e Insumos",
-    deliverable: "Painel de margem operacional dos postos atualizado com plano de redução de custos excedentes",
+    version: "v1.1",
+    homologatedBy: "Diretoria de Operações",
+    timeWindow: "13:30 - 15:30",
+    title: "Auditoria de Qualidade Técnica, Resolução de Não Conformidades e Blindagem",
+    deliverable: "Planos de ação corretivos em 48h para eliminar reclamações de clientes e prevenção de glosas",
     frequency: "daily",
     orderIndex: 3,
     sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-003
-**Cadeira:** Head de Operações | **Versão:** 1.0
+**Cadeira:** Head de Operações | **Versão:** 1.1
 
-Auditoria do custo direto de cada posto de serviço (horas extras, substituições de diaristas e consumo de produtos químicos diluíveis), garantindo a margem de contribuição contratual acordada.`
+Intervenção tempestiva em contratos com apontamento de falha ou reclamação, instaurando plano de ação corretivo de 48h junto aos Coordenadores de Campo para estancar reatividade operacional.`
+  },
+  {
+    id: "block-head-04",
+    roleId: "role-1792084692479",
+    code: "POP-OPE-004",
+    version: "v1.1",
+    homologatedBy: "Controladoria & Diretoria Executiva",
+    timeWindow: "16:00 - 17:30",
+    title: "Auditoria de Gente & DRE: Gestão de Vagas Abertas, ABS, Turnover e Horas Extras",
+    deliverable: "Painel de vagas críticas cobradas do RH, análise de absenteísmo por contrato e auditoria do custo de horas extras",
+    frequency: "daily",
+    orderIndex: 4,
+    sopMarkdown: `### Procedimento Operacional Padrão • POP-OPE-004
+**Cadeira:** Head de Operações | **Versão:** 1.1
+
+---
+
+#### 1. Gestão dos Indicadores de Pessoas & Eficiência
+1. **Gestão de Vagas em Aberto:** Cobrar do RH o cumprimento do SLA de contratação para postos em aberto (máximo 72h para reposição definitiva).
+2. **Absenteísmo (ABS):** Cruzar os postos com maior taxa de faltas e atestados médicos para entender causas operacionais.
+3. **Turnover:** Analisar contratos com alta rotatividade (relação encarregado x colaborador, perfil da escala).
+4. **Horas Extras de Cobertura:** Auditar se a falta de candidatos está forçando dobras e onerando o DRE operacional.`
   }
 ];
 
@@ -463,23 +494,23 @@ export const INITIAL_RITUALS: DailyRitual[] = [
     ]
   },
 
-  // --- HEAD DE OPERAÇÕES (PORTA FORA / CLIENTES) ---
+  // --- HEAD DE OPERAÇÕES (PORTA FORA / CLIENTES & MESA DE OPERAÇÕES) ---
   {
     id: "ritual-head-01",
     roleId: "role-1792084692479",
     code: "RIT-HEAD-01",
-    timeSlot: "08:00",
-    title: "Briefing Tático & Planejamento de Rotas a Clientes (Porta Fora)",
+    timeSlot: "08:15",
+    title: "Mesa de Despacho Operacional: Cobertura de Postos, ABS do Dia & Vagas Críticas",
     durationMinutes: 20,
     type: "operational_cadence",
     frequency: "daily",
     weekDays: [1, 2, 3, 4, 5],
     includeWeekends: false,
     agendaItems: [
-      "Mapear contratos com ocorrências abertas nas últimas 24h ou risco de notificação/glosa",
-      "Definir roteiro presencial de visitas do dia aos síndicos, gerentes prediais e gestores de facilities",
-      "Validar alinhamento com Coordenadores de Campo sobre pontos críticos a serem inspecionados in loco",
-      "Sinalizar à Diretoria Executiva a agenda externa e clientes prioritários a serem visitados"
+      "Conferir fechamento da Mesa de Operações: 100% dos postos cobertos e diaristas reservas confirmados",
+      "Auditar taxa de absenteísmo (ABS) do dia e contratos com faltas reincidentes",
+      "Cobrar SLA do RH/DP sobre vagas em aberto, prazos de reposição e triagem de substitutos",
+      "Validar alinhamento com Coordenadores de Campo sobre prioridades operacionais antes da saída para a rua"
     ]
   },
   {
@@ -506,17 +537,17 @@ export const INITIAL_RITUALS: DailyRitual[] = [
     roleId: "role-1792084692479",
     code: "RIT-HEAD-03",
     timeSlot: "16:30",
-    title: "Debriefing de Campo, Retenção de Contratos & DRE Operacional",
+    title: "Comitê Semanal de Retenção de Contratos, Turnover & DRE Operacional",
     durationMinutes: 30,
     type: "operational_cadence",
     frequency: "weekly",
     weekDays: [5],
     includeWeekends: false,
     agendaItems: [
-      "Consolidar termômetro dos clientes visitados na semana e notas de satisfação dos síndicos",
-      "Sinalizar contratos em zona de risco de cancelamento/rescisão e ações preventivas de blindagem",
-      "Auditar horas extras de campo, consumo excessivo de químicos e eventuais glosas aplicadas",
-      "Apresentar previsão de novos aditivos comerciais e cronograma de implantação de novos contratos"
+      "Apresentar consolidado de visitas executivas da semana e matriz de termômetro de satisfação dos clientes",
+      "Auditar índice semanal de Turnover por posto, causas raízes de desligamento e plano de retenção de talentos",
+      "Auditar DRE operacional: impacto financeiro de horas extras de cobertura e glosas aplicadas",
+      "Apresentar previsão de novos aditivos contratuais e cronograma de implantação de novos clientes"
     ]
   }
 ];
