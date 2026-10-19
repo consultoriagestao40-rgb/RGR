@@ -312,11 +312,11 @@ export const AdminTab: React.FC<AdminTabProps> = ({
     <div className="space-y-6 max-w-5xl mx-auto">
       
       {/* Top Header */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-[#172338] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#233552]">
-              ADMINISTRAÇÃO
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              Administração
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Arquitetura de Governança
@@ -325,39 +325,39 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             Matriz de Cadeiras, POPs e Ritos
           </h1>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Parametrização formal de papéis, janelas de horário e procedimentos homologados.
           </p>
         </div>
 
         {/* Section switcher */}
-        <div className="flex items-center bg-slate-100 dark:bg-[#141d2e] border border-slate-200 dark:border-[#223048] p-1 rounded-md">
+        <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0">
           <button
             onClick={() => setActiveSection('blocks')}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
               activeSection === 'blocks'
-                ? 'bg-blue-600 dark:bg-[#1e3a5f] text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             POPs & Rotinas ({blocks.length})
           </button>
           <button
             onClick={() => setActiveSection('rituals')}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
               activeSection === 'rituals'
-                ? 'bg-blue-600 dark:bg-[#1e3a5f] text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             Ritos ({rituals.length})
           </button>
           <button
             onClick={() => setActiveSection('roles')}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
               activeSection === 'roles'
-                ? 'bg-blue-600 dark:bg-[#1e3a5f] text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             Cadeiras ({roles.length})
@@ -374,7 +374,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenBlockModal()}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] text-white rounded text-xs font-semibold flex items-center gap-1.5 border border-blue-700 dark:border-[#2d558b] transition-colors shadow-sm"
+              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Novo Procedimento (POP)</span>
@@ -385,10 +385,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             {blocks.map(block => (
               <div
                 key={block.id}
-                className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-3.5 flex items-center justify-between text-xs shadow-sm"
+                className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 flex items-center justify-between text-xs shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-[#172033] text-blue-700 dark:text-blue-300 border border-slate-200 dark:border-[#233552]">
+                  <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                     {block.code || 'POP-01'}
                   </span>
                   <span className="font-mono text-slate-500 dark:text-slate-400">{block.timeWindow}</span>
@@ -401,18 +401,20 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
                     {block.version || 'v1.0'}
                   </span>
                   <button
                     onClick={() => handleOpenBlockModal(block)}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Editar POP"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteBlock(block.id)}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                    title="Excluir POP"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -432,7 +434,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenRitualModal()}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] text-white rounded text-xs font-semibold flex items-center gap-1.5 border border-blue-700 dark:border-[#2d558b] transition-colors shadow-sm"
+              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Novo Rito</span>
@@ -443,28 +445,28 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             {rituals.map(rit => (
               <div
                 key={rit.id}
-                className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-3.5 flex items-center justify-between text-xs shadow-sm"
+                className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 flex items-center justify-between text-xs shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-blue-700 dark:text-blue-300 bg-slate-100 dark:bg-[#172033] px-2 py-0.5 rounded border border-slate-200 dark:border-[#233552]">
+                    <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       {rit.timeSlot} • {rit.durationMinutes} min
                     </span>
                     <h4 className="font-semibold text-slate-900 dark:text-white">{rit.title}</h4>
                     {rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title.toLowerCase().includes('conselho') ? (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                        <Landmark className="w-3 h-3" />
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                        <Landmark className="w-3 h-3 text-amber-500" />
                         Pauta de Conselho
                       </span>
                     ) : (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-[#172033] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#233552] flex items-center gap-1">
-                        <CheckSquare className="w-3 h-3 text-slate-500" />
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                        <CheckSquare className="w-3 h-3 text-slate-400" />
                         Cadência Operacional
                       </span>
                     )}
 
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-[#132238] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#223755] flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-blue-500" />
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-400" />
                       {formatRitualFrequency(rit)}
                     </span>
                   </div>
@@ -476,13 +478,15 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenRitualModal(rit)}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Editar Rito"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteRitual(rit.id)}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                    title="Excluir Rito"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -502,7 +506,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenRoleModal()}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] text-white rounded text-xs font-semibold flex items-center gap-1.5 border border-blue-700 dark:border-[#2d558b] transition-colors shadow-sm"
+              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nova Cadeira</span>
@@ -513,47 +517,49 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             {roles.map(role => (
               <div
                 key={role.id}
-                className={`p-4 rounded-lg border text-xs flex flex-col justify-between shadow-sm transition-all ${
-                  selectedRoleId === role.id ? 'bg-blue-50/60 dark:bg-[#152033] border-blue-500 ring-1 ring-blue-500/30' : 'bg-white dark:bg-[#111827] border-slate-200 dark:border-[#1f293d]'
+                className={`p-4 rounded-xl border text-xs flex flex-col justify-between shadow-xs transition-all ${
+                  selectedRoleId === role.id 
+                    ? 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-900 dark:border-blue-500/80 ring-1 ring-slate-900/20 dark:ring-blue-500/20' 
+                    : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-blue-700 dark:text-blue-300">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       {role.code || 'CAD-01'}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleOpenRoleModal(role)}
-                        className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                        className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                         title="Editar Cadeira"
                       >
                         <Edit3 className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => handleDeleteRole(role.id)}
-                        className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
+                        className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                         title="Excluir Cadeira"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
-                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{role.title}</h4>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold block mt-0.5">
+                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{role.title}</h4>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-medium block mt-0.5">
                     {role.department}
                   </span>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 line-clamp-3">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
                     {role.description}
                   </p>
                 </div>
 
                 <button
                   onClick={() => onSelectRole(role.id)}
-                  className="mt-4 pt-2 border-t border-slate-200 dark:border-[#1f293d] text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center justify-between text-xs"
+                  className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-slate-900 dark:text-blue-400 hover:text-blue-600 font-medium flex items-center justify-between text-xs cursor-pointer group"
                 >
                   <span>Ativar Cadeira</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
             ))}
@@ -563,66 +569,66 @@ export const AdminTab: React.FC<AdminTabProps> = ({
 
       {/* Role Modal */}
       {isRoleModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 text-xs text-slate-800 dark:text-white shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md">
+          <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in">
             <h3 className="text-sm font-bold mb-3">{editingRole ? 'Editar Cadeira' : 'Cadastrar Nova Cadeira'}</h3>
-            <form onSubmit={handleSaveRole} className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+            <form onSubmit={handleSaveRole} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Código da Cadeira</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Código da Cadeira</label>
                   <input
                     type="text"
                     value={roleCode}
                     onChange={(e) => setRoleCode(e.target.value)}
                     placeholder="Ex: CAD-SUP-04"
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 font-mono text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Departamento</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Departamento</label>
                   <input
                     type="text"
                     value={roleDept}
                     onChange={(e) => setRoleDept(e.target.value)}
                     placeholder="Ex: Suprimentos, Operações..."
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Título do Cargo / Cadeira</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Título do Cargo / Cadeira</label>
                 <input
                   type="text"
                   value={roleTitle}
                   onChange={(e) => setRoleTitle(e.target.value)}
                   placeholder="Ex: Supervisor Operacional de Postos"
                   required
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Escopo de Atuação e Responsabilidade</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Escopo de Atuação e Responsabilidade</label>
                 <textarea
                   value={roleDesc}
                   onChange={(e) => setRoleDesc(e.target.value)}
                   rows={3}
                   placeholder="Descreva o objetivo da cadeira e a missão do profissional..."
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 leading-relaxed"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1f293d]">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsRoleModalOpen(false)}
-                  className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                  className="px-3.5 py-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 bg-blue-600 dark:bg-[#1e3a5f] hover:bg-blue-700 dark:hover:bg-[#254673] rounded text-white font-semibold shadow-sm"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
                 >
                   Salvar Cadeira
                 </button>
@@ -634,87 +640,87 @@ export const AdminTab: React.FC<AdminTabProps> = ({
 
       {/* Block Modal */}
       {isBlockModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 text-xs text-slate-800 dark:text-white shadow-xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl my-8 animate-in fade-in">
             <h3 className="text-sm font-bold mb-3">{editingBlock ? 'Editar POP & Bloco' : 'Novo POP & Bloco'}</h3>
-            <form onSubmit={handleSaveBlock} className="space-y-3">
-              <div className="grid grid-cols-3 gap-2">
+            <form onSubmit={handleSaveBlock} className="space-y-3.5">
+              <div className="grid grid-cols-3 gap-2.5">
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Código</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Código</label>
                   <input
                     type="text"
                     value={blockCode}
                     onChange={(e) => setBlockCode(e.target.value)}
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 font-mono text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Janela de Horário</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Janela de Horário</label>
                   <input
                     type="text"
                     value={blockTimeWindow}
                     onChange={(e) => setBlockTimeWindow(e.target.value)}
                     placeholder="08:00 - 08:30"
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 font-mono text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Versão</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Versão</label>
                   <input
                     type="text"
                     value={blockVersion}
                     onChange={(e) => setBlockVersion(e.target.value)}
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 font-mono text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Título do Macroprocesso</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Título do Macroprocesso</label>
                 <input
                   type="text"
                   value={blockTitle}
                   onChange={(e) => setBlockTitle(e.target.value)}
                   required
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Entregável Obrigatório (Critério de Aceite)</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Entregável Obrigatório (Critério de Aceite)</label>
                 <input
                   type="text"
                   value={blockDeliverable}
                   onChange={(e) => setBlockDeliverable(e.target.value)}
                   required
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Texto Normativo do POP (Markdown)</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Texto Normativo do POP (Markdown)</label>
                 <textarea
                   value={blockSopMarkdown}
                   onChange={(e) => setBlockSopMarkdown(e.target.value)}
                   rows={8}
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded p-2.5 font-mono text-xs text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1f293d]">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsBlockModalOpen(false)}
-                  className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                  className="px-3.5 py-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 bg-blue-600 dark:bg-[#1e3a5f] hover:bg-blue-700 dark:hover:bg-[#254673] rounded text-white font-semibold shadow-sm"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
                 >
                   Salvar Procedimento
                 </button>
@@ -726,24 +732,24 @@ export const AdminTab: React.FC<AdminTabProps> = ({
 
       {/* Ritual Modal */}
       {isRitualModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 text-xs text-slate-800 dark:text-white shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md">
+          <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in">
             <h3 className="text-sm font-bold mb-3">{editingRitual ? 'Editar Rito' : 'Novo Rito de Despacho'}</h3>
-            <form onSubmit={handleSaveRitual} className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+            <form onSubmit={handleSaveRitual} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Horário</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Horário</label>
                   <input
                     type="text"
                     value={ritualTimeSlot}
                     onChange={(e) => setRitualTimeSlot(e.target.value)}
                     placeholder="08:30"
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 font-mono text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-500 dark:text-slate-400 block mb-1">Duração (Minutos)</label>
+                  <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Duração (Minutos)</label>
                   <input
                     type="number"
                     value={ritualDuration}
@@ -751,62 +757,62 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                     min={5}
                     max={60}
                     required
-                    className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Título do Rito</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Título do Rito</label>
                 <input
                   type="text"
                   value={ritualTitle}
                   onChange={(e) => setRitualTitle(e.target.value)}
                   required
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Natureza do Rito</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Natureza do Rito</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setRitualType('operational_cadence')}
-                    className={`p-2 rounded border text-left flex flex-col gap-0.5 transition-all ${
+                    className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                       ritualType === 'operational_cadence'
-                        ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-300 ring-1 ring-blue-500'
-                        : 'bg-slate-50 dark:bg-[#0c121e] border-slate-200 dark:border-[#1f293d] text-slate-600 dark:text-slate-400'
+                        ? 'bg-slate-50 dark:bg-slate-800/80 border-slate-900 dark:border-blue-500 text-slate-900 dark:text-blue-300 ring-1 ring-slate-900/20'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
-                    <span className="font-bold text-xs flex items-center gap-1">
-                      <CheckSquare className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="font-semibold text-xs flex items-center gap-1.5">
+                      <CheckSquare className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                       Cadência Operacional
                     </span>
-                    <span className="text-[10px] text-slate-500 leading-tight">Checklist diário de rotina e pendências</span>
+                    <span className="text-[10px] text-slate-400 leading-tight">Checklist diário de rotina e pendências</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setRitualType('board_council')}
-                    className={`p-2 rounded border text-left flex flex-col gap-0.5 transition-all ${
+                    className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                       ritualType === 'board_council'
-                        ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-500 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500'
-                        : 'bg-slate-50 dark:bg-[#0c121e] border-slate-200 dark:border-[#1f293d] text-slate-600 dark:text-slate-400'
+                        ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-500 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/20'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
-                    <span className="font-bold text-xs flex items-center gap-1">
+                    <span className="font-semibold text-xs flex items-center gap-1.5">
                       <Landmark className="w-3.5 h-3.5 text-amber-500" />
                       Pauta de Conselho
                     </span>
-                    <span className="text-[10px] text-slate-500 leading-tight">Votação nominal e ata deliberativa</span>
+                    <span className="text-[10px] text-slate-400 leading-tight">Votação nominal e ata deliberativa</span>
                   </button>
                 </div>
               </div>
               {/* Periodicidade & Frequência de Execução */}
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1f293d] bg-slate-50/70 dark:bg-[#0c121e]/80 space-y-2.5">
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1.5 text-xs">
-                    <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5 text-xs">
+                    <Calendar className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                     Periodicidade & Frequência
                   </label>
                   <span className="text-[10px] text-slate-500 font-medium font-mono">
@@ -817,16 +823,16 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 </div>
 
                 {/* Frequency Type Tabs */}
-                <div className="grid grid-cols-3 gap-1.5 bg-slate-200/80 dark:bg-[#141d2e] p-1 rounded-md">
+                <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-lg">
                   <button
                     type="button"
                     onClick={() => {
                       setRitualFreq('daily');
                       setRitualWeekDays([1, 2, 3, 4, 5]);
                     }}
-                    className={`py-1 rounded text-xs font-semibold transition-all ${
+                    className={`py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
                       ritualFreq === 'daily'
-                        ? 'bg-white dark:bg-[#1e293b] text-blue-600 dark:text-blue-400 shadow-sm'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
@@ -835,9 +841,9 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   <button
                     type="button"
                     onClick={() => setRitualFreq('weekly')}
-                    className={`py-1 rounded text-xs font-semibold transition-all ${
+                    className={`py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
                       ritualFreq === 'weekly'
-                        ? 'bg-white dark:bg-[#1e293b] text-blue-600 dark:text-blue-400 shadow-sm'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
@@ -846,9 +852,9 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   <button
                     type="button"
                     onClick={() => setRitualFreq('monthly')}
-                    className={`py-1 rounded text-xs font-semibold transition-all ${
+                    className={`py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
                       ritualFreq === 'monthly'
-                        ? 'bg-white dark:bg-[#1e293b] text-blue-600 dark:text-blue-400 shadow-sm'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
@@ -864,7 +870,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                         type="checkbox"
                         checked={!ritualIncludeWeekends}
                         onChange={(e) => setRitualIncludeWeekends(!e.target.checked)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                       />
                       <span>
                         <strong>Apenas dias úteis</strong> (Segunda a Sexta — <em>não roda aos finais de semana</em>)
@@ -882,7 +888,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 {ritualFreq === 'weekly' && (
                   <div className="space-y-1.5 pt-1">
                     <div className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Selecione os dias da semana em que este rito ocorre (ex: 2x ou 3x na semana):
+                      Selecione os dias da semana em que este rito ocorre:
                     </div>
                     <div className="grid grid-cols-7 gap-1">
                       {WEEK_DAYS.map(day => {
@@ -892,10 +898,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                             key={day.value}
                             type="button"
                             onClick={() => toggleWeekDay(day.value)}
-                            className={`py-1 px-1 rounded text-[11px] font-bold border transition-all text-center ${
+                            className={`py-1 px-1 rounded-md text-[11px] font-semibold border transition-all text-center cursor-pointer ${
                               isSelected
-                                ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-1 ring-blue-500'
-                                : 'bg-white dark:bg-[#111827] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#223048] hover:border-slate-400'
+                                ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-xs'
+                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                             }`}
                             title={day.fullName}
                           >
@@ -904,7 +910,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                         );
                       })}
                     </div>
-                    <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                       Ocorrência: {ritualWeekDays.length}x na semana ({ritualWeekDays.map(d => WEEK_DAYS.find(w => w.value === d)?.label).join(', ')})
                     </p>
                   </div>
@@ -917,10 +923,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setRitualMonthlyType('specific_day')}
-                        className={`p-1.5 rounded border text-center transition-all ${
+                        className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'specific_day'
-                            ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-900 dark:text-blue-300 font-bold'
-                            : 'bg-white dark:bg-[#111827] border-slate-200 dark:border-[#223048] text-slate-600 dark:text-slate-400'
+                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
                         Dia Fixo do Mês
@@ -928,10 +934,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setRitualMonthlyType('first_business_day')}
-                        className={`p-1.5 rounded border text-center transition-all ${
+                        className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'first_business_day'
-                            ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-900 dark:text-blue-300 font-bold'
-                            : 'bg-white dark:bg-[#111827] border-slate-200 dark:border-[#223048] text-slate-600 dark:text-slate-400'
+                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
                         1º Dia Útil
@@ -939,10 +945,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setRitualMonthlyType('last_business_day')}
-                        className={`p-1.5 rounded border text-center transition-all ${
+                        className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'last_business_day'
-                            ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-900 dark:text-blue-300 font-bold'
-                            : 'bg-white dark:bg-[#111827] border-slate-200 dark:border-[#223048] text-slate-600 dark:text-slate-400'
+                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
                         Último Dia Útil
@@ -958,7 +964,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                           max={31}
                           value={ritualMonthDay}
                           onChange={(e) => setRitualMonthDay(Number(e.target.value))}
-                          className="w-16 px-2 py-1 text-center font-mono font-bold bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#223048] rounded text-slate-900 dark:text-white"
+                          className="w-16 px-2 py-1 text-center font-mono font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white"
                         />
                         <span className="text-slate-500">de cada mês</span>
                       </div>
@@ -968,26 +974,26 @@ export const AdminTab: React.FC<AdminTabProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 block mb-1">Pauta Obrigatória (1 item por linha)</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Pauta Obrigatória (1 item por linha)</label>
                 <textarea
                   value={ritualItemsText}
                   onChange={(e) => setRitualItemsText(e.target.value)}
                   rows={4}
                   required
-                  className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 leading-relaxed"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1f293d]">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsRitualModalOpen(false)}
-                  className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                  className="px-3.5 py-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 bg-blue-600 dark:bg-[#1e3a5f] hover:bg-blue-700 dark:hover:bg-[#254673] rounded text-white font-semibold shadow-sm"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
                 >
                   Salvar Rito
                 </button>

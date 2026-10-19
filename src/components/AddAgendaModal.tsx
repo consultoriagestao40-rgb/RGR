@@ -87,23 +87,23 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-[#1a2333] flex items-center justify-between bg-slate-50/70 dark:bg-[#0c121e]">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
               <Briefcase className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-                  Propor Pauta para Reunião com o CEO / Diretoria
+                  Propor Pauta para Reunião com a Diretoria
                 </h3>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-50 dark:bg-[#1a2942] text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-[#24395a]">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700">
                   RGR Boardroom
                 </span>
               </div>
@@ -115,7 +115,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-[#1a2333] transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -124,7 +124,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
         {/* Body Content */}
         <div className="p-6 space-y-5 overflow-y-auto flex-1">
           {successMessage && (
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{successMessage}</span>
             </div>
@@ -134,14 +134,14 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Target Ritual Selector */}
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Rito / Reunião de Destino:
               </label>
               {rituals.length > 0 ? (
                 <select
                   value={selectedRitualId}
                   onChange={(e) => setSelectedRitualId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#141d2e] border border-slate-300 dark:border-[#223048] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer"
                 >
                   {rituals.map(rit => (
                     <option key={rit.id} value={rit.id}>
@@ -150,7 +150,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                   ))}
                 </select>
               ) : (
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>Nenhum rito de despacho cadastrado para esta cadeira. O administrador pode cadastrar na Matriz de Governança.</span>
                 </div>
@@ -159,7 +159,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
 
             {/* Agenda Title Input */}
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Título da Pauta / Assunto a ser Deliberado: *
               </label>
               <input
@@ -167,14 +167,14 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                 required
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Ex: Aprovação de contratação emergencial de equipe de limpeza..."
-                className="w-full bg-slate-50 dark:bg-[#141d2e] border border-slate-300 dark:border-[#223048] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                placeholder="Ex: Aprovação de contratação emergencial de equipe..."
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
               />
             </div>
 
             {/* Context / Justification */}
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Contexto / Justificativa Operacional (Opcional):
               </label>
               <textarea
@@ -182,7 +182,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                 value={contextNote}
                 onChange={(e) => setContextNote(e.target.value)}
                 placeholder="Ex: Cliente Unidade Barra solicitou reforço imediato devido a evento extraordinário na sexta-feira..."
-                className="w-full bg-slate-50 dark:bg-[#141d2e] border border-slate-300 dark:border-[#223048] rounded-lg p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-normal leading-relaxed resize-none"
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 font-normal leading-relaxed resize-none"
               />
             </div>
 
@@ -191,21 +191,21 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !newTitle.trim() || rituals.length === 0}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>{isSubmitting ? 'Incluindo...' : 'Incluir Pauta no Despacho do CEO'}</span>
+                <span>{isSubmitting ? 'Incluindo...' : 'Incluir Pauta no Despacho'}</span>
               </button>
             </div>
           </form>
 
           {/* Existing Agendas in this Ritual */}
           {activeRitual && (
-            <div className="pt-4 border-t border-slate-200 dark:border-[#1a2333]">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  Pautas Já Cadastradas para este Despacho ({agendaList.length}):
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  Pautas Já Cadastradas ({agendaList.length}):
                 </span>
                 {onNavigateToDispatch && (
                   <button
@@ -214,16 +214,16 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                       onClose();
                       onNavigateToDispatch();
                     }}
-                    className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    className="text-[11px] font-medium text-slate-900 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Abrir Mesa de Despacho (Boardroom)</span>
+                    <span>Abrir Mesa de Despacho</span>
                     <span>→</span>
                   </button>
                 )}
               </div>
 
               {agendaList.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-400 bg-slate-50/60 dark:bg-[#141d2e]/40 border border-slate-200 dark:border-[#1e2a3f] rounded-lg">
+                <div className="text-center py-6 text-xs text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl">
                   Nenhuma pauta cadastrada até o momento.
                 </div>
               ) : (
@@ -231,10 +231,10 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                   {agendaList.map((item, idx) => (
                     <div 
                       key={idx}
-                      className="p-3 bg-slate-50 dark:bg-[#141d2e] border border-slate-200 dark:border-[#1e2b40] rounded-lg flex items-start justify-between gap-3 text-xs"
+                      className="p-3 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl flex items-start justify-between gap-3 text-xs"
                     >
                       <div className="flex items-start gap-2.5">
-                        <span className="font-mono font-bold text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
+                        <span className="font-mono font-medium text-slate-400 shrink-0 mt-0.5">
                           {idx + 1}.0
                         </span>
                         <span className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
@@ -246,7 +246,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
                           type="button"
                           onClick={() => handleRemove(idx)}
                           title="Remover pauta"
-                          className="text-slate-400 hover:text-rose-500 p-1 rounded hover:bg-slate-200/50 dark:hover:bg-[#1c293d] transition-colors shrink-0"
+                          className="text-slate-400 hover:text-rose-500 p-1 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -260,14 +260,14 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-200 dark:border-[#1a2333] bg-slate-50/70 dark:bg-[#0c121e] flex items-center justify-between text-xs">
+        <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
           <span className="text-slate-500 dark:text-slate-400 text-[11px]">
             Data da Sessão: <strong>{selectedDate}</strong> • Governança RGR
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1.5 border border-slate-300 dark:border-[#223048] bg-white dark:bg-[#141d2e] hover:bg-slate-50 dark:hover:bg-[#1a2638] text-slate-700 dark:text-slate-200 rounded-md text-xs font-semibold transition-colors"
+            className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium transition-colors cursor-pointer"
           >
             Fechar
           </button>

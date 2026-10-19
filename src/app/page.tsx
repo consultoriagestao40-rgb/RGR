@@ -587,10 +587,10 @@ export default function HomePage() {
 
           {activeTab === 'users' && (
             <div className="max-w-5xl mx-auto space-y-5">
-              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-[#172338] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#233552]">
-                    GOVERNANÇA & IAM
+              <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs transition-colors">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    Governança & IAM
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     Controle de Acessos & Usuários
@@ -599,7 +599,7 @@ export default function HomePage() {
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                   Gestão de Usuários & Limitação por Cadeira
                 </h1>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Cadastre novos usuários, altere permissões de acesso, edite dados ou exclua acessos do sistema.
                 </p>
               </div>

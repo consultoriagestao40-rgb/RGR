@@ -76,13 +76,13 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-slate-950/85 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-6 shadow-2xl text-slate-800 dark:text-slate-100 my-8 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md overflow-y-auto">
+      <div className="w-full max-w-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-800 dark:text-slate-100 my-8 transition-colors animate-in fade-in">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#1f293d] mb-4">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded bg-blue-50 dark:bg-[#172338] text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-[#233552]">
+            <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               <FileCheck2 className="w-5 h-5" />
             </div>
             <div>
@@ -96,7 +96,7 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,7 +105,7 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+            <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
               Título Formal do Documento
             </label>
             <input
@@ -113,37 +113,37 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+              <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
                 Data da Sessão
               </label>
               <input
                 type="date"
                 value={selectedDate}
                 disabled
-                className="w-full bg-slate-100 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono"
+                className="w-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono"
               />
             </div>
             <div>
-              <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+              <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
                 Cadeira Relatora
               </label>
               <input
                 type="text"
                 value={`${role.title} (${role.code})`}
                 disabled
-                className="w-full bg-slate-100 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-500 dark:text-slate-400"
+                className="w-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-500 dark:text-slate-400"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+            <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
               Membros Presentes no Rito (1 por linha)
             </label>
             <textarea
@@ -151,12 +151,12 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
               onChange={(e) => setParticipantsText(e.target.value)}
               rows={3}
               required
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors leading-relaxed"
             />
           </div>
 
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+            <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
               Deliberações Aprovadas e Diretrizes de Desembolso
             </label>
             <textarea
@@ -164,12 +164,12 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
               onChange={(e) => setDeliberations(e.target.value)}
               rows={5}
               required
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 leading-relaxed font-sans"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 leading-relaxed font-sans transition-colors"
             />
           </div>
 
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[10px] block mb-1">
+            <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
               Assinante / Visto da Presidência
             </label>
             <input
@@ -177,12 +177,12 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
               value={signer}
               onChange={(e) => setSigner(e.target.value)}
               required
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium transition-colors"
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-[#1f293d] flex items-center justify-between">
-            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               Gera hash e indexa ao Livro de Atas
             </span>
@@ -191,14 +191,14 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                className="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 border border-blue-700 dark:border-[#2d558b] transition-colors shadow-sm"
+                className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 disabled:opacity-50 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
                 {isSubmitting ? 'Assinando...' : 'Assinar & Publicar Ata'}

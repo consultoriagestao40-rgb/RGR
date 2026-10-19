@@ -72,20 +72,20 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
     <div className="space-y-6 max-w-5xl mx-auto">
       
       {/* Playbook Header Dossier */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-[#172338] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#233552]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {role.code || 'CAD-01'}
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
               Repositório Normativo Homologado
             </span>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
             Manual de Procedimentos Operacionais: {role.title}
           </h1>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Base de conhecimento auditada para onboarding de novos ocupantes e execução padrão.
           </p>
         </div>
@@ -93,19 +93,19 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={expandAll}
-            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#162033] hover:bg-slate-200 dark:hover:bg-[#1d2a42] rounded border border-slate-200 dark:border-[#23324d] transition-colors"
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
           >
             Expandir Todos
           </button>
           <button
             onClick={collapseAll}
-            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#162033] hover:bg-slate-200 dark:hover:bg-[#1d2a42] rounded border border-slate-200 dark:border-[#23324d] transition-colors"
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
           >
             Recolher
           </button>
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 text-xs font-semibold text-white dark:text-blue-100 bg-blue-600 hover:bg-blue-700 dark:bg-[#1e3a5f] dark:hover:bg-[#254673] rounded border border-blue-700 dark:border-[#2d558b] transition-colors flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir Manual</span>
@@ -120,9 +120,9 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Pesquisar norma ou POP (ex: 'NFS-e', 'POP-FIN-001', 'Conta Azul', 'DDA', 'centro de custo')..."
-          className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-md pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 shadow-sm transition-colors"
+          className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1e293b] rounded-lg pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-400 shadow-xs transition-colors"
         />
-        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3" />
+        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-2.5" />
       </div>
 
       {/* POPs Accordion List */}
@@ -133,18 +133,18 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
           return (
             <div 
               key={block.id}
-              className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-lg overflow-hidden transition-all shadow-sm"
+              className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden transition-colors shadow-xs"
             >
               {/* Header */}
               <div 
                 onClick={() => toggleExpand(block.id)}
-                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#141d2e] transition-colors"
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-300 bg-slate-100 dark:bg-[#172033] border border-slate-200 dark:border-[#24334d] px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md">
                     {block.code || `POP-${index + 1}`}
                   </span>
-                  <span className="font-mono text-xs text-blue-600 dark:text-blue-400">
+                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     {block.timeWindow}
                   </span>
                   <div>
@@ -152,13 +152,13 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                       {block.title}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                      <strong className="text-slate-700 dark:text-slate-300">Entregável:</strong> {block.deliverable}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Entregável:</span> {block.deliverable}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     {block.version || 'v1.0'}
                   </span>
 
@@ -168,7 +168,7 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                       e.stopPropagation();
                       copySopText(block);
                     }}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     title="Copiar texto oficial"
                   >
                     {copiedId === block.id ? (
@@ -186,26 +186,26 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
 
               {/* Body */}
               {isExpanded && (
-                <div className="px-5 pb-5 pt-3 border-t border-slate-200 dark:border-[#1a2333] bg-slate-50 dark:bg-[#0c121e]">
+                <div className="px-5 pb-5 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#0c121e]">
                   
                   {/* Metadata Header Box */}
-                  <div className="mb-4 p-3 rounded bg-white dark:bg-[#101726] border border-slate-200 dark:border-[#1c273b] text-xs flex flex-wrap items-center justify-between gap-2 text-slate-700 dark:text-slate-300 shadow-sm">
+                  <div className="mb-4 p-3 rounded-lg bg-white dark:bg-[#101726] border border-slate-200/80 dark:border-[#1c273b] text-xs flex flex-wrap items-center justify-between gap-3 text-slate-600 dark:text-slate-300 shadow-xs">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Homologação:</span>
-                      <span>{block.homologatedBy || 'Diretoria Executiva'}</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Homologação:</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{block.homologatedBy || 'Diretoria Executiva'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Frequência:</span>
-                      <span className="capitalize">{block.frequency === 'daily' ? 'Diária' : block.frequency}</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Frequência:</span>
+                      <span className="capitalize font-medium text-slate-800 dark:text-slate-200">{block.frequency === 'daily' ? 'Diária' : block.frequency}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Critério de Aceite:</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Critério de Aceite:</span>
                       <span className="text-emerald-700 dark:text-emerald-300 font-medium">{block.deliverable}</span>
                     </div>
                   </div>
 
                   {/* SOP Document Content */}
-                  <div className="sop-content prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-xs sm:text-sm">
+                  <div className="sop-content prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
                     <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
                   </div>
 

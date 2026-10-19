@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </button>
 
       {/* Top Brand: RGR - Gerenciamento da Rotina */}
-      <div className={`h-16 border-b border-slate-200 dark:border-[#1a2333] flex items-center transition-colors shrink-0 bg-white dark:bg-[#0c121e] ${
+      <div className={`h-16 border-b border-slate-200/80 dark:border-[#1a2333] flex items-center transition-colors shrink-0 bg-white dark:bg-[#0c121e] ${
         isCollapsed ? 'justify-center px-2' : 'px-4'
       }`}>
         <div 
@@ -162,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title={isCollapsed ? 'Clique para expandir o menu lateral' : undefined}
         >
           <div 
-            className={`h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-600 dark:to-blue-800 border border-blue-500/40 dark:border-blue-500/20 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-xs shrink-0 ${
+            className={`h-9 w-9 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-950 flex items-center justify-center font-bold text-xs tracking-wider shadow-xs shrink-0 ${
               isCollapsed ? 'hover:scale-105 transition-transform' : ''
             }`}
             title="RGR Governança Operacional"
@@ -172,14 +172,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!isCollapsed && (
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans whitespace-nowrap">
-                  RGR <span className="text-blue-600 dark:text-[#3b82f6] font-semibold">Rotina</span>
+                <span className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">
+                  RGR <span className="text-slate-500 dark:text-slate-400 font-normal">Rotina</span>
                 </span>
-                <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#162235] text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-[#22334e] whitespace-nowrap">
-                  Operacional
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                  Facilities
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate whitespace-nowrap">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal truncate whitespace-nowrap">
                 Gerenciamento da Rotina
               </p>
             </div>
@@ -188,16 +188,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Cadeira Ativa com Limitação de Acesso por Usuário */}
-      <div className={`border-b border-slate-200 dark:border-[#1a2333] bg-white/70 dark:bg-[#0f1726]/60 ${isCollapsed ? 'p-2 flex flex-col items-center' : 'p-4'}`}>
+      <div className={`border-b border-slate-200/80 dark:border-[#1a2333] bg-white/50 dark:bg-[#0f1726]/40 ${isCollapsed ? 'p-2 flex flex-col items-center' : 'p-3.5'}`}>
         {!isCollapsed ? (
           <>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                  Cadeira em Sessão
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  Cadeira Ativa
                 </span>
                 {isOperator && (
-                  <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.2 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                     <Lock className="w-2.5 h-2.5" /> Titular
                   </span>
                 )}
@@ -207,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {isAdmin && (
                 <button
                   onClick={onOpenCreateRoleModal}
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-[#20324f] border border-blue-200 dark:border-[#29426b] transition-colors flex items-center gap-1 cursor-pointer"
+                  className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
                   title="Cadastrar nova cadeira operacional"
                 >
                   <Plus className="w-3 h-3" />
@@ -221,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 value={selectedRoleId}
                 onChange={(e) => handleSelectChange(e.target.value)}
                 disabled={isOperator && allowedRoles.length <= 1}
-                className={`w-full bg-slate-100 dark:bg-[#141d2e] hover:bg-slate-200 dark:hover:bg-[#182338] border border-slate-300 dark:border-[#223048] rounded-md px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer appearance-none pr-8 ${
+                className={`w-full bg-white dark:bg-[#111827] hover:border-slate-300 dark:hover:border-slate-700 border border-slate-200 dark:border-[#1e293b] rounded-lg px-3 py-2 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors cursor-pointer appearance-none pr-8 shadow-xs ${
                   isOperator && allowedRoles.length <= 1 ? 'opacity-85 cursor-not-allowed' : ''
                 }`}
               >
@@ -232,20 +232,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ))}
               </select>
               {!(isOperator && allowedRoles.length <= 1) && (
-                <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-500 dark:text-slate-400 text-xs">
+                <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-400 text-xs">
                   ▾
                 </div>
               )}
             </div>
 
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 truncate">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 truncate">
               {currentRole?.department}
             </p>
           </>
         ) : (
           <div className="relative group w-full flex justify-center">
             <div 
-              className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-[#18263d] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-[#273d61] flex flex-col items-center justify-center font-mono font-bold text-[10px] shadow-sm cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#111827] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center font-mono font-medium text-[10px] shadow-xs cursor-pointer"
               title={`Cadeira em Sessão:\n${currentRole?.title} (${currentRole?.code || 'CAD'})\n${currentRole?.department}`}
             >
               <span className="leading-none text-[8px] text-slate-400 font-sans">CAD</span>
@@ -253,7 +253,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {currentRole?.code ? currentRole.code.replace('CAD-', '').slice(0, 3) : 'FIN'}
               </span>
             </div>
-            {/* Invisible native select allowing fast role switch when collapsed */}
             {!(isOperator && allowedRoles.length <= 1) && (
               <select
                 value={selectedRoleId}
@@ -273,12 +272,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-6'}`}>
+      <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
         
         {/* Group 1: Rotina & Ritos */}
         <div>
           {!isCollapsed && (
-            <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+            <span className="px-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">
               Cadência & Despacho
             </span>
           )}
@@ -288,23 +287,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={() => onSelectTab('timeline')}
               title={isCollapsed ? (isWeekend ? 'Meu Dia (Timeline) • Fim de Semana (Pausa de Rotina)' : `Meu Dia (Timeline) • ${totalCount} entregas`) : undefined}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all relative ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors relative cursor-pointer ${
                 activeTab === 'timeline'
-                  ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'timeline' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'timeline' ? 'text-white' : 'text-slate-400'}`} />
                 {!isCollapsed && <span>Meu Dia (Timeline)</span>}
               </div>
               {!isCollapsed ? (
-                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'timeline' 
+                    ? 'bg-white/20 text-white' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}>
                   {isWeekend ? '—' : totalCount}
                 </span>
               ) : (
                 !isWeekend && totalCount > 0 && (
-                  <span className="absolute top-1 right-1 font-mono text-[8px] w-3.5 h-3.5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <span className="absolute top-1 right-1 font-mono text-[8px] w-3.5 h-3.5 rounded-full bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center font-bold">
                     {totalCount > 9 ? '9+' : totalCount}
                   </span>
                 )
@@ -315,17 +318,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={() => onSelectTab('dispatch')}
               title={isCollapsed ? 'Mesa de Despacho (CEO / Boardroom)' : undefined}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all relative ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors relative cursor-pointer ${
                 activeTab === 'dispatch'
-                  ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Building2 className={`w-4 h-4 shrink-0 ${activeTab === 'dispatch' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <Building2 className={`w-4 h-4 shrink-0 ${activeTab === 'dispatch' ? 'text-white' : 'text-slate-400'}`} />
                 {!isCollapsed && <span>Mesa de Despacho (CEO)</span>}
               </div>
-              <span className={`${isCollapsed ? 'absolute top-1.5 right-1.5' : ''} w-2 h-2 rounded-full bg-emerald-500 animate-pulse`} />
+              <span className={`${isCollapsed ? 'absolute top-1.5 right-1.5' : ''} w-2 h-2 rounded-full bg-emerald-500`} />
             </button>
 
           </div>
@@ -334,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Group 2: Governança & Conhecimento */}
         <div>
           {!isCollapsed && (
-            <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+            <span className="px-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">
               Governança & Padrões
             </span>
           )}
@@ -344,18 +347,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={() => onSelectTab('playbook')}
               title={isCollapsed ? 'Playbook & POPs (Procedimentos Operacionais Padrão)' : undefined}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
                 activeTab === 'playbook'
-                  ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <BookOpen className={`w-4 h-4 shrink-0 ${activeTab === 'playbook' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <BookOpen className={`w-4 h-4 shrink-0 ${activeTab === 'playbook' ? 'text-white' : 'text-slate-400'}`} />
                 {!isCollapsed && <span>Playbook & POPs</span>}
               </div>
               {!isCollapsed && (
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">SOP</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'playbook' ? 'bg-white/20 text-white' : 'text-slate-400'
+                }`}>SOP</span>
               )}
             </button>
 
@@ -363,18 +368,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={() => onSelectTab('minutes')}
               title={isCollapsed ? 'Livro Oficial de Atas Homologadas' : undefined}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
                 activeTab === 'minutes'
-                  ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <FileCheck2 className={`w-4 h-4 shrink-0 ${activeTab === 'minutes' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <FileCheck2 className={`w-4 h-4 shrink-0 ${activeTab === 'minutes' ? 'text-white' : 'text-slate-400'}`} />
                 {!isCollapsed && <span>Livro de Atas</span>}
               </div>
               {!isCollapsed && (
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Oficial</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'minutes' ? 'bg-white/20 text-white' : 'text-slate-400'
+                }`}>Oficial</span>
               )}
             </button>
 
@@ -385,7 +392,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!isOperator && (
           <div>
             {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+              <span className="px-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">
                 Administração & IAM
               </span>
             )}
@@ -398,54 +405,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onSelectTab('admin');
                 }}
                 title={isCollapsed ? `Cadeiras & Governança (${roles.length})` : undefined}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Briefcase className="w-4 h-4 shrink-0 text-slate-400" />
-                  {!isCollapsed && <span>Cadeiras & Governança</span>}
-                </div>
-                {!isCollapsed && (
-                  <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                    {roles.length}
-                  </span>
-                )}
-              </button>
-
-              {/* Matriz POPs */}
-              <button
-                onClick={() => {
-                  if (onSelectAdminSection) onSelectAdminSection('blocks');
-                  onSelectTab('admin');
-                }}
-                title={isCollapsed ? 'Matriz de POPs & Ritos' : undefined}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
                   activeTab === 'admin'
-                    ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                    ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Sliders className={`w-4 h-4 shrink-0 ${activeTab === 'admin' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
-                  {!isCollapsed && <span>Matriz de POPs & Ritos</span>}
+                  <Briefcase className={`w-4 h-4 shrink-0 ${activeTab === 'admin' ? 'text-white' : 'text-slate-400'}`} />
+                  {!isCollapsed && <span>Cadeiras & Governança</span>}
                 </div>
+                {!isCollapsed && (
+                  <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-md ${
+                    activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  }`}>
+                    {roles.length}
+                  </span>
+                )}
               </button>
 
               {/* IAM Users */}
               <button
                 onClick={() => onSelectTab('users')}
                 title={isCollapsed ? 'Usuários & Acessos (IAM)' : undefined}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
                   activeTab === 'users'
-                    ? 'bg-white dark:bg-[#18263d] text-blue-700 dark:text-white font-semibold shadow-sm border border-slate-300 dark:border-[#243959]'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-[#131c2d]'
+                    ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Users className={`w-4 h-4 shrink-0 ${activeTab === 'users' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                  <Users className={`w-4 h-4 shrink-0 ${activeTab === 'users' ? 'text-white' : 'text-slate-400'}`} />
                   {!isCollapsed && <span>Usuários & Acessos (IAM)</span>}
                 </div>
                 {!isCollapsed && (
-                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold font-mono">
+                  <span className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-md ${
+                    activeTab === 'users' ? 'bg-white/20 text-white' : 'text-slate-400'
+                  }`}>
                     RBAC
                   </span>
                 )}
@@ -459,39 +455,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Compliance Gauge */}
       {!isCollapsed ? (
-        <div className="p-4 border-t border-slate-200 dark:border-[#1a2333] bg-slate-100/80 dark:bg-[#0c121e]">
+        <div className="p-3.5 border-t border-slate-200/80 dark:border-[#1a2333] bg-white/40 dark:bg-[#0c121e]">
           <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-slate-600 dark:text-slate-400 font-medium">
-              {isWeekend ? 'Pausa de Fim de Semana' : 'Compliance do Dia'}
+            <span className="text-slate-500 dark:text-slate-400 font-medium">
+              {isWeekend ? 'Pausa Semanal' : 'Taxa de Execução'}
             </span>
-            <span className={`font-mono font-bold ${complianceRate === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+            <span className={`font-mono text-xs font-semibold ${complianceRate === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
               {complianceRate}%
             </span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-[#182333] h-1.5 rounded-full overflow-hidden mb-2">
+          <div className="w-full bg-slate-200/80 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
             <div 
               className={`h-full transition-all duration-500 rounded-full ${
-                complianceRate === 100 ? 'bg-emerald-500' : 'bg-blue-600'
+                complianceRate === 100 ? 'bg-emerald-500' : 'bg-slate-900 dark:bg-blue-600'
               }`}
               style={{ width: `${complianceRate}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <span>{isWeekend ? 'Sem rotina aos sábados e domingos' : `${completedCount} de ${totalCount} entregues`}</span>
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-              <Shield className="w-3 h-3" /> Auditado
+          <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+            <span>{isWeekend ? 'Sem rotina aos fins de semana' : `${completedCount} de ${totalCount} entregues`}</span>
+            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium">
+              <Shield className="w-3 h-3 text-slate-400" /> Auditado
             </span>
           </div>
         </div>
       ) : (
         <div 
-          className="p-2 border-t border-slate-200 dark:border-[#1a2333] bg-slate-100/80 dark:bg-[#0c121e] flex flex-col items-center justify-center cursor-pointer"
-          title={isWeekend ? 'Fim de Semana: Rotina em pausa (Segunda a Sexta)' : `Compliance do Dia: ${complianceRate}% (${completedCount}/${totalCount} entregas homologadas)`}
+          className="p-2 border-t border-slate-200/80 dark:border-[#1a2333] bg-white/40 dark:bg-[#0c121e] flex flex-col items-center justify-center cursor-pointer"
+          title={isWeekend ? 'Fim de Semana: Rotina em pausa' : `Compliance do Dia: ${complianceRate}% (${completedCount}/${totalCount})`}
         >
-          <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-mono font-bold ${
+          <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-mono font-medium ${
             complianceRate === 100 
-              ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' 
-              : 'border-blue-500 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+              ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30' 
+              : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900'
           }`}>
             {isWeekend ? '100%' : `${complianceRate}%`}
           </div>
@@ -500,27 +496,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom User Profile & Switcher */}
       {currentUser && (
-        <div className={`border-t border-slate-200 dark:border-[#1a2333] bg-white/80 dark:bg-[#0a0f1a] relative ${isCollapsed ? 'p-2 flex flex-col items-center gap-1.5' : 'p-3'}`} ref={userMenuRef}>
+        <div className={`border-t border-slate-200/80 dark:border-[#1a2333] bg-white/60 dark:bg-[#0a0f1a] relative ${isCollapsed ? 'p-2 flex flex-col items-center gap-1.5' : 'p-3'}`} ref={userMenuRef}>
           
           {!isCollapsed ? (
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex-1 flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#151f30] transition-colors text-left border border-slate-200 dark:border-[#1e2a3f] group shadow-sm min-w-0 cursor-pointer"
+                className="flex-1 flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors text-left border border-slate-200/90 dark:border-[#1e2a3f] group shadow-xs min-w-0 cursor-pointer"
                 title="Opções da conta e perfil de acesso"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${currentUser.avatarColor || 'bg-blue-600 text-white'}`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0 ${currentUser.avatarColor || 'bg-slate-900 text-white dark:bg-slate-700'}`}>
                     {getInitials(currentUser.name)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1">
-                      <span className="font-semibold text-xs text-slate-900 dark:text-white truncate block">
+                      <span className="font-medium text-xs text-slate-900 dark:text-white truncate block">
                         {currentUser.name}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate block">
                         {currentUser.jobTitle}
                       </span>
                     </div>
@@ -534,19 +530,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="button"
                   onClick={onLogout}
                   title="Encerrar sessão (Sair)"
-                  className="p-2.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-[#1e2a3f] hover:border-rose-300 dark:hover:border-rose-800 transition-colors shrink-0 cursor-pointer"
+                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200/90 dark:border-[#1e2a3f] hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0 cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
           ) : (
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="w-10 h-10 rounded-xl flex items-center justify-center hover:ring-2 hover:ring-blue-500/50 transition-all shadow-sm cursor-pointer"
-              title={`Perfil: ${currentUser.name}\n${currentUser.jobTitle}\nClique para ver opções e alterar senha`}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:ring-1 hover:ring-slate-400 transition-all shadow-xs cursor-pointer"
+              title={`Perfil: ${currentUser.name}\n${currentUser.jobTitle}\nClique para ver opções`}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${currentUser.avatarColor || 'bg-blue-600 text-white'}`}>
+              <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-semibold ${currentUser.avatarColor || 'bg-slate-900 text-white dark:bg-slate-700'}`}>
                 {getInitials(currentUser.name)}
               </div>
             </button>
@@ -554,26 +550,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Upward / Popover Dropdown Menu */}
           {isUserMenuOpen && (
-            <div className={`absolute z-50 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-xl shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 animate-in fade-in duration-150 ${
+            <div className={`absolute z-50 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1f293d] rounded-xl shadow-xl overflow-hidden text-slate-800 dark:text-slate-100 animate-in fade-in duration-150 ${
               isCollapsed 
                 ? 'left-16 bottom-2 w-72' 
                 : 'bottom-full mb-2 left-3 right-3'
             }`}>
               
               {/* Header */}
-              <div className="p-3 bg-slate-50 dark:bg-[#0c121e] border-b border-slate-200 dark:border-[#1a2333]">
+              <div className="p-3 bg-slate-50/80 dark:bg-[#0c121e] border-b border-slate-200/80 dark:border-[#1a2333]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1">
-                    <Key className="w-3 h-3 text-blue-500" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                    <Key className="w-3 h-3 text-slate-500" />
                     Sessão Ativa
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${currentUser.avatarColor || 'bg-blue-600 text-white'}`}>
+                  <div className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold shrink-0 ${currentUser.avatarColor || 'bg-slate-900 text-white dark:bg-slate-700'}`}>
                     {getInitials(currentUser.name)}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">
+                    <span className="text-xs font-semibold text-slate-900 dark:text-white truncate block">
                       {currentUser.name}
                     </span>
                     <span className="text-[10px] text-slate-400 truncate block font-mono">
@@ -582,18 +578,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-2 pt-1.5 border-t border-slate-200 dark:border-[#1c273a]">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">
+                <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-[#1c273a]">
+                  <span className="text-[10px] font-medium text-slate-400 block mb-1">
                     Cadeiras Autorizadas:
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {currentUser.allowedRoleIds.includes('*') ? (
-                      <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                         Acesso Total (*)
                       </span>
                     ) : (
                       currentUser.allowedRoleIds.map(rId => (
-                        <span key={rId} className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-[#1a2333] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#24334d]">
+                        <span key={rId} className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#1a2333] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#24334d]">
                           {getChairName(rId)}
                         </span>
                       ))
@@ -604,15 +600,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* IAM Management button */}
               {!isOperator && (
-                <div className="p-1.5 bg-slate-50 dark:bg-[#0a0f1a] border-t border-slate-200 dark:border-[#1a2333]">
+                <div className="p-1.5 border-t border-slate-100 dark:border-[#1a2333]">
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);
                       onSelectTab('users');
                     }}
-                    className="w-full text-center py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <Users className="w-3.5 h-3.5" />
+                    <Users className="w-3.5 h-3.5 text-slate-400" />
                     <span>Gerenciar Usuários & Cadeiras (IAM)</span>
                   </button>
                 </div>
@@ -620,15 +616,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Change Password button */}
               {onOpenChangePassword && (
-                <div className="p-1.5 bg-slate-50 dark:bg-[#0a0f1a] border-t border-slate-200 dark:border-[#1a2333]">
+                <div className="p-1.5 border-t border-slate-100 dark:border-[#1a2333]">
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);
                       onOpenChangePassword();
                     }}
-                    className="w-full text-center py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#151f30] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <KeyRound className="w-3.5 h-3.5 text-blue-500" />
+                    <KeyRound className="w-3.5 h-3.5 text-slate-400" />
                     <span>Alterar Minha Senha</span>
                   </button>
                 </div>
@@ -636,13 +632,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Logout button in dropdown */}
               {onLogout && (
-                <div className="p-1.5 bg-slate-50 dark:bg-[#0a0f1a] border-t border-slate-200 dark:border-[#1a2333]">
+                <div className="p-1.5 border-t border-slate-100 dark:border-[#1a2333]">
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);
                       onLogout();
                     }}
-                    className="w-full text-center py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Encerrar Sessão (Sair)</span>

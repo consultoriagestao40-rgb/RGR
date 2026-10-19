@@ -48,18 +48,18 @@ export const DelayJustificationModal: React.FC<DelayJustificationModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-lg bg-white dark:bg-[#111827] border border-amber-300 dark:border-amber-500/30 rounded-xl p-6 shadow-2xl text-slate-800 dark:text-slate-100 my-8 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md overflow-y-auto">
+      <div className="w-full max-w-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-800 dark:text-slate-100 my-8 transition-colors animate-in fade-in">
         
         {/* Header with Alert badge */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1f293d]">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-700/60 text-amber-600 dark:text-amber-400">
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800 text-amber-600 dark:text-amber-400">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                <span className="text-[10px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   Atraso de {formatDelay(delayMinutes)}
                 </span>
                 <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -73,14 +73,14 @@ export const DelayJustificationModal: React.FC<DelayJustificationModalProps> = (
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Activity Details Box */}
-        <div className="mt-4 p-3.5 rounded-lg bg-slate-50 dark:bg-[#0c121e] border border-slate-200 dark:border-[#1a2333] text-xs space-y-1.5">
+        <div className="mt-4 p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span>Macroprocesso:</span>
             <span className="font-semibold text-slate-900 dark:text-white">{block.title}</span>
@@ -105,7 +105,7 @@ export const DelayJustificationModal: React.FC<DelayJustificationModalProps> = (
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-300 dark:border-[#1f293d] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors cursor-pointer"
             >
               {DELAY_CATEGORIES.map(cat => (
                 <option key={cat.id} value={cat.id}>
@@ -124,29 +124,29 @@ export const DelayJustificationModal: React.FC<DelayJustificationModalProps> = (
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
-              placeholder="Explique o motivo do atraso e as medidas corretivas adotadas para que não se repita (ex: 'O fornecedor de químicos entregou as notas fiscais com 40 min de atraso, o que postergou a conciliação no Conta Azul')."
+              placeholder="Explique o motivo do atraso e as medidas corretivas adotadas para que não se repita (ex: 'O fornecedor entregou os insumos com 40 min de atraso, o que postergou a conferência')."
               required
-              className="w-full bg-slate-50 dark:bg-[#0c121e] border border-slate-300 dark:border-[#1f293d] rounded-md p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors leading-relaxed"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors leading-relaxed"
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-[#1f293d] flex items-center justify-between">
-            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              Impacta o Índice de Pontualidade da Cadeira
+              Impacta o Índice de Pontualidade
             </span>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium"
+                className="px-3.5 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Voltar
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Protocolar com Atraso</span>
