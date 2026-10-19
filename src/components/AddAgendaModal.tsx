@@ -191,7 +191,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !newTitle.trim() || rituals.length === 0}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>{isSubmitting ? 'Incluindo...' : 'Incluir Pauta no Despacho'}</span>

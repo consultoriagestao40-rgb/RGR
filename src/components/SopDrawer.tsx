@@ -124,7 +124,7 @@ export const SopDrawer: React.FC<SopDrawerProps> = ({
                 className={`px-4 py-2 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${
                   isCompleted
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white'
+                    : 'bg-atlas-600 hover:bg-atlas-700 text-white font-semibold'
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4" />

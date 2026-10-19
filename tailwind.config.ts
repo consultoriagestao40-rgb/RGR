@@ -32,7 +32,20 @@ const config: Config = {
           500: "#10b981",
           600: "#059669",
           700: "#047857",
-        }
+        },
+        atlas: {
+          50: "#edfcf7",
+          100: "#d3f8ea",
+          200: "#abf0d7",
+          300: "#73e3bf",
+          400: "#38cda2",
+          500: "#14b388",
+          600: "#0ea879", // Atlas Governance primary green
+          700: "#0b8b63", // Hover
+          800: "#0c6249",
+          900: "#0c513e",
+          950: "#042e23",
+        },
       },
       fontFamily: {
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],

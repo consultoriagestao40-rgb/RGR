@@ -142,7 +142,7 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg shadow-xs transition-colors cursor-pointer"
+                className="px-5 py-2 text-xs font-semibold text-white bg-atlas-600 hover:bg-atlas-700 rounded-lg shadow-xs transition-colors cursor-pointer"
               >
                 Salvar Registro
               </button>

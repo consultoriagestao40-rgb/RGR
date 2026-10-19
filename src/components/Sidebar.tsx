@@ -307,7 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               ) : (
                 !isWeekend && totalCount > 0 && (
-                  <span className="absolute top-1 right-1 font-mono text-[8px] w-3.5 h-3.5 rounded-full bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <span className="absolute top-1 right-1 font-mono text-[8px] w-3.5 h-3.5 rounded-full bg-atlas-600 text-white flex items-center justify-center font-bold">
                     {totalCount > 9 ? '9+' : totalCount}
                   </span>
                 )
@@ -467,7 +467,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="w-full bg-slate-200/80 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
             <div 
               className={`h-full transition-all duration-500 rounded-full ${
-                complianceRate === 100 ? 'bg-emerald-500' : 'bg-slate-900 dark:bg-blue-600'
+                complianceRate === 100 ? 'bg-emerald-500' : 'bg-atlas-600'
               }`}
               style={{ width: `${complianceRate}%` }}
             />

@@ -130,7 +130,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Subtle Header Accent */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-500" />
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-atlas-600 via-emerald-500 to-atlas-500" />
 
         {/* Top Header */}
         <div className="flex items-start justify-between mb-4">
@@ -304,7 +304,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 sm:flex-none px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs rounded-lg shadow-sm shadow-blue-600/20 border border-blue-700 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="flex-1 sm:flex-none px-5 py-2 bg-atlas-600 hover:bg-atlas-700 active:bg-atlas-800 text-white font-semibold text-xs rounded-lg shadow-sm shadow-atlas-600/20 border border-atlas-700 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

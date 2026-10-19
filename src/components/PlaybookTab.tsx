@@ -105,7 +105,7 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
           </button>
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="px-3 py-1.5 text-xs font-semibold text-white bg-atlas-600 hover:bg-atlas-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir Manual</span>

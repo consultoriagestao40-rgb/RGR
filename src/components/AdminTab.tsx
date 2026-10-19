@@ -374,7 +374,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenBlockModal()}
-              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-3.5 py-1.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Novo Procedimento (POP)</span>
@@ -434,7 +434,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenRitualModal()}
-              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-3.5 py-1.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Novo Rito</span>
@@ -506,7 +506,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             </span>
             <button
               onClick={() => handleOpenRoleModal()}
-              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-3.5 py-1.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nova Cadeira</span>
@@ -628,7 +628,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
+                  className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 rounded-lg text-white font-semibold text-xs shadow-xs cursor-pointer"
                 >
                   Salvar Cadeira
                 </button>
@@ -720,7 +720,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
+                  className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 rounded-lg text-white font-semibold text-xs shadow-xs cursor-pointer"
                 >
                   Salvar Procedimento
                 </button>
@@ -900,7 +900,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                             onClick={() => toggleWeekDay(day.value)}
                             className={`py-1 px-1 rounded-md text-[11px] font-semibold border transition-all text-center cursor-pointer ${
                               isSelected
-                                ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-xs'
+                                ? 'bg-atlas-600 text-white border-atlas-600 shadow-xs'
                                 : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                             }`}
                             title={day.fullName}
@@ -925,7 +925,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                         onClick={() => setRitualMonthlyType('specific_day')}
                         className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'specific_day'
-                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            ? 'bg-atlas-600 text-white border-atlas-600 font-semibold'
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
@@ -936,7 +936,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                         onClick={() => setRitualMonthlyType('first_business_day')}
                         className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'first_business_day'
-                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            ? 'bg-atlas-600 text-white border-atlas-600 font-semibold'
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
@@ -947,7 +947,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                         onClick={() => setRitualMonthlyType('last_business_day')}
                         className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                           ritualMonthlyType === 'last_business_day'
-                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 font-semibold'
+                            ? 'bg-atlas-600 text-white border-atlas-600 font-semibold'
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                         }`}
                       >
@@ -993,7 +993,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg text-white font-medium shadow-xs cursor-pointer"
+                  className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 rounded-lg text-white font-semibold text-xs shadow-xs cursor-pointer"
                 >
                   Salvar Rito
                 </button>

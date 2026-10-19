@@ -227,7 +227,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || isDeleting}
-                className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>

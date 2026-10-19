@@ -166,9 +166,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Action Button: Formal Meeting Minute */}
         <button
           onClick={onOpenMinuteModal}
-          className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium shadow-xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          className="flex items-center gap-1.5 bg-atlas-600 hover:bg-atlas-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
-          <FileCheck2 className="w-3.5 h-3.5 text-slate-300 dark:text-blue-200" />
+          <FileCheck2 className="w-3.5 h-3.5 text-white/90" />
           <span>Lavrar Ata do Despacho</span>
         </button>
 

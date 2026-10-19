@@ -73,7 +73,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
         {onSelectDate && (
           <button
             onClick={() => onSelectDate(SYSTEM_START_DATE)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+            className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             Ir para Início da Plataforma (15/10/2026)
           </button>
@@ -256,7 +256,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
             <button
               type="button"
               onClick={() => onOpenAddAgendaModal()}
-              className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-2 rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Adicionar Pauta</span>
@@ -295,7 +295,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
             {onSelectDate && (
               <button
                 onClick={() => onSelectDate(getNextBusinessDay(selectedDate))}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-600/20 border border-blue-700 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Ir para o Próximo Dia Útil (Segunda-feira)</span>
                 <ArrowRight className="w-4 h-4" />
@@ -492,7 +492,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                           ? 'bg-amber-600 hover:bg-amber-700 text-white'
                           : isPastUncompleted
                           ? 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-blue-600 dark:hover:bg-blue-500'
+                          : 'bg-atlas-600 hover:bg-atlas-700 text-white'
                       }`}
                     >
                       <Check className="w-3.5 h-3.5" />
