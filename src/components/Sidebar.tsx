@@ -19,9 +19,7 @@ import {
   Pencil,
   Briefcase,
   LogOut,
-  KeyRound,
-  PanelLeftClose,
-  PanelLeftOpen
+  KeyRound
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 
@@ -141,54 +139,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out`}>
       
-      {/* Top Brand: RGR - Gerenciamento da Rotina & Single Encased Toggle Button */}
+      {/* Top Brand: RGR - Gerenciamento da Rotina */}
       <div className={`h-16 border-b border-slate-200 dark:border-[#1a2333] flex items-center transition-colors shrink-0 bg-white dark:bg-[#0c121e] ${
-        isCollapsed ? 'justify-center px-2' : 'justify-between px-3.5'
+        isCollapsed ? 'justify-center px-2' : 'px-4'
       }`}>
-        {isCollapsed ? (
-          <button
-            onClick={handleToggleCollapse}
-            className="w-10 h-10 rounded-xl border border-slate-200 dark:border-[#1e2c42] bg-slate-50 dark:bg-[#121c2e] hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 dark:hover:border-blue-800 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 flex items-center justify-center transition-all shadow-xs cursor-pointer group"
-            title="Expandir menu lateral"
-            aria-label="Expandir menu lateral"
+        <div 
+          onClick={isCollapsed ? handleToggleCollapse : undefined}
+          className={`flex items-center gap-3 min-w-0 ${isCollapsed ? 'cursor-pointer' : ''}`}
+          title={isCollapsed ? 'Clique para expandir o menu lateral' : undefined}
+        >
+          <div 
+            className={`h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-600 dark:to-blue-800 border border-blue-500/40 dark:border-blue-500/20 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-xs shrink-0 ${
+              isCollapsed ? 'hover:scale-105 transition-transform' : ''
+            }`}
+            title="RGR Governança Operacional"
           >
-            <PanelLeftOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform group-hover:scale-110" />
-          </button>
-        ) : (
-          <>
-            <div className="flex items-center gap-2.5 min-w-0 pr-1">
-              <div 
-                className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-600 dark:to-blue-800 border border-blue-500/40 dark:border-blue-500/20 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-xs shrink-0"
-                title="RGR Governança Operacional"
-              >
-                RGR
+            RGR
+          </div>
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans whitespace-nowrap">
+                  RGR <span className="text-blue-600 dark:text-[#3b82f6] font-semibold">Rotina</span>
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#162235] text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-[#22334e] whitespace-nowrap">
+                  Operacional
+                </span>
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white uppercase font-sans">
-                    RGR <span className="text-blue-600 dark:text-[#3b82f6] font-semibold">Rotina</span>
-                  </span>
-                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#162235] text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-[#22334e]">
-                    Operacional
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                  Gerenciamento da Rotina
-                </p>
-              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate whitespace-nowrap">
+                Gerenciamento da Rotina
+              </p>
             </div>
-
-            {/* Encased Single Toggle Button */}
-            <button
-              onClick={handleToggleCollapse}
-              className="w-8 h-8 rounded-lg border border-slate-200 dark:border-[#1e2c42] bg-slate-50 dark:bg-[#121c2e] hover:bg-slate-100 dark:hover:bg-[#1a2638] hover:border-slate-300 dark:hover:border-[#2a3c5a] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer"
-              title="Recolher menu lateral"
-              aria-label="Recolher menu lateral"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Cadeira Ativa com Limitação de Acesso por Usuário */}
