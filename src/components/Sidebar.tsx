@@ -19,7 +19,9 @@ import {
   Pencil,
   Briefcase,
   LogOut,
-  KeyRound
+  KeyRound,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 
@@ -137,8 +139,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out`}>
+    <aside className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out relative`}>
       
+      {/* Setinha discreta na linha de divisa entre menu e tela */}
+      <button
+        type="button"
+        onClick={handleToggleCollapse}
+        className="absolute -right-3 top-5 z-40 w-6 h-6 rounded-full bg-white dark:bg-[#162235] border border-slate-300 dark:border-[#2a3c5a] text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 shadow-sm hover:shadow flex items-center justify-center transition-all cursor-pointer hover:scale-110"
+        title={isCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+        aria-label={isCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+      >
+        {isCollapsed ? (
+          <ChevronRight className="w-3.5 h-3.5" />
+        ) : (
+          <ChevronLeft className="w-3.5 h-3.5" />
+        )}
+      </button>
+
       {/* Top Brand: RGR - Gerenciamento da Rotina */}
       <div className={`h-16 border-b border-slate-200 dark:border-[#1a2333] flex items-center transition-colors shrink-0 bg-white dark:bg-[#0c121e] ${
         isCollapsed ? 'justify-center px-2' : 'px-4'

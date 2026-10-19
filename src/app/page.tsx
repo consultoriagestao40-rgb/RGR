@@ -518,8 +518,6 @@ export default function HomePage() {
           onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
           onResetData={handleResetData}
           onLogout={handleLogout}
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleSidebar={handleToggleSidebar}
         />
 
         {/* Scrollable Content Body */}

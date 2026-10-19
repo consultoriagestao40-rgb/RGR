@@ -8,9 +8,7 @@ import {
   FileCheck2, 
   RotateCcw, 
   Building,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen
+  LogOut
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
 import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
@@ -24,8 +22,6 @@ interface HeaderProps {
   onOpenMinuteModal: () => void;
   onResetData: () => void;
   onLogout?: () => void;
-  isSidebarCollapsed?: boolean;
-  onToggleSidebar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,9 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onOpenMinuteModal,
   onResetData,
-  onLogout,
-  isSidebarCollapsed,
-  onToggleSidebar
+  onLogout
 }) => {
   const getTabLabel = (tab: string) => {
     switch (tab) {
@@ -82,26 +76,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="h-16 bg-white dark:bg-[#0f1726] border-b border-slate-200 dark:border-[#1a2333] px-4 sm:px-6 flex items-center justify-between shrink-0 select-none transition-colors">
       
-      {/* Left: Docked Toggle + Clean Non-Breaking Breadcrumbs (Mapa do Site) */}
+      {/* Left: Clean Non-Breaking Breadcrumbs (Mapa do Site) */}
       <div className="flex items-center gap-2.5 min-w-0">
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/80 dark:bg-[#141d2e] dark:hover:bg-[#1c283f] border border-slate-200/90 dark:border-[#223048] transition-all shrink-0 cursor-pointer shadow-2xs"
-            title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-            aria-label={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-          >
-            {isSidebarCollapsed ? (
-              <PanelLeftOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            ) : (
-              <PanelLeftClose className="w-4 h-4" />
-            )}
-          </button>
-        )}
-
-        <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
-
         {/* Mapa do Site / Breadcrumbs */}
         <nav aria-label="Mapa do Site" className="flex items-center gap-2 text-xs whitespace-nowrap min-w-0">
           <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">
