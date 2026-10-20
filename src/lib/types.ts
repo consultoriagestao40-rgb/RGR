@@ -40,7 +40,7 @@ export interface BoardAgendaVote {
 
 export type RitualType = 'operational_cadence' | 'board_council';
 export type RitualFrequency = 'daily' | 'weekly' | 'monthly';
-export type MonthlyScheduleType = 'specific_day' | 'first_business_day' | 'last_business_day';
+export type MonthlyScheduleType = 'specific_day' | 'first_business_day' | 'fifth_business_day' | 'last_business_day';
 
 export interface DailyRitual {
   id: string;

@@ -1,4 +1,4 @@
-import { DailyRitual } from './types';
+import { DailyRitual, RoutineBlock } from './types';
 
 export const WEEK_DAYS = [
   { value: 1, label: 'Seg', fullName: 'Segunda-feira' },
@@ -85,6 +85,27 @@ export function isLastBusinessDayOfMonth(date: Date): boolean {
 }
 
 /**
+ * Verifica se a data é o quinto dia útil do mês (data padrão CLT para pagamento de salários e VA).
+ */
+export function isFifthBusinessDayOfMonth(date: Date): boolean {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  let count = 0;
+  for (let day = 1; day <= 31; day++) {
+    const candidate = new Date(year, month, day);
+    if (candidate.getMonth() !== month) break;
+    const dow = candidate.getDay();
+    if (dow !== 0 && dow !== 6) {
+      count++;
+      if (count === 5) {
+        return date.getDate() === day;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Regra de Ouro: Avalia se um rito deve ser executado na data específica.
  */
 export function isRitualScheduledForDate(ritual: DailyRitual, dateStr: string): boolean {
@@ -125,6 +146,9 @@ export function isRitualScheduledForDate(ritual: DailyRitual, dateStr: string): 
   if (frequency === 'monthly') {
     if (ritual.monthlyType === 'first_business_day') {
       return isFirstBusinessDayOfMonth(date);
+    }
+    if (ritual.monthlyType === 'fifth_business_day') {
+      return isFifthBusinessDayOfMonth(date);
     }
     if (ritual.monthlyType === 'last_business_day') {
       return isLastBusinessDayOfMonth(date);
@@ -179,6 +203,9 @@ export function formatRitualFrequency(ritual: DailyRitual): string {
     if (ritual.monthlyType === 'first_business_day') {
       return 'Mensal (1º dia útil)';
     }
+    if (ritual.monthlyType === 'fifth_business_day') {
+      return 'Mensal (5º dia útil)';
+    }
     if (ritual.monthlyType === 'last_business_day') {
       return 'Mensal (Último dia útil)';
     }
@@ -189,6 +216,99 @@ export function formatRitualFrequency(ritual: DailyRitual): string {
   }
 
   return 'Diário (Seg a Sex)';
+}
+
+/**
+ * Avalia se um bloco de rotina operacional (POP) deve ser executado na data específica.
+ */
+export function isBlockScheduledForDate(block: RoutineBlock, dateStr: string): boolean {
+  if (isBeforeSystemStart(dateStr)) return false;
+  const date = parseLocalDate(dateStr);
+  const dow = date.getDay(); // 0 a 6
+  const isWeekendDay = dow === 0 || dow === 6;
+  const freq = block.frequency || 'daily';
+
+  if (freq === 'daily') {
+    // Se for diário, executa em dias úteis
+    return !isWeekendDay;
+  }
+
+  if (freq === 'weekly') {
+    if (block.dayOfWeek !== undefined && block.dayOfWeek !== null) {
+      return block.dayOfWeek === dow;
+    }
+    // padrão se não especificado: sexta-feira
+    return dow === 5;
+  }
+
+  if (freq === 'monthly') {
+    if (block.dayOfMonth) {
+      // 999 = Último dia útil do mês (compra de VT)
+      if (block.dayOfMonth === 999) {
+        return isLastBusinessDayOfMonth(date);
+      }
+      // 555 = 5º dia útil do mês (salários e VA)
+      if (block.dayOfMonth === 555) {
+        return isFifthBusinessDayOfMonth(date);
+      }
+      return date.getDate() === block.dayOfMonth;
+    }
+    return date.getDate() === 1;
+  }
+
+  return true;
+}
+
+/**
+ * Formata a periodicidade de um POP para exibição elegante no card.
+ */
+export function formatBlockFrequency(block: RoutineBlock): { label: string; badgeColor: string; isMonthly: boolean; isWeekly: boolean } {
+  const freq = block.frequency || 'daily';
+
+  if (freq === 'daily') {
+    return {
+      label: 'Diário (Seg a Sex)',
+      badgeColor: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+      isMonthly: false,
+      isWeekly: false
+    };
+  }
+
+  if (freq === 'weekly') {
+    const dayName = block.dayOfWeek !== undefined && block.dayOfWeek !== null 
+      ? WEEK_DAYS.find(w => w.value === block.dayOfWeek)?.label || 'Semanal'
+      : 'Semanal';
+    return {
+      label: `Semanal (${dayName})`,
+      badgeColor: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+      isMonthly: false,
+      isWeekly: true
+    };
+  }
+
+  if (freq === 'monthly') {
+    let dayStr = 'Mensal';
+    if (block.dayOfMonth === 999) {
+      dayStr = 'Mensal (Último dia útil)';
+    } else if (block.dayOfMonth === 555) {
+      dayStr = 'Mensal (5º dia útil)';
+    } else if (block.dayOfMonth) {
+      dayStr = `Mensal (Dia ${String(block.dayOfMonth).padStart(2, '0')})`;
+    }
+    return {
+      label: dayStr,
+      badgeColor: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800',
+      isMonthly: true,
+      isWeekly: false
+    };
+  }
+
+  return {
+    label: 'Diário',
+    badgeColor: 'bg-slate-100 text-slate-700 border-slate-200',
+    isMonthly: false,
+    isWeekly: false
+  };
 }
 
 /**
@@ -205,3 +325,4 @@ export function getNextBusinessDay(dateStr: string): string {
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+

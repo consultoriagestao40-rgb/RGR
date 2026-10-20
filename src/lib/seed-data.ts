@@ -6,7 +6,7 @@ export const INITIAL_ROLES: OperationalRole[] = [
     "code": "CAD-FIN-01",
     "title": "Controladoria & Finanças",
     "department": "Controladoria, Finanças & Resultados",
-    "description": "Cadeira responsável pela gestão de faturamento de contratos, contas a receber e régua de cobrança, contas a pagar com conciliação diária, DRE e resultado por contrato e por empresa, e liberação de pagamentos à tarde com o CEO.",
+    "description": "Cadeira responsável pela gestão de faturamento diário de contratos, conciliação de recebíveis e régua de cobrança, contas operacionais (químicos, EPIs e diárias), contas a pagar com DDA, liberação de pagamentos à tarde (14:30) com o CEO, auditoria semanal de cartões corporativos, liquidação mensal de encargos/tributos (dia 20) e apuração mensal de resultados (DRE por Contrato e por Empresa).",
     "createdAt": "2026-10-15T16:48:50.493Z"
   },
   {
@@ -14,7 +14,7 @@ export const INITIAL_ROLES: OperationalRole[] = [
     "code": "CAD-DP-02",
     "title": "Departamento Pessoal & Folha (DP)",
     "department": "Departamento Pessoal & Relações Trabalhistas",
-    "description": "Cadeira responsável pelo fechamento de ponto eletrônico diário, tratamento de horas extras e atestados, processamento da folha de pagamento, encargos trabalhistas e compra tempestiva de benefícios (VT/VR).",
+    "description": "Cadeira responsável pela conferência diária de ponto e atestados, gestão diária de prazos de rescisões trabalhistas (blindagem dos 10 dias da CLT), fechamento oficial do período de ponto (dia 25), processamento da folha e encargos (pós dia 25), compra de VT (último dia útil) e crédito de salários/VA (5º dia útil).",
     "createdAt": "2026-10-15T16:48:50.493Z"
   },
   {
@@ -22,7 +22,7 @@ export const INITIAL_ROLES: OperationalRole[] = [
     "code": "CAD-OPS-03",
     "title": "Coordenador de Operações",
     "department": "Diretoria de Operações & Facilities",
-    "description": "Cadeira de supervisão técnica com foco em conformidade operacional dos postos de trabalho, auditorias de qualidade in loco com checklist fotográfico e gestão de suprimentos e equipamentos químicos.",
+    "description": "Cadeira de supervisão técnica com foco em conformidade operacional dos postos de trabalho, auditorias de qualidade in loco com checklist fotográfico na ferramenta Checklist Fácil e gestão de suprimentos e equipamentos químicos.",
     "createdAt": "2026-10-15T16:48:50.493Z"
   },
   {
@@ -30,7 +30,7 @@ export const INITIAL_ROLES: OperationalRole[] = [
     "code": "CAD-OPE-04",
     "title": "Head de Operações",
     "department": "Operações",
-    "description": "Liderar estrategicamente a operação de facilities, garantindo 100% de cobertura dos postos, cumprimento rigoroso de SLAs e retenção dos contratos. Responsável pela gestão dos coordenadores de campo, controle do DRE operacional (horas extras e consumo de insumos), relacionamento executivo com clientes e eliminação de reatividade operacional.",
+    "description": "Liderar estrategicamente a operação de facilities: Mesa de Operações diária (100% de cobertura e diaristas reservas), visitas executivas porta fora a síndicos e clientes, gestão diária de vagas em aberto com SLA de 72h e relatório executivo semanal de auditorias na ferramenta Checklist Fácil.",
     "createdAt": "2026-10-15T17:18:12.479Z"
   }
 ];
@@ -40,222 +40,269 @@ export const INITIAL_BLOCKS: RoutineBlock[] = [
     "id": "block-fin-01",
     "roleId": "role-fin-01",
     "code": "POP-FIN-001",
-    "version": "v2.5",
+    "version": "v3.0",
     "homologatedBy": "Diretoria Executiva / CEO",
-    "timeWindow": "08:30 - 10:30",
-    "title": "Faturamento de Contratos, Medições Físicas & Emissão de NFS-e",
-    "deliverable": "Boletins de medição validados pela Operação, retenções fiscais calculadas e NFS-e emitidas com boletos registrados enviados aos clientes",
+    "timeWindow": "08:30 - 10:00",
+    "title": "Faturamento Diário de Contratos, Medições & Emissão de NFS-e",
+    "deliverable": "Medições físicas conferidas com a Operação, retenções calculadas (IRRF, CSRF, INSS) e NFS-e emitidas com boletos registrados enviados aos clientes",
     "frequency": "daily",
     "orderIndex": 1,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-001\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5 | **Homologado por:** CEO\n\n---\n\n#### 1. Faturamento Conforme Medição Contratual\n1. Importar planilha de medição física mensal validada pelo Coordenador de Operações e assinada pelo cliente.\n2. Deduzir glosas contratuais decorrentes de faltas não cobertas ou penalidades de SLA.\n3. Aplicar retenções de tributos federais e municipais: IRRF (1,5%), CSRF (4,65%) e INSS (11%).\n4. Transmitir NFS-e na prefeitura e gerar boleto registrado no banco operador com link de pagamento.\n5. Disparar dossiê de cobrança (DANFE + XML + Boleto + Relatório de Medição) ao financeiro do cliente."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-001\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Faturamento Conforme Medição Contratual\n1. Importar planilha de medição física mensal validada pelo Coordenador de Operações e assinada pelo cliente.\n2. Deduzir glosas contratuais decorrentes de faltas não cobertas ou penalidades de SLA.\n3. Aplicar retenções de tributos federais e municipais: IRRF (1,5%), CSRF (4,65%) e INSS (11%).\n4. Transmitir NFS-e na prefeitura e gerar boleto registrado no banco operador com link de pagamento.\n5. Disparar dossiê de cobrança (DANFE + XML + Boleto + Relatório de Medição) ao financeiro do cliente contratante."
   },
   {
     "id": "block-fin-02",
     "roleId": "role-fin-01",
     "code": "POP-FIN-002",
-    "version": "v2.5",
+    "version": "v3.0",
     "homologatedBy": "Controladoria Geral",
-    "timeWindow": "10:30 - 12:00",
-    "title": "Contas a Receber, Conciliação de Entradas & Régua Ativa de Cobrança",
-    "deliverable": "Extrato bancário de créditos 100% conciliado no Conta Azul, baixas efetuadas e contato formal com clientes inadimplentes",
+    "timeWindow": "10:00 - 11:30",
+    "title": "Contas a Receber, Conciliação Diária de Entradas & Régua de Cobrança",
+    "deliverable": "Extrato bancário de créditos 100% conciliado no ERP, baixas efetuadas e contato formal com clientes inadimplentes (D+1 envio cortês, D+5 cobrança ativa)",
     "frequency": "daily",
     "orderIndex": 2,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-002\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5\n\n---\n\n#### 1. Conciliação Diária de Recebimentos\n1. Importar extrato bancário de todos os bancos com recebimento no dia (Inter, Itaú).\n2. Efetuar a baixa por compensação de boletos, transferências Pix e TEDs vinculando aos respectivos contratos.\n3. Identificar títulos vencidos:\n   - **D+1 (24h de atraso):** Envio cortês de 2ª via atualizada.\n   - **D+5 (5 dias úteis):** Contato telefônico com gerente de contas do cliente.\n4. Atualizar mapa de inadimplência e promessas de liquidação para a Controladoria."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-002\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Conciliação Diária de Recebimentos\n1. Importar extrato bancário de todos os bancos com recebimento no dia (Inter, Itaú).\n2. Efetuar a baixa por compensação de boletos, transferências Pix e TEDs vinculando aos respectivos contratos.\n3. Identificar títulos vencidos:\n   - **D+1 (24h de atraso):** Envio cortês de 2ª via atualizada por e-mail/WhatsApp.\n   - **D+5 (5 dias úteis):** Contato telefônico direto com o gerente de contas/síndico do cliente.\n4. Atualizar mapa de inadimplência e promessas de liquidação para a Controladoria."
   },
   {
     "id": "block-fin-03",
     "roleId": "role-fin-01",
     "code": "POP-FIN-003",
-    "version": "v2.5",
+    "version": "v3.0",
     "homologatedBy": "Diretoria Financeira",
-    "timeWindow": "13:30 - 14:30",
-    "title": "Contas a Pagar, DDA Bancário & Montagem do Borderô da Tarde",
-    "deliverable": "Títulos do dia conferidos contra notas fiscais homologadas e lote montado no Conta Azul de Bolso pronto para aprovação do CEO",
+    "timeWindow": "11:30 - 12:30",
+    "title": "Controle Diário de Contas Operacionais: Materiais, EPIs & Diárias",
+    "deliverable": "Conferência e liberação diária de notas de químicos de facilities, EPIs recebidos e pagamento de diárias dos diaristas reservas da Operação",
     "frequency": "daily",
     "orderIndex": 3,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-003\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5\n\n---\n\n#### 1. Montagem do Lote da Tarde para Liberação do CEO\n1. Acessar o DDA bancário de todas as contas e listar os títulos emitidos contra o CNPJ com vencimento no dia.\n2. Cruzar com as notas de compra homologadas pelo departamento de Suprimentos/Operações no ERP Conta Azul.\n3. Montar o lote de liquidação da tarde discriminado por categoria:\n   - *Fornecedores Críticos e Químicos de Facilities*\n   - *Guias Trabalhistas, Folha e Benefícios*\n   - *Impostos e Encargos Fiscais*\n4. Submeter lote no aplicativo Conta Azul de Bolso aguardando o despacho executivo das 14:30 com o CEO."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-003\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Contas Operacionais do Dia a Dia\n1. **Insumos Químicos & Descartáveis:** Cruzar pedidos de compras de produtos de limpeza com a nota fiscal de entrega física no DML central ou no posto.\n2. **EPIs e Uniformes:** Validar recebimento físico de botinas, luvas e uniformes homologados com o almoxarifado.\n3. **Diárias Operacionais:** Receber da Mesa de Operações a relação de diaristas reservas que cobriram faltas no dia anterior, auditar valores contratados e incluir no lote da tarde para liquidação via Pix."
   },
   {
     "id": "block-fin-04",
     "roleId": "role-fin-01",
     "code": "POP-FIN-004",
-    "version": "v2.5",
-    "homologatedBy": "Diretoria Executiva / CEO",
-    "timeWindow": "14:30 - 15:00",
-    "title": "Rito com o CEO: Despacho Financeiro da Tarde & Liberação de Pagamentos",
-    "deliverable": "Aprovação em lote no aplicativo Conta Azul de Bolso pelo CEO após conferência de saldo real e faturamento",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Financeira",
+    "timeWindow": "13:30 - 14:30",
+    "title": "Contas a Pagar, DDA Bancário & Montagem do Borderô da Tarde",
+    "deliverable": "Varredura de títulos no DDA bancário cruzados com notas fiscais homologadas e lote montado no Conta Azul de Bolso pronto para o CEO",
     "frequency": "daily",
     "orderIndex": 4,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-004\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5 | **Homologado por:** CEO\n\n---\n\n#### 1. Rito Executivo da Tarde (14:30)\n1. Apresentar ao CEO a posição consolidada de saldos em conta corrente e aplicações.\n2. Apresentar o lote de pagamentos montado no Conta Azul de Bolso.\n3. Justificar despesas extraordinárias ou boletos avulsos.\n4. Obter a liberação digital expressa do CEO no aplicativo bancário/ERP."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-004\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Montagem do Lote da Tarde para Liberação do CEO\n1. Acessar o DDA bancário de todas as contas e listar os títulos emitidos contra o CNPJ com vencimento no dia.\n2. Cruzar com as notas de compra homologadas pelo departamento de Suprimentos/Operações no ERP Conta Azul.\n3. Montar o lote de liquidação da tarde discriminado por categoria:\n   - *Fornecedores Críticos e Químicos de Facilities*\n   - *Diárias Operacionais de Cobertura*\n   - *Guias Trabalhistas, Folha e Benefícios (conforme calendário)*\n4. Submeter lote no aplicativo Conta Azul de Bolso aguardando o despacho executivo das 14:30 com o CEO."
   },
   {
     "id": "block-fin-05",
     "roleId": "role-fin-01",
     "code": "POP-FIN-005",
-    "version": "v2.5",
-    "homologatedBy": "Auditoria e Compliance",
-    "timeWindow": "15:00 - 16:30",
-    "title": "Conciliação Bancária de Saídas, Quitação de Guias & Arquivo de Comprovantes",
-    "deliverable": "Extratos bancários 100% conciliados com diferença zero entre extratos e Conta Azul, comprovantes indexados no Drive",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Executiva / CEO",
+    "timeWindow": "14:30 - 15:00",
+    "title": "Rito com o CEO: Despacho Financeiro da Tarde & Liberação de Pagamentos",
+    "deliverable": "Aprovação em lote no aplicativo do banco / Conta Azul pelo CEO após validação de saldo bancário real e faturamento",
     "frequency": "daily",
     "orderIndex": 5,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-005\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5\n\n---\n\n#### 1. Conciliação Definitiva de Saídas\n1. Realizar a liquidação dos pagamentos autorizados no internet banking.\n2. Fazer o download dos comprovantes em PDF e vincular linha por linha no Conta Azul.\n3. Arquivar comprovantes no repositório criptografado em nuvem: `Governança/Financeiro/[Ano]/[Mês]/[Dia]`.\n4. Checagem de saldo final: diferença entre ERP e Extrato Bancário deve ser exatamente R$ 0,00."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-005\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária (14:30)\n\n---\n\n#### 1. Rito Executivo da Tarde (14:30)\n1. Apresentar ao CEO a posição consolidada de saldos em conta corrente e aplicações.\n2. Apresentar o lote de pagamentos montado no Conta Azul de Bolso.\n3. Justificar despesas operacionais do dia (diárias, químicos, EPIs) e eventuais boletos avulsos.\n4. Obter a liberação digital expressa do CEO no aplicativo bancário/ERP."
   },
   {
     "id": "block-fin-06",
     "roleId": "role-fin-01",
     "code": "POP-FIN-006",
-    "version": "v2.5",
-    "homologatedBy": "CEO / Conselho Diretor",
-    "timeWindow": "16:30 - 17:30",
-    "title": "Controladoria Gerencial: DRE por Contrato & Resultado Operacional por Empresa",
-    "deliverable": "Relatório analítico de margem de contribuição contrato por contrato e resultado consolidado por CNPJ/empresa do grupo",
+    "version": "v3.0",
+    "homologatedBy": "Auditoria e Compliance",
+    "timeWindow": "15:00 - 16:30",
+    "title": "Conciliação Bancária de Saídas, Quitação no ERP & Arquivo de Comprovantes",
+    "deliverable": "Liquidação bancária confirmada, comprovantes anexados linha por linha no ERP/Drive e conferência de saldo final (diferença R$ 0,00)",
     "frequency": "daily",
     "orderIndex": 6,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-006\n**Cadeira:** Controladoria & Finanças | **Versão:** 2.5 | **Homologado por:** CEO\n\n---\n\n#### 1. Apuração de Resultados por Contrato & Empresa\n1. **Cálculo da Margem de Contribuição por Contrato:**\n   - `Receita Líquida do Contrato` (-)\n   - `Custo Direto de Folha (Salários + Encargos + Provisões)` (-)\n   - `Benefícios do Posto (VT + VR + Cesta Básica)` (-)\n   - `Insumos Químicos & Descartáveis Consumidos` (-)\n   - `Horas Extras & Diárias de Cobertura` (=)\n   - **Margem de Contribuição Líquida (%)**\n2. Apurar o DRE Operacional Consolidado de cada empresa do grupo e sinalizar contratos deficitários para renegociação."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-006\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Conciliação Definitiva de Saídas\n1. Realizar a liquidação dos pagamentos autorizados no internet banking.\n2. Fazer o download dos comprovantes em PDF e vincular linha por linha no Conta Azul.\n3. Arquivar comprovantes no repositório criptografado em nuvem: `Governança/Financeiro/[Ano]/[Mês]/[Dia]`.\n4. Checagem de saldo final: diferença entre ERP e Extrato Bancário deve ser exatamente R$ 0,00."
+  },
+  {
+    "id": "block-fin-07",
+    "roleId": "role-fin-01",
+    "code": "POP-FIN-007",
+    "version": "v3.0",
+    "homologatedBy": "Controladoria Geral",
+    "timeWindow": "16:30 - 17:30",
+    "title": "Auditoria de Cartões de Crédito Corporativos por Empresa do Grupo",
+    "deliverable": "Faturas e despesas de cartão de crédito de cada CNPJ conferidas com notas fiscais, sem despesas desordenadas ou não comprovadas",
+    "frequency": "weekly",
+    "dayOfWeek": 4,
+    "orderIndex": 7,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-007\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Semanal (Quintas)\n\n---\n\n#### 1. Auditoria de Cartão Corporativo por Empresa\n1. Baixar faturas em aberto e lançamentos em tempo real dos cartões corporativos de todas as empresas do grupo.\n2. Exigir comprovante fiscal (DANFE / Cupom NFC-e) para cada transação (combustível, pedágio, alimentação em campo, materiais de urgência).\n3. Lançar as despesas no centro de custo correto de cada contrato/empresa.\n4. Notificar portadores sobre lançamentos sem comprovante para bloqueio preventivo de limite."
+  },
+  {
+    "id": "block-fin-08",
+    "roleId": "role-fin-01",
+    "code": "POP-FIN-008",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Financeira / CEO",
+    "timeWindow": "10:00 - 12:00",
+    "title": "Liquidação Mensal de Encargos Sociais, Trabalhistas & Tributos (Dia 20)",
+    "deliverable": "Guias de FGTS Digital, DCTFWeb (INSS), IRRF retido e tributos municipais/federais quitadas no dia 20 com comprovantes emitidos",
+    "frequency": "monthly",
+    "dayOfMonth": 20,
+    "orderIndex": 8,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-008\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Mensal (Todo dia 20)\n\n---\n\n#### 1. Calendário Fiscal e Trabalhista (Dia 20)\n1. Receber do Departamento Pessoal e Contabilidade as guias oficiais de recolhimento:\n   - **FGTS Digital** (recolhimento unificado via Pix/código de barras).\n   - **DCTFWeb / INSS** (contribuição previdenciária e retenções de terceiros).\n   - **Tributos Municipais (ISS) e Federais (IRRF, PIS, COFINS, CSLL)**.\n2. Agendar os pagamentos no internet banking para liquidação no borderô da tarde das 14:30.\n3. Emitir e arquivar os comprovantes de quitação imediatamente, garantindo manutenção das Certidões Negativas de Débitos (CND)."
+  },
+  {
+    "id": "block-fin-09",
+    "roleId": "role-fin-01",
+    "code": "POP-FIN-009",
+    "version": "v3.0",
+    "homologatedBy": "CEO / Conselho Diretor",
+    "timeWindow": "14:00 - 16:30",
+    "title": "Apuração Mensal de Resultados: DRE por Contrato & Resultado por Empresa",
+    "deliverable": "Relatório analítico mensal de Margem de Contribuição contrato por contrato e DRE Operacional consolidado por empresa (após pagar folha, benefícios, tributos, insumos e encargos)",
+    "frequency": "monthly",
+    "dayOfMonth": 28,
+    "orderIndex": 9,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-FIN-009\n**Cadeira:** Controladoria & Finanças | **Versão:** 3.0 | **Periodicidade:** Mensal (Pós-Pagamento Total)\n\n---\n\n#### 1. Fechamento Mensal de Resultados\n*Esta rotina é realizada uma vez por mês, após a quitação integral de todas as obrigações: folha de pagamento, benefícios, tributos, insumos e encargos sociais.*\n\n1. **Cálculo da Margem de Contribuição Real por Contrato:**\n   - `Receita Líquida Faturada no Mês` (-)\n   - `Custo Direto de Folha de Pagamento` (-)\n   - `Benefícios Pagos no Posto (VT + VA/VR)` (-)\n   - `Encargos Sociais e Trabalhistas (FGTS/INSS)` (-)\n   - `Insumos Químicos & Materiais Consumidos` (-)\n   - `Horas Extras & Diárias de Cobertura Pagas` (=)\n   - **Margem de Contribuição Líquida Real (%)**\n2. Apurar o DRE Operacional Consolidado por CNPJ/empresa do grupo.\n3. Submeter contratos deficitários para o Comitê Executivo com o CEO para repactuação ou descontinuidade."
   },
   {
     "id": "block-rh-01",
     "roleId": "role-rh-02",
     "code": "POP-DP-001",
-    "version": "v2.5",
+    "version": "v3.0",
     "homologatedBy": "Compliance Trabalhista & CEO",
     "timeWindow": "08:00 - 10:30",
-    "title": "Fechamento Diário de Ponto Eletrônico, Horas Extras & Atestados",
-    "deliverable": "Espelhos de ponto auditados diariamente, batidas ímpares tratadas, atestados validados no CRM e mapa de contratos com estouro de horas extras",
+    "title": "Conferência Diária de Ponto Eletrônico, Batidas Ímpares & Atestados do Dia",
+    "deliverable": "Espelhos de ponto do dia anterior auditados, marcações ímpares tratadas, atestados médicos conferidos no CRM e faltas lançadas para a Mesa de Operações",
     "frequency": "daily",
     "orderIndex": 1,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-001\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 2.5\n\n---\n\n#### 1. Auditoria Diária de Ponto Eletrônico\n1. Puxar as marcações de ponto biométricas e por aplicativo de 100% dos postos de clientes.\n2. Tratar marcações ímpares, esquecimentos e justificar com base na escala de serviço.\n3. Auditar atestados médicos entregues: verificar registro no CRM, CID e autenticidade da assinatura digital.\n4. Emitir alerta à Coordenadoria de Operações sobre postos com acúmulo de horas extras ou dobras de turno."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-001\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Auditoria Diária de Ponto Eletrônico\n1. Descarregar as marcações de ponto biométricas e por aplicativo de 100% dos postos de clientes (dia anterior).\n2. Tratar batidas ímpares, esquecimentos e faltas, validando com a escala oficial de trabalho.\n3. Auditar atestados médicos entregues:\n   - Checar cadastro ativo do médico no portal do CFM/CRM.\n   - Conferir CID, carimbo, assinatura e dias de afastamento concedidos.\n4. Emitir alerta imediato à Mesa de Operações sobre faltas sem justificativa para evitar pagamento indevido."
   },
   {
     "id": "block-rh-02",
     "roleId": "role-rh-02",
     "code": "POP-DP-002",
-    "version": "v2.5",
-    "homologatedBy": "Diretoria de Operações",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Jurídica & CEO",
     "timeWindow": "10:30 - 12:00",
-    "title": "Gestão, Compra & Recarga de Benefícios (VT, VR, VA e Cesta Básica)",
-    "deliverable": "Pedidos de compra de VT e VR integrados às operadoras dentro dos prazos da convenção coletiva, com zero colaboradores sem saldo no 1º dia útil",
+    "title": "Gestão Diária de Prazos de Rescisões Trabalhistas (Art. 477 da CLT)",
+    "deliverable": "Quadro de controle de rescisões com contagem de prazo (máximo 10 dias corridos), exames demissionais agendados e guias rescisórias enviadas ao financeiro para zero multas",
     "frequency": "daily",
     "orderIndex": 2,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-002\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 2.5\n\n---\n\n#### 1. Pontualidade de Benefícios\n1. Apurar dias úteis de trabalho e faltas do período para cálculo exato de Vale-Transporte (VT) e Vale-Refeição (VR).\n2. Gerar pedido nas operadoras (Sodexo, Alelo, Flash, bilhetagem de transporte público).\n3. Encaminhar pedido de pagamento ao Financeiro para agendamento no borderô da tarde.\n4. Confirmar carga efetiva nos cartões antes do primeiro dia útil do mês."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-002\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Blindagem de Prazos Rescisórios (Zero Multas Art. 477 CLT)\n1. Monitorar diariamente comunicações de demissão (com aviso trabalhado ou indenizado).\n2. Calcular o prazo limite improrrogável: **exatamente 10 dias corridos** contados a partir do término do contrato.\n3. Agendar exame médico demissional no prazo legal.\n4. Elaborar TRCT, gerar guias de FGTS rescisório (chave de saque) e demonstrativo de médias salariais.\n5. Encaminhar borderô rescisório com 48h de antecedência ao Financeiro para agendamento no lote da tarde, garantindo comprovante dentro do prazo."
   },
   {
     "id": "block-rh-03",
     "roleId": "role-rh-02",
     "code": "POP-DP-003",
-    "version": "v2.5",
-    "homologatedBy": "Diretoria Executiva / CEO",
-    "timeWindow": "13:30 - 16:00",
-    "title": "Processamento da Folha de Pagamento, Encargos (FGTS/INSS) & Rescisões",
-    "deliverable": "Prévia da folha de pagamento calculada sem divergências, provisões de 13º e férias atualizadas e guias de encargos emitidas para o financeiro",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria de Operações",
+    "timeWindow": "15:30 - 17:30",
+    "title": "Auditoria Diária de Efetivo, Vagas Críticas & Interface com Mesa de Operações",
+    "deliverable": "Controle de SLA de vagas em aberto (máximo 72h para reposição definitiva), alinhamento de candidatos e controle do absenteísmo diário",
     "frequency": "daily",
     "orderIndex": 3,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-003\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 2.5\n\n---\n\n#### 1. Cálculo da Folha e Encargos\n1. Importar dados de ponto fechados (horas normais, DSR, adicional noturno, insalubridade e horas extras).\n2. Processar cálculo da folha no ERP de folha de pagamento.\n3. Gerar guias de FGTS Digital, DCTFWeb (INSS) e IRRF sobre a folha.\n4. Emitir espelho analítico de folha por centro de custo/contrato e enviar guias ao Financeiro para inclusão no borderô da tarde."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-003\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Gestão Diária de Pessoas & Vagas\n1. Cobrar diariamente do recrutamento e seleção o status de preenchimento dos postos em aberto (SLA máximo de 72h).\n2. Cruzar postos com maior índice de absenteísmo para entender as causas (escala, transporte ou liderança).\n3. Auditar contratos com acúmulo de horas extras e dobras, atuando para direcionar contratações imediatas."
   },
   {
     "id": "block-rh-04",
     "roleId": "role-rh-02",
     "code": "POP-DP-004",
-    "version": "v2.5",
-    "homologatedBy": "Compliance Trabalhista",
-    "timeWindow": "16:00 - 17:30",
-    "title": "Auditoria de Gente: Absenteísmo (ABS), Homologações & Passivo Trabalhista",
-    "deliverable": "Taxa de absenteísmo consolidada da empresa e auditoria de prazos de homologação rescisória para prevenção de multas (Art. 477 da CLT)",
-    "frequency": "daily",
+    "version": "v3.0",
+    "homologatedBy": "Compliance Trabalhista & CEO",
+    "timeWindow": "08:00 - 17:30",
+    "title": "Fechamento Oficial do Período de Ponto Eletrônico (Dia 25)",
+    "deliverable": "Espelhos de ponto fechados de 100% dos colaboradores (período 26 a 25) com totalização de horas normais, extras, noturnas, faltas e DSR",
+    "frequency": "monthly",
+    "dayOfMonth": 25,
     "orderIndex": 4,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-004\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 2.5\n\n---\n\n#### 1. Indicadores de Gestão de Gente\n1. Calcular taxa de Absenteísmo (ABS) = `(Horas Perdidas / Horas Programadas) * 100`.\n2. Auditar contratos de trabalho em período de experiência (45/90 dias) para parecer de efetivação com a Operação.\n3. Monitorar prazos de pagamento de rescisões (máximo 10 dias corridos) para blindar contra multas trabalhistas."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-004\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Mensal (Todo dia 25)\n\n---\n\n#### 1. Fechamento de Ponto (Período 26 a 25)\n*O fechamento de ponto ocorre exclusivamente no dia 25 de cada mês.*\n\n1. Travar as marcações do período (26 do mês anterior a 25 do mês corrente).\n2. Consolidar o cálculo de:\n   - Horas normais trabalhadas\n   - Horas extras (50%, 100% e feriados)\n   - Adicional noturno e hora reduzida noturna\n   - DSR e faltas injustificadas\n   - Atestados médicos homologados\n3. Emitir espelhos de ponto para assinatura dos colaboradores e encarregados."
   },
   {
-    "id": "block-ops-01",
-    "roleId": "role-ops-03",
-    "code": "POP-OPS-001",
-    "version": "v2.3",
-    "homologatedBy": "Diretoria Executiva",
-    "timeWindow": "08:00 - 09:00",
-    "title": "Distribuição da Matriz de Vistorias e Fiscais de Campo",
-    "deliverable": "Rotas de auditoria presencial despachadas aos fiscais com metas de qualidade",
-    "frequency": "daily",
-    "orderIndex": 1,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPS-001\n**Cadeira:** Coordenador de Operações | **Versão:** 2.3\n\nDespacho matinal das rotas de fiscalização com foco em contratos com ocorrências abertas e auditorias de apresentação e uso correto de EPIs."
+    "id": "block-rh-05",
+    "roleId": "role-rh-02",
+    "code": "POP-DP-005",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Executiva / CEO",
+    "timeWindow": "08:00 - 17:30",
+    "title": "Processamento e Fechamento da Folha de Pagamento Analítica (Pós Dia 25)",
+    "deliverable": "Folha de pagamento calculada por centro de custo, holerites emitidos e guias de FGTS Digital e DCTFWeb (INSS) geradas e enviadas ao Financeiro",
+    "frequency": "monthly",
+    "dayOfMonth": 28,
+    "orderIndex": 5,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-005\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Mensal (Dias 26 a 30)\n\n---\n\n#### 1. Cálculo da Folha Pós-Fechamento de Ponto\n*Esta rotina ocorre após o dia 25, quando o ponto já foi totalmente auditado.*\n\n1. Importar o arquivo de variáveis do ponto para o sistema de folha de pagamento.\n2. Processar a folha de pagamento discriminada por contrato/empresa.\n3. Emitir o espelho analítico da folha e conferir totais de salários, adicionais e descontos de benefícios.\n4. Transmitir o eSocial e gerar as guias de **FGTS Digital** e **DCTFWeb / INSS** para envio ao Financeiro."
   },
   {
-    "id": "block-ops-02",
-    "roleId": "role-ops-03",
-    "code": "POP-OPS-002",
-    "version": "v3.1",
-    "homologatedBy": "Comitê de Qualidade e Governança",
-    "timeWindow": "10:00 - 12:30",
-    "title": "Auditoria Presencial de Padrão Técnico e Checklist Fotográfico",
-    "deliverable": "Checklists de qualidade in loco em 3 clientes protocolados com fotos e visto do cliente",
-    "frequency": "daily",
-    "orderIndex": 2,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPS-002\n**Cadeira:** Coordenador de Operações | **Versão:** 3.1\n\nAuditoria física de áreas nobres: pisos tratados, sanitários higienizados, suprimento de dispensers e assinatura de aceite do síndico ou gestor de facilities."
+    "id": "block-rh-06",
+    "roleId": "role-rh-02",
+    "code": "POP-DP-006",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria de Operações",
+    "timeWindow": "09:00 - 12:00",
+    "title": "Compra & Recarga de Vale-Transporte (Último Dia Útil do Mês)",
+    "deliverable": "Pedidos de recarga de VT transmitidos às operadoras e faturas enviadas ao Financeiro para liberação no mesmo dia, com crédito garantido no 1º dia útil",
+    "frequency": "monthly",
+    "dayOfMonth": 999,
+    "orderIndex": 6,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-006\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Mensal (Último Dia Útil)\n\n---\n\n#### 1. Compra de Vale-Transporte (VT)\n*A compra de VT ocorre no último dia útil do mês para crédito no 1º dia útil seguinte.*\n\n1. Apurar os dias úteis de trabalho do mês subsequente para cada colaborador e escala.\n2. Descontar os dias de faltas ou férias ocorridas no período de ponto fechado.\n3. Gerar os pedidos de compra nas concessionárias de transporte público e operadoras de bilhetagem.\n4. Enviar a fatura de VT para o Financeiro liquidar no borderô da tarde das 14:30 do último dia útil."
   },
   {
-    "id": "block-ops-03",
-    "roleId": "role-ops-03",
-    "code": "POP-OPS-003",
-    "version": "v1.7",
-    "homologatedBy": "Diretoria de Suprimentos",
-    "timeWindow": "16:00 - 17:30",
-    "title": "Requisição e Racionamento Técnico de Insumos Químicos",
-    "deliverable": "Ordem de ressuprimento de materiais para postos críticos despachada dentro da cota contratual",
-    "frequency": "daily",
-    "orderIndex": 3,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPS-003\n**Cadeira:** Coordenador de Operações | **Versão:** 1.7\n\nAnálise técnica do consumo de produtos químicos diluíveis e insumos descartáveis, prevenindo desperdícios e garantindo abastecimento tempestivo."
+    "id": "block-rh-07",
+    "roleId": "role-rh-02",
+    "code": "POP-DP-007",
+    "version": "v3.0",
+    "homologatedBy": "Diretoria Financeira & CEO",
+    "timeWindow": "08:30 - 12:00",
+    "title": "Pagamento de Salários & Compra/Recarga de Vale-Alimentação (5º Dia Útil)",
+    "deliverable": "Arquivo CNAB de salários transmitido ao banco e recarga de cartões de Vale Alimentação/Refeição (VA/VR) creditados aos colaboradores",
+    "frequency": "monthly",
+    "dayOfMonth": 555,
+    "orderIndex": 7,
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-DP-007\n**Cadeira:** Departamento Pessoal & Folha (DP) | **Versão:** 3.0 | **Periodicidade:** Mensal (5º Dia Útil)\n\n---\n\n#### 1. Salários e Vale-Alimentação (5º Dia Útil)\n*No 5º dia útil são pagos os salários e liberados os benefícios de alimentação (VA/VR).*\n\n1. Gerar e validar o arquivo bancário CNAB de liquidação dos salários líquidos.\n2. Gerar pedido de crédito de Vale-Alimentação e Vale-Refeição nas operadoras (Sodexo, Alelo, Flash, etc.).\n3. Despachar com o Financeiro para liberação no lote das 14:30 com o CEO.\n4. Confirmar disponibilidade de saldo nas contas e cartões dos colaboradores."
   },
   {
-    "id": "block-head-01",
+    "id": "block-1792084792001",
     "roleId": "role-1792084692479",
     "code": "POP-OPE-001",
-    "version": "v1.1",
+    "version": "v3.0",
     "homologatedBy": "Diretoria Executiva / CEO",
     "timeWindow": "07:30 - 08:15",
-    "title": "Mesa de Operações: Fechamento de Escala & Garantia de 100% dos Postos Cobertos",
-    "deliverable": "Painel de postos 100% preenchido com diaristas de reserva alocados antes das 08h e zero clientes desassistidos",
+    "title": "Mesa de Operações: Índice de Cobertura 100%, Faltas & Diaristas Reservas",
+    "deliverable": "100% dos postos de clientes cobertos até as 08:00 com presenças confirmadas e diaristas volantes posicionados",
     "frequency": "daily",
     "orderIndex": 1,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-001\n**Cadeira:** Head de Operações | **Versão:** 1.1 | **Homologado por:** CEO\n\n---\n\n#### 1. Diretriz de Cobertura Crítica Matinal\nO Head de Operações inicia o dia na Mesa de Operações assegurando que nenhum posto de cliente (limpeza, portaria, recepção ou liderança de campo) fique desfalqueado por faltas não cobertas.\n\n#### 2. Protocolo de Checagem (07:30 às 08:15)\n1. Acessar o sistema de ponto e espelho de presença em tempo real.\n2. Identificar postos com colaboradores que não registraram entrada até 07:45.\n3. Acionar os Coordenadores de Campo e o RH/DP para despacho imediato da equipe de volantes e diaristas reservas.\n4. Validar que 100% das substituições estão a caminho com confirmação de previsão de chegada antes de liberar a equipe para visitas de campo."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-001\n**Cadeira:** Head de Operações | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Mesa de Operações Diária (07:30 - 08:15)\n1. Monitorar o painel de presença em tempo real de todos os postos de clientes.\n2. Identificar faltas não avisadas e remanejar a equipe volante ou acionar diaristas reservas credenciados.\n3. Garantir que até as 08:00 todos os postos críticos de portaria, limpeza e facilities estejam operando normalmente.\n4. Registrar o custo das diárias acionadas e encaminhar a planilha ao Financeiro."
   },
   {
-    "id": "block-head-02",
+    "id": "block-1792084792002",
     "roleId": "role-1792084692479",
     "code": "POP-OPE-002",
-    "version": "v1.1",
+    "version": "v3.0",
     "homologatedBy": "Conselho Diretor",
-    "timeWindow": "08:45 - 12:30",
-    "title": "Roteiro Presencial Porta Fora: Visitas Executivas aos Contratos & Síndicos",
-    "deliverable": "Relatório fotográfico de auditoria e termos de alinhamento com clientes/síndicos validados in loco",
+    "timeWindow": "08:30 - 12:30",
+    "title": "Porta Fora: Visitas Executivas a Síndicos, Contratantes & Auditorias In Loco",
+    "deliverable": "Visitas presenciais a contratos prioritários, relacionamento com tomadores de serviço e aplicação de checklists de governança",
     "frequency": "daily",
     "orderIndex": 2,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-002\n**Cadeira:** Head de Operações | **Versão:** 1.1\n\n---\n\n#### 1. Atuação Porta Fora de Alto Impacto\nCom a mesa de operações estabilizada, o Head atua fisicamente nos contratos corporativos, fortalecendo a relação de confiança com síndicos e gestores de facilities.\n\n#### 2. Roteiro da Visita Executiva\n1. Inspecionar apresentação pessoal, uniformes e postura dos colaboradores no posto.\n2. Vistoriar áreas nobres, DMLs, conservação de maquinários e padrão técnico de higienização.\n3. Reunião de alinhamento com o síndico ou tomador do serviço para coleta de percepção de valor (NPS).\n4. Registro de oportunidade de melhoria ou aditivos de escopo."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-002\n**Cadeira:** Head de Operações | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Atuação Executiva em Campo (Porta Fora)\n1. Realizar visitas de relacionamento com síndicos, gerentes prediais e gestores de compras.\n2. Acompanhar a percepção de valor dos serviços prestados.\n3. Identificar oportunidades de expansão de escopo (vitrificação, tratamento de piso, dedetização).\n4. Resolver atritos operacionais antes que virem notificações contratuais."
   },
   {
-    "id": "block-head-03",
+    "id": "block-1792084792003",
     "roleId": "role-1792084692479",
     "code": "POP-OPE-003",
-    "version": "v1.1",
+    "version": "v3.0",
     "homologatedBy": "Diretoria de Operações",
-    "timeWindow": "13:30 - 15:30",
-    "title": "Auditoria de Qualidade Técnica, Resolução de Não Conformidades e Blindagem",
-    "deliverable": "Planos de ação corretivos em 48h para eliminar reclamações de clientes e prevenção de glosas",
+    "timeWindow": "15:30 - 17:30",
+    "title": "Gestão Diária de Vagas em Aberto, SLA de Reposição & Absenteísmo",
+    "deliverable": "Painel diário de vagas críticas, cobrança do SLA de 72h junto ao DP/RH e auditoria de contratos com horas extras forçadas",
     "frequency": "daily",
     "orderIndex": 3,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-003\n**Cadeira:** Head de Operações | **Versão:** 1.1\n\nIntervenção tempestiva em contratos com apontamento de falha ou reclamação, instaurando plano de ação corretivo de 48h junto aos Coordenadores de Campo para estancar reatividade operacional."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-003\n**Cadeira:** Head de Operações | **Versão:** 3.0 | **Periodicidade:** Diária\n\n---\n\n#### 1. Gestão de Pessoas & Eficiência Operacional\n1. Cobrar do DP/RH o cumprimento do SLA de contratação para postos vagos (máximo 72h para reposição definitiva).\n2. Cruzar postos com absenteísmo crônico e propor rotação de equipe.\n3. Auditar despesas geradas por dobras e horas extras decorrentes de falta de pessoal."
   },
   {
-    "id": "block-head-04",
+    "id": "block-1792084792004",
     "roleId": "role-1792084692479",
     "code": "POP-OPE-004",
-    "version": "v1.1",
-    "homologatedBy": "Controladoria & Diretoria Executiva",
-    "timeWindow": "16:00 - 17:30",
-    "title": "Auditoria de Gente & DRE: Gestão de Vagas Abertas, ABS, Turnover e Horas Extras",
-    "deliverable": "Painel de vagas críticas cobradas do RH, análise de absenteísmo por contrato e auditoria do custo de horas extras",
-    "frequency": "daily",
+    "version": "v3.0",
+    "homologatedBy": "CEO / Diretoria",
+    "timeWindow": "14:00 - 16:30",
+    "title": "Gestão Semanal de Visitas & Relatório de Entrega (Checklist Fácil)",
+    "deliverable": "Consolidado semanal de auditorias fotográficas e checklists realizados via ferramenta Checklist Fácil, com índices de conformidade por posto enviados à Diretoria",
+    "frequency": "weekly",
+    "dayOfWeek": 5,
     "orderIndex": 4,
-    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-004\n**Cadeira:** Head de Operações | **Versão:** 1.1\n\n---\n\n#### 1. Gestão dos Indicadores de Pessoas & Eficiência\n1. **Gestão de Vagas em Aberto:** Cobrar do RH o cumprimento do SLA de contratação para postos em aberto (máximo 72h para reposição definitiva).\n2. **Absenteísmo (ABS):** Cruzar os postos com maior taxa de faltas e atestados médicos para entender causas operacionais.\n3. **Turnover:** Analisar contratos com alta rotatividade (relação encarregado x colaborador, perfil da escala).\n4. **Horas Extras de Cobertura:** Auditar se a falta de candidatos está forçando dobras e onerando o DRE operacional."
+    "sopMarkdown": "### Procedimento Operacional Padrão • POP-OPE-004\n**Cadeira:** Head de Operações | **Versão:** 3.0 | **Periodicidade:** Semanal (Sextas)\n\n---\n\n#### 1. Relatório Semanal de Entrega (Checklist Fácil)\n1. Extrair os relatórios de vistorias executadas pelos supervisores e coordenadores na ferramenta **Checklist Fácil**.\n2. Auditar evidências fotográficas de limpeza de hall, garagens, sanitários, vidros e maquinários.\n3. Consolidar o percentual médio de conformidade técnica de cada contrato.\n4. Apresentar o dossiê executivo de qualidade ao CEO no Comitê de Operações da sexta-feira."
   }
 ];
 
@@ -267,13 +314,7 @@ export const INITIAL_RITUALS: DailyRitual[] = [
     "timeSlot": "14:30",
     "title": "Despacho Financeiro da Tarde & Liberação de Pagamentos (com o CEO)",
     "durationMinutes": 25,
-    "agendaItems": [
-      "Apresentar lote de pagamentos do dia montado e auditado (títulos validados com NF e pedido de compra)",
-      "Conferir conciliação bancária das entradas da manhã (recebimentos de faturas de clientes)",
-      "Apresentar boletos DDA autorizados vs divergentes retidos",
-      "Apresentar posição de fluxo de caixa projetado para D+1 e provisão de folha/benefícios",
-      "Aprovação expressa do lote de pagamentos pelo CEO no app do banco / Conta Azul"
-    ],
+    "type": "operational_cadence",
     "frequency": "daily",
     "weekDays": [
       1,
@@ -282,101 +323,99 @@ export const INITIAL_RITUALS: DailyRitual[] = [
       4,
       5
     ],
-    "includeWeekends": false
+    "includeWeekends": false,
+    "agendaItems": [
+      "Apresentar lote de pagamentos do dia montado e auditado (títulos validados com NF e pedido de compra)",
+      "Conferir conciliação bancária das entradas da manhã (recebimentos de faturas de clientes)",
+      "Apresentar contas operacionais do dia: químicos recebidos, EPIs e diárias de diaristas da Operação",
+      "Apresentar posição de fluxo de caixa projetado para D+1 e provisão de folha/benefícios",
+      "Aprovação expressa do lote de pagamentos pelo CEO no app do banco / Conta Azul"
+    ]
   },
   {
     "id": "ritual-fin-02",
     "roleId": "role-fin-01",
     "code": "RIT-FIN-02",
-    "timeSlot": "15:30",
-    "title": "Comitê de Controladoria: Análise de Resultados por Contratos & Resultado Operacional por Empresa",
-    "durationMinutes": 35,
-    "agendaItems": [
-      "Apresentar DRE Gerencial consolidado por empresa/CNPJ do grupo",
-      "Apresentar DRE analítico por contrato (Margem de Contribuição por posto: Faturamento (-) Mão de Obra (-) Insumos (-) HE)",
-      "Auditar faturamento mensal emitido vs medido, retenções tributárias e notas em contestação",
-      "Analisar mapa de inadimplência (Contas a Receber D+1, D+5, D+15) e conciliação bancária pendente",
-      "Pactuar planos de renegociação, substituição de insumos ou reequilíbrio econômico-financeiro para contratos deficitários"
-    ],
+    "timeSlot": "16:00",
+    "title": "Auditoria Semanal de Cartões de Crédito Corporativos por Empresa do Grupo",
+    "durationMinutes": 30,
+    "type": "operational_cadence",
     "frequency": "weekly",
     "weekDays": [
-      5
+      4
     ],
-    "includeWeekends": false
+    "includeWeekends": false,
+    "agendaItems": [
+      "Apresentar faturas e lançamentos dos cartões corporativos de cada CNPJ do grupo",
+      "Conferir notas fiscais e comprovantes de combustível, viagens e despesas de campo",
+      "Identificar lançamentos sem comprovação fiscal e bloquear cartões em inconformidade",
+      "Alocar despesas no centro de custo correto de cada empresa"
+    ]
+  },
+  {
+    "id": "ritual-fin-03",
+    "roleId": "role-fin-01",
+    "code": "RIT-FIN-03",
+    "timeSlot": "15:30",
+    "title": "Comitê Mensal de Controladoria: Apuração de Resultados por Contrato & Empresa",
+    "durationMinutes": 40,
+    "type": "operational_cadence",
+    "frequency": "monthly",
+    "monthDay": 28,
+    "agendaItems": [
+      "Apresentar DRE Gerencial consolidado por empresa/CNPJ do grupo (após pagar folha, benefícios, materiais e tributos)",
+      "Apresentar DRE analítico por contrato (Margem de Contribuição real: Faturamento (-) Folha (-) Benefícios (-) Insumos (-) HE)",
+      "Auditar faturamento mensal emitido vs medido e glosas aplicadas pelos clientes",
+      "Pactuar planos de renegociação de preço ou substituição de equipe para contratos deficitários",
+      "Deliberar distribuição de resultados e plano de investimentos com o CEO"
+    ]
   },
   {
     "id": "ritual-rh-01",
     "roleId": "role-rh-02",
     "code": "RIT-DP-01",
     "timeSlot": "15:00",
-    "title": "Despacho Executivo de DP & Folha com o CEO: Ponto, Benefícios e Encargos",
+    "title": "Despacho Semanal de DP & Pessoal com o CEO: Ponto, Rescisões e Vagas",
     "durationMinutes": 30,
-    "agendaItems": [
-      "Apresentar fechamento dos espelhos de ponto eletrônico e mapa de horas extras por contrato",
-      "Auditar atestados médicos recebidos (validação de CID/CRM) e planos para redução do absenteísmo",
-      "Conferir cronograma de compra e recarga de benefícios (VT, VR, VA, cesta básica) - garantia de crédito no 1º dia útil",
-      "Apresentar prévia da folha de pagamento consolidada por empresa do grupo",
-      "Validar guias de encargos sociais e fiscais trabalhistas (FGTS Digital, DCTFWeb/INSS)"
-    ],
+    "type": "operational_cadence",
     "frequency": "weekly",
     "weekDays": [
       2
     ],
-    "includeWeekends": false
+    "includeWeekends": false,
+    "agendaItems": [
+      "Apresentar fechamento dos espelhos de ponto eletrônico e mapa de horas extras da semana por contrato",
+      "Auditar quadro de rescisões trabalhistas em andamento: cumprimento do prazo de 10 dias da CLT e agendamento de exames demissionais",
+      "Auditar atestados médicos recebidos (validação de CRM) e plano de contenção de faltas",
+      "Acompanhar SLA de reposição de vagas em aberto (meta 72h) com a Mesa de Operações",
+      "Alinhar calendário do mês: previsão de fechamento de ponto dia 25, compra de VT e crédito de salários/VA no 5º dia útil"
+    ]
   },
   {
-    "id": "ritual-ops-01",
-    "roleId": "role-ops-03",
-    "code": "RIT-OPS-01",
-    "timeSlot": "16:00",
-    "title": "Alinhamento Operacional Semanal com Diretoria: Qualidade, SLAs e Glosas",
+    "id": "ritual-rh-02",
+    "roleId": "role-rh-02",
+    "code": "RIT-DP-02",
+    "timeSlot": "15:30",
+    "title": "Comitê Mensal de Fechamento de Folha & Encargos com o CEO (Pós Dia 25)",
     "durationMinutes": 30,
+    "type": "operational_cadence",
+    "frequency": "monthly",
+    "monthDay": 28,
     "agendaItems": [
-      "Apresentar índice de conformidade dos checklists de qualidade e rotinas executadas nos postos",
-      "Avaliar chamados críticos de clientes, ocorrências de insatisfação e risco de glosa de faturamento",
-      "Auditar cronograma de manutenção e conservação de maquinários e equipamentos pesados de limpeza",
-      "Validar relatório de consumo de químicos e materiais por contrato"
-    ],
-    "frequency": "weekly",
-    "weekDays": [
-      4
-    ],
-    "includeWeekends": false
-  },
-  {
-    "id": "ritual-board-01",
-    "roleId": "role-fin-01",
-    "code": "CON-DIR-01",
-    "timeSlot": "14:00",
-    "title": "Sessão Deliberativa do Conselho de Administração & Diretoria",
-    "durationMinutes": 45,
-    "type": "board_council",
-    "agendaItems": [
-      "Homologação do Orçamento Extraordinário de Suprimentos & Químicos de Facilities",
-      "Aprovação do Novo Regulamento Interno de Escalas, Benefícios e Banco de Horas",
-      "Deliberação sobre Aporte de Capital para Aquisição de Lavadoras e Enceradeiras Industriais",
-      "Aprovação da Rescisão Contratual e Substituição de Fornecedor de Uniformes em Atraso"
-    ],
-    "frequency": "weekly",
-    "weekDays": [
-      4
-    ],
-    "includeWeekends": false
+      "Apresentar fechamento oficial do período de ponto (26 a 25) consolidado por empresa",
+      "Apresentar prévia analítica da folha de pagamento e mapa de provisões de 13º e férias",
+      "Conferir guias de FGTS Digital e DCTFWeb (INSS) geradas para pagamento no dia 20",
+      "Validar total de recarga do Vale-Transporte (último dia útil) e salários/VA (5º dia útil)"
+    ]
   },
   {
     "id": "ritual-head-01",
     "roleId": "role-1792084692479",
     "code": "RIT-HEAD-01",
     "timeSlot": "08:15",
-    "title": "Mesa de Despacho Operacional: Cobertura de Postos, ABS do Dia & Vagas Críticas",
+    "title": "Mesa de Despacho Operacional: Cobertura 100%, Faltas & Vagas Críticas",
     "durationMinutes": 20,
     "type": "operational_cadence",
-    "agendaItems": [
-      "Conferir fechamento da Mesa de Operações: 100% dos postos cobertos e diaristas reservas confirmados",
-      "Auditar taxa de absenteísmo (ABS) do dia e contratos com faltas reincidentes",
-      "Cobrar SLA do RH/DP sobre vagas em aberto, prazos de reposição e triagem de substitutos",
-      "Validar alinhamento com Coordenadores de Campo sobre prioridades operacionais antes da saída para a rua"
-    ],
     "frequency": "daily",
     "weekDays": [
       1,
@@ -385,49 +424,34 @@ export const INITIAL_RITUALS: DailyRitual[] = [
       4,
       5
     ],
-    "includeWeekends": false
+    "includeWeekends": false,
+    "agendaItems": [
+      "Conferir fechamento da Mesa de Operações: 100% dos postos cobertos e diaristas reservas confirmados",
+      "Auditar taxa de absenteísmo (ABS) do dia e contratos com faltas reincidentes",
+      "Cobrar SLA do RH/DP sobre vagas em aberto, prazos de reposição e triagem de substitutos",
+      "Validar alinhamento com Coordenadores de Campo sobre prioridades operacionais antes da saída para a rua"
+    ]
   },
   {
     "id": "ritual-head-02",
     "roleId": "role-1792084692479",
     "code": "RIT-HEAD-02",
-    "timeSlot": "11:00",
-    "title": "Alinhamento Executivo Presencial com Contratantes & Síndicos",
-    "durationMinutes": 30,
-    "type": "board_council",
-    "agendaItems": [
-      "Apresentar Relatório Executivo Mensal de SLA, assiduidade e auditoria de qualidade in loco",
-      "Coletar percepção de valor do tomador do serviço (NPS qualitativo e expectativas da gestão)",
-      "Tratar e pactuar planos de ação para demandas extraordinárias, eventos e adequação de escopo",
-      "Identificar oportunidades de expansão de serviços (aditivos contratuais, tratamento de piso, vitrificação)",
-      "Formalizar ata de alinhamento com visto e aceite do representante legal do cliente"
-    ],
-    "frequency": "weekly",
-    "weekDays": [
-      2,
-      4
-    ],
-    "includeWeekends": false
-  },
-  {
-    "id": "ritual-head-03",
-    "roleId": "role-1792084692479",
-    "code": "RIT-HEAD-03",
-    "timeSlot": "16:30",
-    "title": "Comitê Semanal de Retenção de Contratos, Turnover & DRE Operacional",
+    "timeSlot": "14:30",
+    "title": "Comitê Semanal de Operações: Relatório de Visitas (Checklist Fácil) & Retenção",
     "durationMinutes": 30,
     "type": "operational_cadence",
-    "agendaItems": [
-      "Apresentar consolidado de visitas executivas da semana e matriz de termômetro de satisfação dos clientes",
-      "Auditar índice semanal de Turnover por posto, causas raízes de desligamento e plano de retenção de talentos",
-      "Auditar DRE operacional: impacto financeiro de horas extras de cobertura e glosas aplicadas",
-      "Apresentar previsão de novos aditivos contratuais e cronograma de implantação de novos clientes"
-    ],
     "frequency": "weekly",
     "weekDays": [
       5
     ],
-    "includeWeekends": false
+    "includeWeekends": false,
+    "agendaItems": [
+      "Apresentar consolidado semanal de auditorias e checklists realizados na ferramenta Checklist Fácil",
+      "Apresentar notas de qualidade e índice de conformidade dos postos auditados in loco",
+      "Auditar chamados críticos e reclamações de clientes/síndicos da semana e medidas corretivas tomadas",
+      "Auditar custos da semana com diárias operacionais e horas extras de cobertura",
+      "Apresentar previsão de novos aditivos contratuais e cronograma de implantação de novos clientes"
+    ]
   }
 ];
 

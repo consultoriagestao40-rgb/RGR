@@ -18,11 +18,23 @@ import {
   Plus,
   ArrowRight,
   Calendar,
-  Coffee
+  Coffee,
+  CalendarCheck2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { RoutineBlockWithExecution, DailyRitual, OperationalRole } from '@/lib/types';
 import { evaluateDelay, calculateRolePerformance } from '@/lib/timeline-utils';
-import { isRitualScheduledForDate, isBeforeSystemStart, SYSTEM_START_DATE, isWeekend, parseLocalDate, getNextBusinessDay } from '@/lib/frequency';
+import { 
+  isRitualScheduledForDate, 
+  isBeforeSystemStart, 
+  SYSTEM_START_DATE, 
+  isWeekend, 
+  parseLocalDate, 
+  getNextBusinessDay,
+  isBlockScheduledForDate,
+  formatBlockFrequency 
+} from '@/lib/frequency';
 
 interface TimelineTabProps {
   role: OperationalRole | null;
@@ -85,9 +97,18 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   // Check weekend context
   const isCurrentWeekend = isWeekend(selectedDate);
   const [showWeekendConsultation, setShowWeekendConsultation] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'today_scheduled' | 'all_matrix'>('today_scheduled');
+  const [showCalendarDossier, setShowCalendarDossier] = React.useState(true);
 
-  // Calculate chair performance metrics (pass isCurrentWeekend to pause penalties)
-  const stats = calculateRolePerformance(blocks, isCurrentWeekend);
+  // Filter scheduled blocks for selected date
+  const scheduledBlocks = React.useMemo(() => {
+    return blocks.filter(b => isBlockScheduledForDate(b, selectedDate));
+  }, [blocks, selectedDate]);
+
+  const displayBlocks = viewMode === 'today_scheduled' ? scheduledBlocks : blocks;
+
+  // Calculate chair performance metrics based on scheduled blocks for this date
+  const stats = calculateRolePerformance(scheduledBlocks, isCurrentWeekend);
   const now = new Date();
 
   const getTierBadge = (tier: string) => {
@@ -311,6 +332,132 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
         </div>
       )}
 
+      {/* Dossier Executivo de Calendário & Prazos Críticos */}
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
+        <div 
+          onClick={() => setShowCalendarDossier(!showCalendarDossier)}
+          className="p-3.5 sm:p-4 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/70 transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-atlas-50 dark:bg-atlas-950/60 text-atlas-600 dark:text-atlas-400 border border-atlas-200 dark:border-atlas-800 flex items-center justify-center shrink-0">
+              <CalendarCheck2 className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Calendário Operacional de Fechamentos & Obrigações Mensais</span>
+                <span className="text-[10px] font-normal normal-case px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  Governança
+                </span>
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Prazos oficiais de ponto, folha, benefícios (VT/VA), encargos (dia 20), rescisões e apuração de resultados (DRE).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-slate-400">
+            <span className="text-[11px] font-medium hidden sm:inline">
+              {showCalendarDossier ? 'Ocultar Prazos' : 'Ver Prazos Oficiais'}
+            </span>
+            {showCalendarDossier ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </div>
+
+        {showCalendarDossier && (
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white dark:bg-[#111827]">
+            {/* 5º Dia Útil */}
+            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                5º Dia Útil do Mês
+              </div>
+              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                Salários & Vale-Alimentação (VA)
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                Pagamento líquido de salários e liberação simultânea dos créditos de alimentação/refeição (VA/VR).
+              </p>
+            </div>
+
+            {/* Dia 20 */}
+            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                Todo Dia 20
+              </div>
+              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                Encargos Sociais & Tributos
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                Liquidação de FGTS Digital, DCTFWeb (INSS) e tributos retidos no borderô da tarde das 14:30.
+              </p>
+            </div>
+
+            {/* Dia 25 e Dias 26 a 30 */}
+            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                Dias 25 a 30
+              </div>
+              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                Ponto (Dia 25) & Folha (Pós-25)
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                Fechamento oficial de ponto no dia 25 (período 26 a 25) e cálculo analítico da folha entre os dias 26 e 30.
+              </p>
+            </div>
+
+            {/* Fim do Mês & DRE */}
+            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                Fim do Mês / DRE Fechado
+              </div>
+              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                Compra VT & Apuração de DRE
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                Recarga de VT no último dia útil e apuração do DRE por contrato/empresa após pagar todas as contas do mês.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* View Mode Filter Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-3 shadow-xs">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setViewMode('today_scheduled')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              viewMode === 'today_scheduled'
+                ? 'bg-atlas-600 text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            Rotinas Agendadas para Hoje ({scheduledBlocks.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('all_matrix')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              viewMode === 'all_matrix'
+                ? 'bg-atlas-600 text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            Matriz Completa da Cadeira ({blocks.length} POPs)
+          </button>
+        </div>
+        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+          {viewMode === 'today_scheduled' ? (
+            <span>Rotinas obrigatórias para este dia. {blocks.length - scheduledBlocks.length > 0 && `(${blocks.length - scheduledBlocks.length} rotinas de outras datas ocultas hoje)`}</span>
+          ) : (
+            <span>Exibindo todos os POPs cadastrados (diários, semanais e mensais).</span>
+          )}
+        </div>
+      </div>
+
       {/* Cadence Timeline Container (Exibido em dias úteis ou no modo consulta de fim de semana) */}
       {(!isCurrentWeekend || showWeekendConsultation) && (
         <div className="space-y-3">
@@ -329,78 +476,93 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
             </div>
           )}
 
-          {blocks.map((block, index) => {
-            const status = block.execution?.status || 'pending';
-            const isDone = status === 'completed';
-            const isBlocked = status === 'blocked';
+          {displayBlocks.length === 0 ? (
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-slate-500 text-xs">
+              Nenhuma rotina operacional programada especificamente para esta data.
+            </div>
+          ) : (
+            displayBlocks.map((block, index) => {
+              const status = block.execution?.status || 'pending';
+              const isDone = status === 'completed';
+              const isBlocked = status === 'blocked';
 
-            // Date context
-            const todayStr = new Date().toISOString().split('T')[0];
-            const isToday = selectedDate === todayStr;
-            const isPast = selectedDate < todayStr;
-            const isFuture = selectedDate > todayStr;
+              // Date context
+              const todayStr = new Date().toISOString().split('T')[0];
+              const isToday = selectedDate === todayStr;
+              const isPast = selectedDate < todayStr;
+              const isFuture = selectedDate > todayStr;
 
-            // Live delay state: STRICTLY only for today in real-time, NEVER on weekends
-            const delayCheck = evaluateDelay(block.timeWindow, selectedDate, now);
-            const isCurrentlyOverdue = !isCurrentWeekend && isToday && !isDone && !isBlocked && delayCheck.isDelayed;
-            const isPastUncompleted = !isCurrentWeekend && isPast && !isDone && !isBlocked;
+              // Live delay state: STRICTLY only for today in real-time, NEVER on weekends
+              const delayCheck = evaluateDelay(block.timeWindow, selectedDate, now);
+              const isCurrentlyOverdue = !isCurrentWeekend && isToday && !isDone && !isBlocked && delayCheck.isDelayed;
+              const isPastUncompleted = !isCurrentWeekend && isPast && !isDone && !isBlocked;
 
-            // Check if this block matches an operational ritual or CEO dispatch
-            const matchedRitual = rituals.find(r => 
-              isRitualScheduledForDate(r, selectedDate) && (
-                block.title.toLowerCase().includes('rito') || 
-                block.title.toLowerCase().includes('despacho') ||
-                r.timeSlot === block.timeWindow.split(' - ')[0]
-              )
-            );
-            const isRitualBlock = Boolean(matchedRitual);
+              // Periodicity and schedule check
+              const freqInfo = formatBlockFrequency(block);
+              const isScheduledForDate = isBlockScheduledForDate(block, selectedDate);
 
-            // Left-border status accent class
-            const getBorderAccent = () => {
-              if (isDone && block.execution?.isDelayed) return 'border-l-amber-500';
-              if (isDone) return 'border-l-emerald-500';
-              if (isCurrentlyOverdue) return 'border-l-rose-500';
-              if (isPastUncompleted) return 'border-l-slate-400 dark:border-l-slate-600';
-              if (isBlocked) return 'border-l-rose-500';
-              return 'border-l-slate-300 dark:border-l-slate-700';
-            };
+              // Check if this block matches an operational ritual or CEO dispatch
+              const matchedRitual = rituals.find(r => 
+                isRitualScheduledForDate(r, selectedDate) && (
+                  block.title.toLowerCase().includes('rito') || 
+                  block.title.toLowerCase().includes('despacho') ||
+                  r.timeSlot === block.timeWindow.split(' - ')[0]
+                )
+              );
+              const isRitualBlock = Boolean(matchedRitual);
 
-            return (
-              <div
-                key={block.id}
-                className={`bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl border-l-[3.5px] ${getBorderAccent()} shadow-xs transition-all`}
-              >
-                {/* Card Top Row */}
-                <div className="p-4 sm:p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
-                    
-                    {/* Left: Time and Code */}
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
-                        {block.timeWindow}
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                        {block.code || `POP-00${index + 1}`}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {block.version || 'v1.0'}
-                      </span>
+              // Left-border status accent class
+              const getBorderAccent = () => {
+                if (isDone && block.execution?.isDelayed) return 'border-l-amber-500';
+                if (isDone) return 'border-l-emerald-500';
+                if (isCurrentlyOverdue) return 'border-l-rose-500';
+                if (isPastUncompleted) return 'border-l-slate-400 dark:border-l-slate-600';
+                if (isBlocked) return 'border-l-rose-500';
+                return 'border-l-slate-300 dark:border-l-slate-700';
+              };
 
-                      {isRitualBlock && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenAddAgendaModal?.(matchedRitual)}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
-                          title="Clique para ver ou adicionar pautas a este despacho com a Diretoria/CEO"
-                        >
-                          <Briefcase className="w-3 h-3 text-slate-500" />
-                          <span>Rito de Despacho</span>
-                          <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-0.5">
-                            {Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0}
+              return (
+                <div
+                  key={block.id}
+                  className={`bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl border-l-[3.5px] ${getBorderAccent()} shadow-xs transition-all`}
+                >
+                  {/* Card Top Row */}
+                  <div className="p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
+                      
+                      {/* Left: Time, Code, Frequency Badge */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                          {block.timeWindow}
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                          {block.code || `POP-00${index + 1}`}
+                        </span>
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${freqInfo.badgeColor}`}>
+                          {freqInfo.label}
+                        </span>
+
+                        {!isScheduledForDate && viewMode === 'all_matrix' && (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
+                            Não agendado para hoje
                           </span>
-                        </button>
-                      )}
-                    </div>
+                        )}
+
+                        {isRitualBlock && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenAddAgendaModal?.(matchedRitual)}
+                            className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Clique para ver ou adicionar pautas a este despacho com a Diretoria/CEO"
+                          >
+                            <Briefcase className="w-3 h-3 text-slate-500" />
+                            <span>Rito de Despacho</span>
+                            <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-0.5">
+                              {Array.isArray(matchedRitual?.agendaItems) ? matchedRitual.agendaItems.length : 0}
+                            </span>
+                          </button>
+                        )}
+                      </div>
 
                     {/* Right: Formal Status Tag with Delay Information */}
                     <div>
@@ -571,7 +733,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
 
               </div>
             );
-          })}
+          }))}
         </div>
       )}
 

@@ -11,6 +11,7 @@ import {
   Printer
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock } from '@/lib/types';
+import { formatBlockFrequency } from '@/lib/frequency';
 
 interface PlaybookTabProps {
   role: OperationalRole | null;
@@ -146,6 +147,9 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                   </span>
                   <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     {block.timeWindow}
+                  </span>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${formatBlockFrequency(block).badgeColor}`}>
+                    {formatBlockFrequency(block).label}
                   </span>
                   <div>
                     <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
