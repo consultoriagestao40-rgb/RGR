@@ -22,14 +22,15 @@ import {
   KeyRound,
   ChevronLeft,
   ChevronRight,
-  ListChecks
+  ListChecks,
+  Trophy
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 import { RgrLogo } from './RgrLogo';
 
 interface SidebarProps {
-  activeTab: 'timeline' | 'dispatch' | 'actions' | 'playbook' | 'minutes' | 'admin' | 'users';
-  onSelectTab: (tab: 'timeline' | 'dispatch' | 'actions' | 'playbook' | 'minutes' | 'admin' | 'users') => void;
+  activeTab: 'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users';
+  onSelectTab: (tab: 'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users') => void;
   roles: OperationalRole[];
   selectedRoleId: string;
   onSelectRole: (roleId: string) => void;
@@ -333,6 +334,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
                   activeTab === 'actions' ? 'bg-white/20 text-white' : 'bg-atlas-50 dark:bg-atlas-950 text-atlas-600 dark:text-atlas-400 font-bold'
                 }`}>5W2H</span>
+              )}
+            </button>
+
+            {/* Desempenho & Ranking por Cadeira */}
+            <button
+              onClick={() => onSelectTab('ranking')}
+              title={isCollapsed ? 'Desempenho & Ranking por Cadeira (Leaderboard RGR)' : undefined}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors relative cursor-pointer ${
+                activeTab === 'ranking'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Trophy className={`w-4 h-4 shrink-0 ${activeTab === 'ranking' ? 'text-white' : 'text-amber-500'}`} />
+                {!isCollapsed && <span>Desempenho & Ranking</span>}
+              </div>
+              {!isCollapsed && (
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'ranking' ? 'bg-white/20 text-white' : 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 font-bold'
+                }`}>Rank</span>
               )}
             </button>
 

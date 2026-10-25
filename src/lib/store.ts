@@ -647,6 +647,39 @@ export async function getRitualsForRole(roleId: string): Promise<DailyRitual[]> 
   return store.rituals.filter(r => r.roleId === roleId);
 }
 
+export async function getAllRituals(): Promise<DailyRitual[]> {
+  if (isDbConfigured) {
+    try {
+      const dbRituals = await prisma.dailyRitual.findMany({
+        orderBy: { timeSlot: 'asc' }
+      });
+      if (dbRituals.length > 0) {
+        return dbRituals.map(r => ({
+          id: r.id,
+          roleId: r.roleId,
+          code: r.code || undefined,
+          timeSlot: r.timeSlot,
+          title: r.title,
+          durationMinutes: r.durationMinutes,
+          type: (r.type as any) || 'operational_cadence',
+          frequency: (r.frequency as any) || 'daily',
+          weekDays: Array.isArray(r.weekDays) ? (r.weekDays as number[]) : undefined,
+          includeWeekends: r.includeWeekends || false,
+          monthDay: r.monthDay || undefined,
+          monthlyType: (r.monthlyType as any) || undefined,
+          agendaItems: Array.isArray(r.agendaItems) ? (r.agendaItems as string[]) : [],
+          createdAt: r.createdAt.toISOString()
+        }));
+      }
+    } catch (e) {
+      console.warn('Prisma getAllRituals error, fallback:', e);
+    }
+  }
+
+  const store = readStore();
+  return store.rituals;
+}
+
 export async function createDailyRitual(data: Omit<DailyRitual, 'id'>): Promise<DailyRitual> {
   if (isDbConfigured) {
     try {

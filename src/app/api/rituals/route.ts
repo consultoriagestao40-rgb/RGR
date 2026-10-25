@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getRitualsForRole, createDailyRitual } from '@/lib/store';
+import { getRitualsForRole, getAllRituals, createDailyRitual } from '@/lib/store';
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const roleId = searchParams.get('roleId');
 
-    if (!roleId) {
-      return NextResponse.json({ error: 'roleId is required' }, { status: 400 });
+    if (roleId) {
+      const rituals = await getRitualsForRole(roleId);
+      return NextResponse.json(rituals);
+    } else {
+      const all = await getAllRituals();
+      return NextResponse.json(all);
     }
-
-    const rituals = await getRitualsForRole(roleId);
-    return NextResponse.json(rituals);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch rituals' }, { status: 500 });
   }

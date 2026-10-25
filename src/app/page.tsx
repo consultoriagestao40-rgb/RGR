@@ -10,6 +10,7 @@ import { MinutesTab } from '@/components/MinutesTab';
 import { AdminTab } from '@/components/AdminTab';
 import { UsersManagementSection } from '@/components/UsersManagementSection';
 import { ActionsCentralTab } from '@/components/ActionsCentralTab';
+import { PerformanceRankingTab } from '@/components/PerformanceRankingTab';
 import { MeetingAiModal } from '@/components/MeetingAiModal';
 import { SopDrawer } from '@/components/SopDrawer';
 import { ObservationModal } from '@/components/ObservationModal';
@@ -19,7 +20,7 @@ import { DelayJustificationModal } from '@/components/DelayJustificationModal';
 import { AddAgendaModal } from '@/components/AddAgendaModal';
 import { LoginScreen } from '@/components/LoginScreen';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
-import { OperationalRole, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
+import { OperationalRole, RoutineBlock, RoutineBlockWithExecution, DailyRitual, ExecutionStatus, SystemUser } from '@/lib/types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
 import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
@@ -49,7 +50,10 @@ export default function HomePage() {
     return INITIAL_RITUALS.filter(r => r.roleId === 'role-fin-01');
   });
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'actions' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [allBlocks, setAllBlocks] = useState<RoutineBlock[]>(INITIAL_BLOCKS);
+  const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
+
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -186,10 +190,25 @@ export default function HomePage() {
     }
   }, []);
 
+  const loadCompanyWideData = useCallback(async () => {
+    try {
+      const [bRes, rRes] = await Promise.all([
+        fetch('/api/blocks'),
+        fetch('/api/rituals')
+      ]);
+      const [bData, rData] = await Promise.all([bRes.json(), rRes.json()]);
+      if (Array.isArray(bData) && bData.length > 0) setAllBlocks(bData);
+      if (Array.isArray(rData) && rData.length > 0) setAllRituals(rData);
+    } catch (err) {
+      console.error('Error fetching company-wide blocks/rituals:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadRoles();
     loadUsers();
-  }, [loadRoles, loadUsers]);
+    loadCompanyWideData();
+  }, [loadRoles, loadUsers, loadCompanyWideData]);
 
   useEffect(() => {
     if (selectedRoleId) {
@@ -566,6 +585,24 @@ export default function HomePage() {
               currentRole={selectedRole}
               onOpenMeetingAiModal={() => setIsMeetingAiModalOpen(true)}
               onSelectRole={setSelectedRoleId}
+            />
+          )}
+
+          {activeTab === 'ranking' && (
+            <PerformanceRankingTab
+              roles={roles}
+              blocks={allBlocks}
+              rituals={allRituals}
+              executions={[]}
+              selectedDate={selectedDate}
+              users={users}
+              onSelectRole={setSelectedRoleId}
+              onGoToTimeline={(roleId) => {
+                if (roleId) setSelectedRoleId(roleId);
+                setActiveTab('timeline');
+              }}
+              onGoToDispatch={() => setActiveTab('dispatch')}
+              onGoToActions={() => setActiveTab('actions')}
             />
           )}
 

@@ -159,3 +159,117 @@ export interface GovernanceAction {
   updatedAt?: string;
 }
 
+// =========================================================================
+// DESEMPENHO & RANKING POR CADEIRA (LEADERBOARD & GOVERNANÇA)
+// =========================================================================
+
+export interface RoleLeaderboardItem {
+  roleId: string;
+  roleCode: string;
+  roleTitle: string;
+  department: string;
+  assigneeName: string;
+  avatarColor?: string;
+  rank: number;
+  previousRank?: number;
+  ritualsScheduled: number;
+  ritualsCompleted: number;
+  ritualsRate: number; // %
+  blocksScheduled: number;
+  blocksCompleted: number;
+  blocksOnTime: number;
+  blocksDelayed: number;
+  blocksRate: number; // %
+  executionRate: number; // % Cumprimento Global ponderado
+  punctualityRate: number; // % Pontualidade (sem atraso)
+  governanceScore: number; // 0 - 100
+  tier: 'EXCELLENT' | 'STABLE' | 'ATTENTION' | 'CRITICAL';
+  trend: 'up' | 'down' | 'stable';
+  trendDelta: number; // Variação % recente
+}
+
+export interface DayPerformanceItem {
+  dayName: string; // 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'
+  dayShort: string; // 'SEG', 'TER', 'QUA', 'QUI', 'SEX'
+  date: string; // YYYY-MM-DD
+  dateFormatted: string; // DD/MM/AAAA
+  ritualsScheduled: number;
+  ritualsCompleted: number;
+  blocksScheduled: number;
+  blocksCompleted: number;
+  executionRate: number; // %
+  punctualityRate: number; // %
+}
+
+export interface RoleWeeklyBreakdown {
+  roleId: string;
+  roleCode: string;
+  roleTitle: string;
+  rate: number;
+  daysRate: number[]; // [seg, ter, qua, qui, sex]
+}
+
+export interface WeeklyPerformanceData {
+  weekLabel: string; // "Semana Atual (20/10 a 24/10)"
+  days: DayPerformanceItem[];
+  averageRate: number;
+  roleBreakdown: RoleWeeklyBreakdown[];
+}
+
+export interface MonthlyMilestone {
+  id: string;
+  title: string;
+  cadenceDescription: string; // Ex: "Todo dia 25", "5º dia útil", "Último dia útil", "Dia 20"
+  roleCode: string;
+  roleTitle: string;
+  status: 'completed' | 'in_progress' | 'pending';
+  completionRate: number;
+  targetDateStr: string;
+  targetDateFormatted: string;
+}
+
+export interface MonthlyPerformanceData {
+  selectedMonth: string; // "2026-10"
+  monthLabel: string; // "Outubro de 2026"
+  totalRituals: number;
+  completedRituals: number;
+  totalDeliverables: number;
+  completedDeliverables: number;
+  overallCompliance: number;
+  milestones: MonthlyMilestone[];
+  roleRankings: RoleLeaderboardItem[];
+}
+
+export interface AnnualMonthDataPoint {
+  monthKey: string; // "2025-11", "2025-12", ..., "2026-10"
+  monthLabel: string; // "Nov/25", "Dez/25", ..., "Out/26"
+  corporateAverage: number;
+  rolesData: { [roleId: string]: number }; // roleId -> % de execução
+  totalRitualsExecuted: number;
+  totalDeliverablesCompleted: number;
+}
+
+export interface AnnualEvolutionData {
+  periodLabel: string; // "Últimos 12 Meses (Novembro/2025 a Outubro/2026)"
+  months: AnnualMonthDataPoint[];
+  corporateAnnualAverage: number;
+  bestPerformingRole: {
+    roleId: string;
+    roleCode: string;
+    roleTitle: string;
+    averageRate: number;
+  };
+  mostImprovedRole: {
+    roleId: string;
+    roleCode: string;
+    roleTitle: string;
+    growthDelta: number;
+  };
+  mostPunctualRole: {
+    roleId: string;
+    roleCode: string;
+    roleTitle: string;
+    punctualityRate: number;
+  };
+}
+
