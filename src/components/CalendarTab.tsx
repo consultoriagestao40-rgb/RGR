@@ -558,80 +558,85 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. INTERACTIVE CHAIRS PILL STRIP & SEARCH TOOLBAR */}
+      {/* 2. FILTERS & SEARCH TOOLBAR (Lista Suspensa de Cadeiras & Filtros) */}
       {/* ========================================================================= */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
         
-        {/* Interactive Chairs Carousel */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-thin">
-          <button
-            type="button"
-            onClick={() => setRoleFilter('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-              roleFilter === 'all'
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs scale-[1.02]'
-                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Todas as Cadeiras ({roles.length})</span>
-          </button>
-
-          {roles.map(r => {
-            const colors = getRoleColor(r.id);
-            const isSelected = roleFilter === r.id;
-            return (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => setRoleFilter(isSelected ? 'all' : r.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border ${
-                  isSelected
-                    ? `${colors.bg} ${colors.text} border-current shadow-xs ring-2 ring-current/20 scale-[1.02]`
-                    : 'bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
-                }`}
-              >
-                <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
-                <span className="font-mono">{r.code || 'CAD'}:</span>
-                <span>{r.title.split(' ')[0]}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Live Search & Filter Selectors */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="relative flex-1 sm:w-56">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar rito ou POP..."
-              className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-atlas-500 transition-all"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+        {/* Filters Group: Dropdowns */}
+        <div className="flex flex-wrap items-center gap-2.5 text-xs">
+          
+          {/* Chair Dropdown (Lista Suspensa) */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <Building2 className="w-3.5 h-3.5 text-atlas-500 shrink-0" />
+            <span className="text-slate-500 font-medium shrink-0">Cadeira:</span>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
+            >
+              <option value="all" className="dark:bg-slate-900">
+                Todas as Cadeiras ({roles.length} Diretorias)
+              </option>
+              {roles.map(r => (
+                <option key={r.id} value={r.id} className="dark:bg-slate-900">
+                  {r.code || 'CAD'} • {r.title}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex items-center bg-slate-50 dark:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+          {/* Type Dropdown */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-slate-500 font-medium shrink-0">Tipo:</span>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
-              className="bg-transparent font-semibold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
             >
-              <option value="all" className="dark:bg-slate-900">Ritos & POPs</option>
-              <option value="rituals" className="dark:bg-slate-900">Apenas Ritos</option>
-              <option value="blocks" className="dark:bg-slate-900">Apenas POPs</option>
+              <option value="all" className="dark:bg-slate-900">Ritos & Entregáveis (POPs)</option>
+              <option value="rituals" className="dark:bg-slate-900">Apenas Ritos Executivos</option>
+              <option value="blocks" className="dark:bg-slate-900">Apenas Entregáveis (POPs)</option>
             </select>
           </div>
+
+          {/* Frequency Dropdown */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-slate-500 font-medium shrink-0">Frequência:</span>
+            <select
+              value={frequencyFilter}
+              onChange={(e) => setFrequencyFilter(e.target.value as any)}
+              className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
+            >
+              <option value="all" className="dark:bg-slate-900">Todas as Frequências</option>
+              <option value="daily" className="dark:bg-slate-900">Diários (Seg a Sex)</option>
+              <option value="weekly" className="dark:bg-slate-900">Semanais (Conselho / Comitês)</option>
+              <option value="monthly" className="dark:bg-slate-900">Mensais (Tributos, Ponto, VT, Folha, DRE)</option>
+            </select>
+          </div>
+
+        </div>
+
+        {/* Live Search Input */}
+        <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar rito ou POP..."
+            className="w-full pl-8 pr-7 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-atlas-500 transition-all shadow-2xs"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
       </div>
