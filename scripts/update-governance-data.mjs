@@ -570,17 +570,18 @@ const rituals = [
     roleId: "role-fin-01",
     code: "RIT-FIN-03",
     timeSlot: "15:30",
-    title: "Comitê Mensal de Controladoria: Apuração de Resultados por Contrato & Empresa",
+    title: "Comitê Mensal de Controladoria: Análise de Resultados (Previsto x Realizado por Contrato & Empresa)",
     durationMinutes: 40,
     type: "operational_cadence",
     frequency: "monthly",
     monthDay: 28,
     agendaItems: [
-      "Apresentar DRE Gerencial consolidado por empresa/CNPJ do grupo (após pagar folha, benefícios, materiais e tributos)",
-      "Apresentar DRE analítico por contrato (Margem de Contribuição real: Faturamento (-) Folha (-) Benefícios (-) Insumos (-) HE)",
-      "Auditar faturamento mensal emitido vs medido e glosas aplicadas pelos clientes",
-      "Pactuar planos de renegociação de preço ou substituição de equipe para contratos deficitários",
-      "Deliberar distribuição de resultados e plano de investimentos com o CEO"
+      "Apresentar DRE Gerencial Previsto x Realizado consolidado por empresa/CNPJ do grupo (Receita Líquida, Folha, Benefícios, Insumos, Tributos, Margem Líquida)",
+      "Apresentar DRE analítico Previsto x Realizado por contrato: Margem de Contribuição orçada na proposta comercial vs Margem líquida realizada pós-pagamentos",
+      "Auditar desvios de custos diretos: consumo de insumos químicos e descartáveis (orçado no contrato vs notas de compras lançadas)",
+      "Auditar desvios de cobertura operacional: despesas com diaristas reservas e horas extras de cobertura vs verba autorizada",
+      "Pactuar planos de ação corretiva para contratos com margem abaixo da meta (renegociação de preço, readequação de escopo ou glosa)",
+      "Deliberar distribuição de resultados e homologar ata executiva formal no Livro de Atas com visto do CEO"
     ]
   },
 
@@ -616,9 +617,10 @@ const rituals = [
     monthDay: 28,
     agendaItems: [
       "Apresentar fechamento oficial do período de ponto (26 a 25) consolidado por empresa",
-      "Apresentar prévia analítica da folha de pagamento e mapa de provisões de 13º e férias",
+      "Apresentar folha de pagamento analítica: total de salários e adicionais previstos vs realizados por centro de custo",
       "Conferir guias de FGTS Digital e DCTFWeb (INSS) geradas para pagamento no dia 20",
-      "Validar total de recarga do Vale-Transporte (último dia útil) e salários/VA (5º dia útil)"
+      "Validar totais de compra de Vale-Transporte (último dia útil) e créditos de salários/VA no 5º dia útil",
+      "Auditar absenteísmo mensal, turnover e saldo de rescisões (garantia de cumprimento do prazo de 10 dias da CLT)"
     ]
   },
 

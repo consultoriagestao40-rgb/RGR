@@ -70,11 +70,21 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
     'Mariana Costa (Relatora Financeira)'
   ]);
 
-  // Frequency & Calendar Filtering (Entende finais de semana e frequências específicas)
+  // Cadence & Frequency Filtering (Entende diários, semanais e agendas mensais de Previsto x Realizado)
   const isCurrentWeekend = isWeekend(selectedDate);
   const scheduledRituals = rituals.filter(r => isRitualScheduledForDate(r, selectedDate));
-  const [showAllRituals, setShowAllRituals] = useState<boolean>(false);
-  const effectiveRituals = showAllRituals ? rituals : scheduledRituals;
+  const monthlyRituals = rituals.filter(r => r.frequency === 'monthly');
+  const [cadenceFilter, setCadenceFilter] = useState<'today' | 'monthly' | 'all'>('today');
+
+  const effectiveRituals = React.useMemo(() => {
+    if (cadenceFilter === 'today') {
+      return scheduledRituals.length > 0 ? scheduledRituals : rituals;
+    }
+    if (cadenceFilter === 'monthly') {
+      return monthlyRituals.length > 0 ? monthlyRituals : rituals;
+    }
+    return rituals;
+  }, [cadenceFilter, scheduledRituals, monthlyRituals, rituals]);
 
   useEffect(() => {
     if (effectiveRituals.length > 0 && (!selectedRitualId || !effectiveRituals.some(r => r.id === selectedRitualId))) {
@@ -296,21 +306,47 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
         <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
           
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Filter Toggle Pill if there are rituals outside today */}
-            {rituals.length > 0 && (
+            {/* Filter Toggle Pills */}
+            <div className="flex items-center bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-0.5 rounded-lg text-xs">
               <button
-                onClick={() => setShowAllRituals(!showAllRituals)}
-                className={`px-2.5 py-1.5 rounded-lg flex items-center gap-1 text-xs font-medium border transition-colors cursor-pointer ${
-                  showAllRituals
-                    ? 'bg-atlas-600 text-white border-transparent shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 border-slate-200 dark:border-slate-800'
+                type="button"
+                onClick={() => setCadenceFilter('today')}
+                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+                  cadenceFilter === 'today'
+                    ? 'bg-atlas-600 text-white font-medium shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
-                title="Alternar entre ver apenas ritos agendados para a data ativa ou todos os ritos cadastrados"
+                title="Ritos programados para a data ativa"
               >
-                <Filter className="w-3.5 h-3.5" />
-                <span>{showAllRituals ? `Todos (${rituals.length})` : `Hoje (${scheduledRituals.length}/${rituals.length})`}</span>
+                Hoje ({scheduledRituals.length})
               </button>
-            )}
+              {monthlyRituals.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCadenceFilter('monthly')}
+                  className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+                    cadenceFilter === 'monthly'
+                      ? 'bg-atlas-600 text-white font-medium shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Agendas mensais de fechamento de resultados (Previsto x Realizado) e folha"
+                >
+                  Mensais • Previsto x Realizado ({monthlyRituals.length})
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setCadenceFilter('all')}
+                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+                  cadenceFilter === 'all'
+                    ? 'bg-atlas-600 text-white font-medium shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Todos os ritos cadastrados na cadeira"
+              >
+                Todos ({rituals.length})
+              </button>
+            </div>
 
             <div className="flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto max-w-full gap-1">
               {effectiveRituals.map(rit => {
@@ -328,7 +364,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                     }`}
                   >
                     {isCouncilRitual ? <Landmark className="w-3 h-3 text-amber-500" /> : <Clock className="w-3 h-3 text-slate-400" />}
-                    <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').slice(0, 16)}</span>
+                    <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 26)}</span>
                     <span className="text-[10px] px-1 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
                       {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
                     </span>
@@ -393,7 +429,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
               </button>
             )}
             <button
-              onClick={() => setShowAllRituals(true)}
+              onClick={() => setCadenceFilter('all')}
               className="px-3.5 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-colors cursor-pointer"
             >
               Visualizar Todos os Ritos ({rituals.length})
