@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
+      <div className={`flex-1 overflow-y-auto sidebar-scroll ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
         
         {/* Group 1: Rotina & Ritos */}
         <div>
