@@ -28,6 +28,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { GovernanceAction, ActionStatus, ActionPriority, OperationalRole, ActionNote } from '@/lib/types';
+import { formatDateBR } from '@/lib/frequency';
 
 interface ActionsCentralTabProps {
   roles: OperationalRole[];
@@ -676,7 +677,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                               isToday ? 'text-amber-600 dark:text-amber-400 font-bold' :
                               'text-slate-700 dark:text-slate-300'
                             }`}>
-                              {action.dueDate}
+                              {formatDateBR(action.dueDate)}
                             </span>
 
                             {isOverdue && (
@@ -833,7 +834,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
 
                         <div className="flex items-center gap-3 shrink-0">
                           <span className="text-xs font-mono font-medium text-slate-700 dark:text-slate-300">
-                            Prazo: {action.dueDate}
+                            Prazo: {formatDateBR(action.dueDate)}
                           </span>
                           <button
                             onClick={() => setActiveActionForNotes(action)}
@@ -886,7 +887,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           {action.title}
                         </span>
                         <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
-                          <span className="font-semibold text-rose-600 font-mono">Venceu em: {action.dueDate}</span>
+                          <span className="font-semibold text-rose-600 font-mono">Venceu em: {formatDateBR(action.dueDate)}</span>
                           <span>•</span>
                           <span>Responsável: {action.assigneeName}</span>
                           <span>•</span>
@@ -993,7 +994,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                         {action.roleCode || 'CAD'}
                       </span>
                       <span className="text-[10px] text-slate-400 font-mono">
-                        {action.dueDate}
+                        {formatDateBR(action.dueDate)}
                       </span>
                     </div>
 
@@ -1048,7 +1049,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                         {action.roleCode || 'CAD'}
                       </span>
                       <span className="text-[10px] text-blue-600 font-mono font-bold">
-                        {action.dueDate}
+                        {formatDateBR(action.dueDate)}
                       </span>
                     </div>
 
@@ -1147,7 +1148,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                   {activeActionForNotes.title}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Responsável: <strong>{activeActionForNotes.assigneeName}</strong> • Prazo: <strong>{activeActionForNotes.dueDate}</strong>
+                  Responsável: <strong>{activeActionForNotes.assigneeName}</strong> • Prazo: <strong>{formatDateBR(activeActionForNotes.dueDate)}</strong>
                 </p>
               </div>
 

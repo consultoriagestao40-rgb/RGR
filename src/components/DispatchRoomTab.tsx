@@ -24,7 +24,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { DailyRitual, OperationalRole, RoutineBlockWithExecution, VoteChoice } from '@/lib/types';
-import { isRitualScheduledForDate, isWeekend, formatRitualFrequency, getNextBusinessDay } from '@/lib/frequency';
+import { isRitualScheduledForDate, isWeekend, formatRitualFrequency, getNextBusinessDay, formatDateBR } from '@/lib/frequency';
 
 interface DispatchRoomTabProps {
   roles: OperationalRole[];
@@ -204,7 +204,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
   // Sync Board Votes to Deliberations Textarea
   const syncVotesToNotes = () => {
     if (!activeRitual) return;
-    let transcript = `=== EXTRATO DE DELIBERAÇÕES E VOTAÇÃO NOMINAL DO CONSELHO (${selectedDate}) ===\n\n`;
+    let transcript = `=== EXTRATO DE DELIBERAÇÕES E VOTAÇÃO NOMINAL DO CONSELHO (${formatDateBR(selectedDate)}) ===\n\n`;
     activeRitual.agendaItems.forEach((item, idx) => {
       const summary = getVotingSummary(idx);
       transcript += `PAUTA ${idx + 1}.0: "${item}"\n`;
@@ -273,132 +273,153 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
     <div className="space-y-6 max-w-6xl mx-auto">
       
       {/* Boardroom Session Banner */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs transition-colors space-y-4">
         
-        <div>
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border ${
-              isBoardCouncil
-                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/80 flex items-center gap-1'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-            }`}>
-              {isBoardCouncil && <Landmark className="w-3 h-3 text-amber-600 dark:text-amber-400" />}
-              {activeRitual?.code || 'RIT-01'}
-            </span>
+        {/* Row 1: Session Title & Badges on Left, AI Assistant & Timer on Right */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+          
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border ${
+                isBoardCouncil
+                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/80 flex items-center gap-1'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+              }`}>
+                {isBoardCouncil && <Landmark className="w-3 h-3 text-amber-600 dark:text-amber-400" />}
+                {activeRitual?.code || 'RIT-01'}
+              </span>
 
-            {/* Date & Weekend / Business Day Badge */}
-            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-slate-400" />
-              {selectedDate} {isCurrentWeekend ? '• Fim de Semana' : '• Dia Útil'}
-            </span>
+              {/* Date in Brazilian DD/MM/AAAA format */}
+              <span className="text-[10px] font-mono font-medium px-2.5 py-0.5 rounded-full border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-slate-400" />
+                <span>{formatDateBR(selectedDate)} {isCurrentWeekend ? '• Fim de Semana' : '• Dia Útil'}</span>
+              </span>
 
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-              {isBoardCouncil ? 'Sessão Deliberativa de Conselho' : 'Sessão de Cadência Operacional'}
-            </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                {isBoardCouncil ? 'Sessão Deliberativa de Conselho' : 'Sessão de Cadência Operacional'}
+              </span>
+            </div>
+
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {isBoardCouncil ? 'Mesa de Votação do Conselho' : 'Mesa de Despacho Operacional'}
+            </h1>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Cadeira Relatora: <span className="font-semibold text-slate-800 dark:text-slate-200">{currentRole?.title}</span> ({currentRole?.code})
+            </p>
           </div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <span>{isBoardCouncil ? 'Mesa de Votação do Conselho' : 'Mesa de Despacho Operacional'}</span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Cadeira Relatora: <span className="font-medium text-slate-800 dark:text-slate-200">{currentRole?.title}</span> ({currentRole?.code})
-          </p>
+
+          {/* Right Header Controls: AI Meeting Assistant + Timer */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {onOpenMeetingAiModal && (
+              <button
+                type="button"
+                onClick={onOpenMeetingAiModal}
+                className="px-3 py-2 rounded-lg bg-gradient-to-r from-atlas-600 to-emerald-600 hover:from-atlas-700 hover:to-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                title="Gravar reunião presencial ou colar transcrição para gerar relatório e tarefas com IA"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                <span>Agente de Reunião com IA</span>
+              </button>
+            )}
+
+            {/* Timekeeper */}
+            <div className="flex items-center gap-2 bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 px-3 py-1.5 rounded-lg shrink-0">
+              <span className="text-[11px] font-medium text-slate-400 font-mono">Tempo:</span>
+              <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white tracking-wider">
+                {formatTimer(timerSeconds)}
+              </span>
+              <button
+                onClick={() => setIsTimerRunning(!isTimerRunning)}
+                className="p-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors ml-1 cursor-pointer"
+                title={isTimerRunning ? 'Pausar' : 'Iniciar'}
+              >
+                {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              </button>
+              <button
+                onClick={() => {
+                  setIsTimerRunning(false);
+                  setTimerSeconds((activeRitual?.durationMinutes || 15) * 60);
+                }}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+                title="Resetar"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        {/* Ritual Switcher & Executive Timer */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
+        {/* Row 2: Full-Width Ritual Selector & Cadence Filter Toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
           
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Filter Toggle Pills */}
-            <div className="flex items-center bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-0.5 rounded-lg text-xs">
+          {/* Cadence Pills */}
+          <div className="flex items-center bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-0.5 rounded-lg text-xs shrink-0">
+            <button
+              type="button"
+              onClick={() => setCadenceFilter('today')}
+              className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
+                cadenceFilter === 'today'
+                  ? 'bg-atlas-600 text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Ritos programados para a data ativa"
+            >
+              Hoje ({scheduledRituals.length})
+            </button>
+            {monthlyRituals.length > 0 && (
               <button
                 type="button"
-                onClick={() => setCadenceFilter('today')}
-                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
-                  cadenceFilter === 'today'
+                onClick={() => setCadenceFilter('monthly')}
+                className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
+                  cadenceFilter === 'monthly'
                     ? 'bg-atlas-600 text-white font-medium shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
-                title="Ritos programados para a data ativa"
+                title="Agendas mensais de fechamento de resultados (Previsto x Realizado) e folha"
               >
-                Hoje ({scheduledRituals.length})
+                Mensais • Previsto x Realizado ({monthlyRituals.length})
               </button>
-              {monthlyRituals.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setCadenceFilter('monthly')}
-                  className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
-                    cadenceFilter === 'monthly'
-                      ? 'bg-atlas-600 text-white font-medium shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  title="Agendas mensais de fechamento de resultados (Previsto x Realizado) e folha"
-                >
-                  Mensais • Previsto x Realizado ({monthlyRituals.length})
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setCadenceFilter('all')}
-                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
-                  cadenceFilter === 'all'
-                    ? 'bg-atlas-600 text-white font-medium shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="Todos os ritos cadastrados na cadeira"
-              >
-                Todos ({rituals.length})
-              </button>
-            </div>
-
-            <div className="flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto max-w-full gap-1">
-              {effectiveRituals.map(rit => {
-                const isCouncilRitual = rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title?.toLowerCase().includes('conselho');
-                const isSelected = selectedRitualId === rit.id;
-                const freqText = formatRitualFrequency(rit);
-                return (
-                  <button
-                    key={rit.id}
-                    onClick={() => handleSelectRitual(rit)}
-                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                      isSelected
-                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {isCouncilRitual ? <Landmark className="w-3 h-3 text-amber-500" /> : <Clock className="w-3 h-3 text-slate-400" />}
-                    <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 26)}</span>
-                    <span className="text-[10px] px-1 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
-                      {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setCadenceFilter('all')}
+              className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
+                cadenceFilter === 'all'
+                  ? 'bg-atlas-600 text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Todos os ritos cadastrados na cadeira"
+            >
+              Todos ({rituals.length})
+            </button>
           </div>
 
-          {/* Timekeeper */}
-          <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 px-3 py-1.5 rounded-lg shrink-0">
-            <span className="text-[11px] font-medium text-slate-400 font-mono">Tempo:</span>
-            <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white tracking-wider">
-              {formatTimer(timerSeconds)}
-            </span>
-            <button
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="p-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors ml-1 cursor-pointer"
-              title={isTimerRunning ? 'Pausar' : 'Iniciar'}
-            >
-              {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-            </button>
-            <button
-              onClick={() => {
-                setIsTimerRunning(false);
-                setTimerSeconds((activeRitual?.durationMinutes || 15) * 60);
-              }}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
-              title="Resetar"
-            >
-              <RotateCcw className="w-3 h-3" />
-            </button>
+          {/* Ritual Switcher Buttons (Full Width Scrollable) */}
+          <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto gap-1.5 scrollbar-thin">
+            {effectiveRituals.map(rit => {
+              const isCouncilRitual = rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title?.toLowerCase().includes('conselho');
+              const isSelected = selectedRitualId === rit.id;
+              const freqText = formatRitualFrequency(rit);
+              return (
+                <button
+                  key={rit.id}
+                  onClick={() => handleSelectRitual(rit)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ${
+                    isSelected
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {isCouncilRitual ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
+                  <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 32)}</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
+                    {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
         </div>
@@ -417,8 +438,8 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
             {isCurrentWeekend
-              ? `A data selecionada (${selectedDate}) é um final de semana. Por protocolo de governança do RGR, ritos operacionais diários ocorrem exclusivamente em dias úteis (Segunda a Sexta).`
-              : `Nenhum rito operacional ou de conselho possui frequência configurada para ${selectedDate}.`}
+              ? `A data selecionada (${formatDateBR(selectedDate)}) é um final de semana. Por protocolo de governança do RGR, ritos operacionais diários ocorrem exclusivamente em dias úteis (Segunda a Sexta).`
+              : `Nenhum rito operacional ou de conselho possui frequência configurada para ${formatDateBR(selectedDate)}.`}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {isCurrentWeekend && onSelectDate && (
@@ -426,7 +447,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                 onClick={() => onSelectDate(getNextBusinessDay(selectedDate))}
                 className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <span>Avançar para Próximo Dia Útil ({getNextBusinessDay(selectedDate)})</span>
+                <span>Avançar para Próximo Dia Útil ({formatDateBR(getNextBusinessDay(selectedDate))})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}

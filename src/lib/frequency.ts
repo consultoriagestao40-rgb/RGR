@@ -49,6 +49,35 @@ export function getDayOfWeek(dateStr: string): number {
 }
 
 /**
+ * Converte qualquer data (YYYY-MM-DD ou ISO) para o formato brasileiro padrão: DD/MM/AAAA.
+ * Ex: '2026-10-25' -> '25/10/2026'
+ */
+export function formatDateBR(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  const trimmed = dateStr.trim();
+  // Se já estiver no padrão DD/MM/AAAA:
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) return trimmed;
+
+  const cleanDate = trimmed.includes('T') ? trimmed.split('T')[0] : trimmed.split(' ')[0];
+  const parts = cleanDate.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    const year = parts[0];
+    const month = parts[1].padStart(2, '0');
+    const day = parts[2].padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }
+
+  try {
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('pt-BR');
+    }
+  } catch (e) {}
+
+  return dateStr;
+}
+
+/**
  * Verifica se a data é o primeiro dia útil do mês.
  */
 export function isFirstBusinessDayOfMonth(date: Date): boolean {

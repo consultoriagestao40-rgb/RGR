@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, FileCheck2, ShieldCheck, Check } from 'lucide-react';
 import { DailyRitual, OperationalRole } from '@/lib/types';
+import { formatDateBR } from '@/lib/frequency';
 
 interface MinuteDraftModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
 
   useEffect(() => {
     if (role) {
-      setTitle(`Ata da Sessão Ordinária de Despacho - ${role.title} (${selectedDate})`);
+      setTitle(`Ata da Sessão Ordinária de Despacho - ${role.title} (${formatDateBR(selectedDate)})`);
       setDeliberations(`1. Posição de liquidez e borderô do dia validada sem divergências.\n2. Lote de pagamentos homologado expressamente pela Diretoria.\n3. Estabelecidas prioridades de conformidade para o dia seguinte.`);
     }
   }, [role, selectedDate]);
@@ -123,10 +124,10 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
                 Data da Sessão
               </label>
               <input
-                type="date"
-                value={selectedDate}
+                type="text"
+                value={formatDateBR(selectedDate)}
                 disabled
-                className="w-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono"
+                className="w-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono cursor-not-allowed"
               />
             </div>
             <div>

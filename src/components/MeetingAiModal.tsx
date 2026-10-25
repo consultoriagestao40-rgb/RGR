@@ -21,6 +21,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { OperationalRole, GovernanceAction, DailyRitual } from '@/lib/types';
+import { formatDateBR } from '@/lib/frequency';
 
 interface MeetingAiModalProps {
   isOpen: boolean;
@@ -368,10 +369,10 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
                   </label>
                   <div className="flex items-center gap-2">
                     <input
-                      type="date"
-                      value={selectedDate}
+                      type="text"
+                      value={formatDateBR(selectedDate)}
                       disabled
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 cursor-not-allowed"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 cursor-not-allowed font-mono"
                     />
                     <span className="text-[11px] text-slate-400 font-mono shrink-0">Hoje</span>
                   </div>

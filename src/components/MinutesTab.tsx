@@ -10,6 +10,7 @@ import {
   Building
 } from 'lucide-react';
 import { GovernanceMinute, OperationalRole } from '@/lib/types';
+import { formatDateBR } from '@/lib/frequency';
 
 interface MinutesTabProps {
   currentRole: OperationalRole | null;
@@ -114,7 +115,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-mono text-slate-500 dark:text-slate-400 font-medium">{min.date}</span>
+                    <span className="font-mono text-slate-500 dark:text-slate-400 font-medium">{formatDateBR(min.date)}</span>
                     <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       Assinada
@@ -165,7 +166,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-lg bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 text-xs">
                 <div>
                   <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Data da Sessão:</span>
-                  <span className="font-mono text-slate-900 dark:text-slate-200 font-medium">{selectedMinute.date}</span>
+                  <span className="font-mono text-slate-900 dark:text-slate-200 font-medium">{formatDateBR(selectedMinute.date)}</span>
                 </div>
                 <div>
                   <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Pautas Deliberadas:</span>

@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { DailyRitual, OperationalRole } from '@/lib/types';
+import { formatDateBR } from '@/lib/frequency';
 
 interface AddAgendaModalProps {
   isOpen: boolean;
@@ -262,7 +263,7 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
           <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-            Data da Sessão: <strong>{selectedDate}</strong> • Governança RGR
+            Data da Sessão: <strong>{formatDateBR(selectedDate)}</strong> • Governança RGR
           </span>
           <button
             type="button"

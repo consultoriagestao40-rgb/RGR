@@ -11,7 +11,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
-import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
+import { SYSTEM_START_DATE, isWeekend, formatDateBR } from '@/lib/frequency';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
@@ -122,8 +122,11 @@ export const Header: React.FC<HeaderProps> = ({
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          <div className="relative flex items-center gap-1.5 px-2.5 py-1">
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="font-mono text-xs font-semibold text-slate-900 dark:text-white tracking-wide">
+              {formatDateBR(selectedDate)}
+            </span>
             <input
               type="date"
               min={SYSTEM_START_DATE}
@@ -137,11 +140,13 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectDate(val);
                 }
               }}
-              className="bg-transparent text-xs font-medium text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              title="Clique para abrir o calendário e alterar a data"
             />
             <button
+              type="button"
               onClick={handleSetToday}
-              className="text-[10px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:underline ml-1 pl-1.5 border-l border-slate-200 dark:border-slate-800 cursor-pointer"
+              className="relative z-10 text-[10px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:underline ml-1 pl-1.5 border-l border-slate-200 dark:border-slate-800 cursor-pointer"
             >
               Hoje
             </button>
