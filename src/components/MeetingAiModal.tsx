@@ -46,7 +46,9 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
 }) => {
   const [mode, setMode] = useState<'record' | 'paste'>('record');
   const [isRecording, setIsRecording] = useState(false);
+  const isRecordingRef = useRef(false);
   const [transcriptText, setTranscriptText] = useState('');
+  const [interimText, setInterimText] = useState('');
   const [participantsText, setParticipantsText] = useState('Cristiano Silva (CEO)\nMarcos Oliveira (Head de Operações)\nLucas Ribeiro (DP)\nAna Beatriz (Controladoria)');
   const [meetingTitle, setMeetingTitle] = useState('');
   
@@ -55,6 +57,14 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
   const [speechSupported, setSpeechSupported] = useState(true);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const timerRef = useRef<any>(null);
+
+  // Audio level visualizer
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0); // 0 to 100
+  const [hasVoiceDetected, setHasVoiceDetected] = useState(false);
 
   // AI Output state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -80,7 +90,64 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
     }
   }, [activeRitual, currentRole]);
 
-  // Setup Web Speech API for real-time in-person recording
+  // Start real-time audio meter using Web Audio API
+  const startAudioMeter = async () => {
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) return;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+
+      const audioCtx = new AudioCtx();
+      audioContextRef.current = audioCtx;
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      analyserRef.current = analyser;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const updateMeter = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += dataArray[i];
+        }
+        const avg = sum / dataArray.length;
+        const normalized = Math.min(100, Math.round((avg / 128) * 100));
+        setAudioLevel(normalized);
+        if (normalized > 12) {
+          setHasVoiceDetected(true);
+        }
+        animFrameRef.current = requestAnimationFrame(updateMeter);
+      };
+      updateMeter();
+    } catch (err) {
+      console.warn('Audio meter init error (mic permission or unsupported):', err);
+    }
+  };
+
+  const stopAudioMeter = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+    setAudioLevel(0);
+  };
+
+  // Setup Web Speech API for real-time in-person recording with auto-restart keepalive
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -89,21 +156,44 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = 'pt-BR';
+        recognition.maxAlternatives = 1;
 
         recognition.onresult = (event: any) => {
-          let currentSessionText = '';
+          let interimStr = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-              setTranscriptText(prev => prev ? `${prev}\n${transcript}` : transcript);
+              setTranscriptText(prev => {
+                const cleaned = transcript.trim();
+                if (!cleaned) return prev;
+                return prev ? `${prev}\n${cleaned}` : cleaned;
+              });
             } else {
-              currentSessionText += transcript;
+              interimStr += transcript;
             }
           }
+          setInterimText(interimStr);
         };
 
         recognition.onerror = (event: any) => {
-          console.warn('Speech recognition event:', event.error);
+          console.warn('Speech recognition warning/error:', event.error);
+          if (event.error === 'not-allowed') {
+            alert('Acesso ao microfone negado pelo navegador. Por favor, autorize o microfone no ícone de cadeado na barra de endereços.');
+            isRecordingRef.current = false;
+            setIsRecording(false);
+            stopAudioMeter();
+          }
+        };
+
+        recognition.onend = () => {
+          // Keep-alive: if user didn't stop, restart immediately
+          if (isRecordingRef.current) {
+            try {
+              recognition.start();
+            } catch (err) {
+              // Might still be active
+            }
+          }
         };
 
         recognitionRef.current = recognition;
@@ -113,11 +203,13 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
     }
 
     return () => {
+      isRecordingRef.current = false;
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
         } catch (e) {}
       }
+      stopAudioMeter();
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
@@ -136,7 +228,7 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
     };
   }, [isRecording]);
 
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     if (!recognitionRef.current && !speechSupported) {
       alert('Seu navegador não suporta captura direta por voz. Utilize a aba "Digitar / Colar Transcrição".');
       setMode('paste');
@@ -144,17 +236,30 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
     }
 
     if (isRecording) {
+      isRecordingRef.current = false;
+      setIsRecording(false);
       try {
         recognitionRef.current.stop();
       } catch (e) {}
-      setIsRecording(false);
+      stopAudioMeter();
+
+      // Flush any pending interim text into transcript
+      if (interimText.trim()) {
+        setTranscriptText(prev => prev ? `${prev}\n${interimText.trim()}` : interimText.trim());
+        setInterimText('');
+      }
     } else {
       try {
-        recognitionRef.current.start();
+        isRecordingRef.current = true;
         setIsRecording(true);
+        setHasVoiceDetected(false);
+        recognitionRef.current.start();
+        await startAudioMeter();
       } catch (e) {
         console.error('Error starting speech recognition:', e);
+        isRecordingRef.current = false;
         setIsRecording(false);
+        stopAudioMeter();
       }
     }
   };
@@ -175,9 +280,16 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
   };
 
   const handleProcessWithAi = async () => {
-    if (!transcriptText || transcriptText.trim().length === 0) {
+    // Flush any pending interim text
+    const fullTranscript = (transcriptText + (interimText ? `\n${interimText.trim()}` : '')).trim();
+
+    if (!fullTranscript) {
       alert('Por favor, grave o áudio ou insira o texto da reunião para processar.');
       return;
+    }
+
+    if (isRecording) {
+      toggleRecording();
     }
 
     setIsProcessing(true);
@@ -187,7 +299,7 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transcript: transcriptText,
+          transcript: fullTranscript,
           participants,
           roleId: currentRole?.id || roles[0]?.id,
           meetingTitle,
@@ -250,6 +362,21 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
       const participants = participantsText.split('\n').map(p => p.trim()).filter(Boolean);
       let minuteId = '';
 
+      // Format actions into an executive 5W2H Markdown table so it's permanently recorded inside the Minute text
+      let actionsTableMarkdown = '';
+      if (actions.length > 0) {
+        actionsTableMarkdown = '\n\n### 📋 Plano de Ação Executivo Deliberado (Matriz 5W2H)\n' +
+          '| O Quê (Ação) | Quem (Responsável) | Quando (Prazo) | Prioridade | Tema / Rito |\n' +
+          '| :--- | :--- | :--- | :--- | :--- |\n' +
+          actions.map(act => {
+            const dateFormatted = act.dueDate ? (act.dueDate.includes('-') ? act.dueDate.split('-').reverse().join('/') : act.dueDate) : 'A definir';
+            const prioBadge = act.priority === 'urgent' ? '🔴 Urgente' : act.priority === 'high' ? '🟠 Alta' : act.priority === 'medium' ? '🟡 Média' : '🟢 Baixa';
+            return `| **${act.title.replace(/\|/g, '-')}** | ${act.roleTitle || act.assigneeName} | ${dateFormatted} | ${prioBadge} | ${act.category || 'Geral'} |`;
+          }).join('\n');
+      }
+
+      const fullDeliberationsText = `${summary}\n\n### Deliberações da Diretoria\n${deliberations}${actionsTableMarkdown}`;
+
       // 1. Salvar no Livro de Atas se marcado
       if (saveToMinuteBook) {
         const minuteRes = await fetch('/api/minutes', {
@@ -260,7 +387,7 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
             roleId: currentRole?.id || roles[0]?.id,
             date: selectedDate,
             title: meetingTitle,
-            deliberations: `${summary}\n\n### Deliberações da Diretoria\n${deliberations}`,
+            deliberations: fullDeliberationsText,
             agendaCheckedCount: actions.length,
             agendaTotalCount: actions.length,
             signedBy: 'Cristiano Silva (Diretoria Executiva / CEO)',
@@ -299,6 +426,7 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
         setSuccessSaved(false);
         setStep('input');
         setTranscriptText('');
+        setInterimText('');
       }, 1500);
 
     } catch (err) {
@@ -426,15 +554,15 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
                     
                     <div className="relative mb-4">
                       {isRecording && (
-                        <div className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-25" />
+                        <div className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-30" />
                       )}
                       <button
                         type="button"
                         onClick={toggleRecording}
                         className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-95 cursor-pointer ${
                           isRecording 
-                            ? 'bg-rose-600 hover:bg-rose-700' 
-                            : 'bg-atlas-600 hover:bg-atlas-700'
+                            ? 'bg-rose-600 hover:bg-rose-700 ring-4 ring-rose-200 dark:ring-rose-950' 
+                            : 'bg-atlas-600 hover:bg-atlas-700 ring-4 ring-atlas-100 dark:ring-atlas-950'
                         }`}
                       >
                         {isRecording ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
@@ -443,33 +571,87 @@ Cristiano Silva (CEO): Perfeito. Ana, da Controladoria: vi que tem uma nota com 
 
                     <div className="space-y-1">
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        {isRecording ? 'Capturando áudio da reunião presencial...' : 'Clique para Iniciar a Gravação'}
+                        {isRecording ? 'Gravando e Transcrevendo em Tempo Real...' : 'Clique para Iniciar a Gravação da Sala'}
                       </h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
                         {isRecording 
-                          ? `Tempo de gravação: ${formatDuration(recordingDuration)}. A IA está ouvindo e transcrevendo as falas.` 
-                          : 'Deixe o celular ou computador no centro da mesa da sala de reunião e clique no botão acima.'}
+                          ? 'A transcrição aparecerá abaixo à medida que você e a equipe falarem.' 
+                          : 'Posicione o dispositivo no centro da mesa da reunião e clique no microfone.'}
                       </p>
                     </div>
 
                     {isRecording && (
-                      <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-mono font-medium">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                        <span>GRAVANDO • {formatDuration(recordingDuration)}</span>
+                      <div className="mt-4 flex flex-col items-center gap-2">
+                        {/* Audio Meter Visualizer Bars */}
+                        <div className="flex items-center gap-1.5 h-6 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800">
+                          <Volume2 className={`w-3.5 h-3.5 ${audioLevel > 15 ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
+                          <div className="flex items-end gap-1 h-4">
+                            {[0.4, 0.7, 1.0, 0.8, 1.2, 0.6, 0.9, 0.5].map((factor, i) => {
+                              const barHeight = Math.max(3, Math.min(16, (audioLevel * factor) / 4));
+                              return (
+                                <span
+                                  key={i}
+                                  className={`w-1 rounded-full transition-all duration-75 ${
+                                    audioLevel > 12 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                                  }`}
+                                  style={{ height: `${barHeight}px` }}
+                                />
+                              );
+                            })}
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 ml-1">
+                            {audioLevel > 12 ? 'Captando Voz' : 'Aguardando Voz'}
+                          </span>
+                        </div>
+
+                        {/* Recording status badge */}
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-mono font-medium">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                          <span>GRAVANDO • {formatDuration(recordingDuration)}</span>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Realtime Live Text Preview */}
+                  {/* Realtime Live Speech Box */}
+                  {isRecording && interimText && (
+                    <div className="p-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 animate-in fade-in duration-150">
+                      <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                        <span>Ouvindo agora (ao vivo):</span>
+                      </div>
+                      <p className="text-xs text-slate-800 dark:text-slate-200 italic font-medium leading-relaxed">
+                        &ldquo;{interimText}&rdquo;
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Accumulated Transcript */}
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                      Transcrição Capturada em Tempo Real (ou edite abaixo):
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                        Transcrição Completa Acumulada:
+                      </label>
+                      {transcriptText && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('Deseja limpar a transcrição gravada?')) {
+                              setTranscriptText('');
+                              setInterimText('');
+                            }
+                          }}
+                          className="text-[11px] text-slate-400 hover:text-rose-500 transition-colors"
+                        >
+                          Limpar Texto
+                        </button>
+                      )}
+                    </div>
                     <textarea
                       value={transcriptText}
                       onChange={(e) => setTranscriptText(e.target.value)}
-                      rows={5}
-                      placeholder="As falas dos participantes aparecerão aqui automaticamente durante a gravação..."
+                      rows={6}
+                      placeholder="As falas transcritas da reunião aparecerão aqui automaticamente linha a linha..."
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400 font-sans leading-relaxed"
                     />
                   </div>

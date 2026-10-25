@@ -631,6 +631,7 @@ export default function HomePage() {
             <MinutesTab
               currentRole={selectedRole}
               onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
+              onGoToActions={() => setActiveTab('actions')}
             />
           )}
 

@@ -7,45 +7,62 @@ import {
   Printer, 
   ShieldCheck, 
   Search,
-  Building
+  Building,
+  ListChecks,
+  ArrowRight,
+  Clock,
+  User,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
-import { GovernanceMinute, OperationalRole } from '@/lib/types';
+import { GovernanceMinute, OperationalRole, GovernanceAction } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
 
 interface MinutesTabProps {
   currentRole: OperationalRole | null;
   onOpenMinuteModal: () => void;
+  onGoToActions?: () => void;
 }
 
 export const MinutesTab: React.FC<MinutesTabProps> = ({
   currentRole,
-  onOpenMinuteModal
+  onOpenMinuteModal,
+  onGoToActions
 }) => {
   const [minutes, setMinutes] = useState<GovernanceMinute[]>([]);
+  const [allActions, setAllActions] = useState<GovernanceAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMinute, setSelectedMinute] = useState<GovernanceMinute | null>(null);
 
-  const loadMinutes = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/minutes');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setMinutes(data);
-        if (data.length > 0 && !selectedMinute) {
-          setSelectedMinute(data[0]);
+      const [minRes, actRes] = await Promise.all([
+        fetch('/api/minutes'),
+        fetch('/api/actions')
+      ]);
+      const [minData, actData] = await Promise.all([minRes.json(), actRes.json()]);
+
+      if (Array.isArray(minData)) {
+        setMinutes(minData);
+        if (minData.length > 0 && !selectedMinute) {
+          setSelectedMinute(minData[0]);
         }
       }
+
+      if (Array.isArray(actData)) {
+        setAllActions(actData);
+      }
     } catch (err) {
-      console.error('Error fetching minutes:', err);
+      console.error('Error fetching minutes & actions:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadMinutes();
+    loadData();
   }, [currentRole]);
 
   const filtered = minutes.filter(m => 
@@ -203,6 +220,96 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
                   {selectedMinute.deliberations}
                 </div>
               </div>
+
+              {/* Linked 5W2H Actions inside Minute */}
+              {(() => {
+                const linkedActions = allActions.filter(a => 
+                  (a.minuteId && a.minuteId === selectedMinute.id) || 
+                  (selectedMinute.title && a.minuteTitle === selectedMinute.title)
+                );
+
+                return (
+                  <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ListChecks className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                          Plano de Ação Registrado na Ata (5W2H)
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                          {linkedActions.length} {linkedActions.length === 1 ? 'Ação' : 'Ações'}
+                        </span>
+                      </div>
+
+                      {onGoToActions && (
+                        <button
+                          type="button"
+                          onClick={onGoToActions}
+                          className="text-xs text-atlas-600 dark:text-atlas-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                        >
+                          <span>Gerenciar na Central de Ações</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {linkedActions.length > 0 ? (
+                      <div className="space-y-2">
+                        {linkedActions.map((action, idx) => (
+                          <div 
+                            key={action.id || idx}
+                            className="p-3 rounded-lg bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/90 dark:border-slate-800 text-xs space-y-1.5 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[10px] font-bold text-slate-400">#{idx + 1}</span>
+                                <h5 className="font-semibold text-slate-900 dark:text-white leading-snug">
+                                  {action.title}
+                                </h5>
+                              </div>
+                              <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold shrink-0 ${
+                                action.priority === 'urgent'
+                                  ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900'
+                                  : action.priority === 'high'
+                                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900'
+                                  : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900'
+                              }`}>
+                                {action.priority === 'urgent' ? 'Urgente' : action.priority === 'high' ? 'Alta' : 'Média'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                              <div className="flex items-center gap-1">
+                                <User className="w-3 h-3 text-slate-400" />
+                                <span><strong>Quem:</strong> {action.assigneeName || 'Liderança'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                <span><strong>Prazo:</strong> <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{formatDateBR(action.dueDate)}</span></span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                  {action.category || 'Governança'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {action.notes && (
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 italic bg-white/60 dark:bg-slate-950/40 p-2 rounded border border-slate-200/60 dark:border-slate-800/80">
+                                📌 {action.notes}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/30 border border-dashed border-slate-200 dark:border-slate-800 text-center text-slate-400 text-xs">
+                        Nenhuma ação 5W2H vinculada formalmente a este protocolo de ata.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Signature Stamp */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
