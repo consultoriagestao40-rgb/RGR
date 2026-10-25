@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1320" />
+      <stop offset="50%" stop-color="#0a1d1c" />
+      <stop offset="100%" stop-color="#062822" />
+    </linearGradient>
+
+    <!-- Emerald Primary Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="50%" stop-color="#0ea879" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Emerald Accent Gradient -->
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+
+    <!-- Gold Compass Accent -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+
+    <!-- Inner Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base Container -->
+  <rect width="512" height="512" rx="120" fill="url(#bgGrad)" stroke="#1e3a35" stroke-width="8" />
+
+  <!-- Subtle Inner Border Highlight -->
+  <rect x="12" y="12" width="488" height="488" rx="108" fill="none" stroke="rgba(52, 211, 153, 0.2)" stroke-width="3" />
+
+  <!-- Outer Routine Cycle (Cadence Ring) -->
+  <circle cx="256" cy="256" r="184" fill="none" stroke="rgba(16, 185, 129, 0.12)" stroke-width="18" />
+  
+  <!-- Active Dynamic Arc (Continuous Improvement / Governance Track) -->
+  <path d="M 256 72 A 184 184 0 1 1 104 152" fill="none" stroke="url(#emeraldGrad)" stroke-width="22" stroke-linecap="round" />
+  
+  <!-- Cadence Indicator Dot -->
+  <circle cx="104" cy="152" r="14" fill="#34d399" filter="url(#glow)" />
+
+  <!-- Central Monogram Icon "R" & Governance Pillar -->
+  <!-- Left Vertical Spine Pillar -->
+  <rect x="160" y="160" width="46" height="192" rx="20" fill="url(#emeraldGrad)" />
+  
+  <!-- Upper Loop of R (Hexagonal Curved Geometry) -->
+  <path d="M 186 160 H 280 C 330 160 360 185 360 225 C 360 265 330 290 280 290 H 186 Z" 
+        fill="none" 
+        stroke="url(#emeraldGrad)" 
+        stroke-width="42" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" />
+
+  <!-- Diagonal Forward Kick Pillar of R (Pace & Execution) -->
+  <path d="M 264 274 L 344 352" 
+        stroke="url(#accentGrad)" 
+        stroke-width="44" 
+        stroke-linecap="round" />
+
+  <!-- Apex Star / Gold Compass of Governance (CEO Direction) -->
+  <polygon points="256,44 266,66 288,76 266,86 256,108 246,86 224,76 246,66" fill="url(#goldGrad)" filter="url(#glow)" />
+</svg>

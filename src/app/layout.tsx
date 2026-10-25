@@ -2,8 +2,17 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'RGR - Gerenciamento da Rotina do Dia a Dia | Facilities Ops',
-  description: 'Playbook Operacional Vivo, Cadência e Agenda de Ritos com a Diretoria',
+  title: 'RGR • Gerenciamento da Rotina & Governança Executiva',
+  description: 'Sistema Integrado de Governança, Ritos Operacionais, POPs e Despacho de Diretoria para Empresas de Facilities.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/icon.svg'
+  },
+  themeColor: '#0ea879'
 };
 
 export default function RootLayout({

@@ -25,6 +25,7 @@ import {
   ListChecks
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
+import { RgrLogo } from './RgrLogo';
 
 interface SidebarProps {
   activeTab: 'timeline' | 'dispatch' | 'actions' | 'playbook' | 'minutes' | 'admin' | 'users';
@@ -159,32 +160,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }`}>
         <div 
           onClick={isCollapsed ? handleToggleCollapse : undefined}
-          className={`flex items-center gap-3 min-w-0 ${isCollapsed ? 'cursor-pointer' : ''}`}
+          className={`flex items-center min-w-0 ${isCollapsed ? 'cursor-pointer justify-center w-full' : ''}`}
           title={isCollapsed ? 'Clique para expandir o menu lateral' : undefined}
         >
-          <div 
-            className={`h-9 w-9 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-950 flex items-center justify-center font-bold text-xs tracking-wider shadow-xs shrink-0 ${
-              isCollapsed ? 'hover:scale-105 transition-transform' : ''
-            }`}
-            title="RGR Governança Operacional"
-          >
-            RGR
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">
-                  RGR <span className="text-slate-500 dark:text-slate-400 font-normal">Rotina</span>
-                </span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
-                  Facilities
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal truncate whitespace-nowrap">
-                Gerenciamento da Rotina
-              </p>
-            </div>
-          )}
+          <RgrLogo 
+            variant={isCollapsed ? 'icon' : 'horizontal'}
+            size="md"
+            showSubtitle={true}
+          />
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { SystemUser } from '@/lib/types';
 import { ThemeToggle } from './ThemeToggle';
+import { RgrLogo } from './RgrLogo';
 
 interface LoginScreenProps {
   users: SystemUser[];
@@ -81,22 +82,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
       {/* Top Navbar */}
       <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 backdrop-blur-md bg-white/70 dark:bg-[#0b101b]/70 transition-colors duration-200">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-atlas-600 to-atlas-700 flex items-center justify-center text-white shadow-md shadow-atlas-600/20 border border-atlas-500/30">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-base tracking-wider text-slate-900 dark:text-white">
-                RGR
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-atlas-50 dark:bg-atlas-500/10 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-500/20 font-bold uppercase tracking-wider">
-                Governança Operacional
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-              Gerenciamento da Rotina & Mesa de Despacho (Boardroom)
-            </p>
-          </div>
+          <RgrLogo variant="horizontal" size="md" showSubtitle={true} />
         </div>
 
         <div className="flex items-center gap-3">
@@ -117,8 +103,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLogin }) => {
             
             {/* Top Badge */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-atlas-50 dark:bg-atlas-600/10 border border-atlas-200 dark:border-atlas-500/30 text-atlas-600 dark:text-atlas-400 mb-3 shadow-xs">
-                <KeyRound className="w-6 h-6" />
+              <div className="flex justify-center mb-3">
+                <RgrLogo variant="icon" size="lg" />
               </div>
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Acesso à Plataforma
