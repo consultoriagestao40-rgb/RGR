@@ -24,6 +24,7 @@ interface AdminTabProps {
   triggerNewRoleModal?: boolean;
   onResetTrigger?: () => void;
   defaultSection?: 'blocks' | 'rituals' | 'roles';
+  onOpenRoleProfile?: (roleId: string) => void;
 }
 
 export const AdminTab: React.FC<AdminTabProps> = ({
@@ -35,7 +36,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onSelectRole,
   triggerNewRoleModal,
   onResetTrigger,
-  defaultSection
+  defaultSection,
+  onOpenRoleProfile
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
   const [activeSection, setActiveSection] = useState<'blocks' | 'rituals' | 'roles'>(defaultSection || 'blocks');
@@ -530,9 +532,15 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                     </span>
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => handleOpenRoleModal(role)}
+                        onClick={() => {
+                          if (onOpenRoleProfile) {
+                            onOpenRoleProfile(role.id);
+                          } else {
+                            handleOpenRoleModal(role);
+                          }
+                        }}
                         className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        title="Editar Cadeira"
+                        title="Editar Perfil da Cadeira"
                       >
                         <Edit3 className="w-3 h-3" />
                       </button>
@@ -554,13 +562,24 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   </p>
                 </div>
 
-                <button
-                  onClick={() => onSelectRole(role.id)}
-                  className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-slate-900 dark:text-blue-400 hover:text-blue-600 font-medium flex items-center justify-between text-xs cursor-pointer group"
-                >
-                  <span>Ativar Cadeira</span>
-                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
-                </button>
+                <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                  {onOpenRoleProfile && (
+                    <button
+                      onClick={() => onOpenRoleProfile(role.id)}
+                      className="text-xs text-atlas-600 dark:text-atlas-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Editar Perfil</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onSelectRole(role.id)}
+                    className="text-slate-900 dark:text-blue-400 hover:text-blue-600 font-medium flex items-center gap-1 cursor-pointer group ml-auto"
+                  >
+                    <span>Ativar Cadeira</span>
+                    <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

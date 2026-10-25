@@ -56,6 +56,7 @@ export default function HomePage() {
   const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
 
   const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [roleProfileDetailId, setRoleProfileDetailId] = useState<string | null>(null);
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -508,7 +509,12 @@ export default function HomePage() {
       {/* Left Navigation Sidebar */}
       <Sidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={(tab) => {
+          if (tab === 'role-profile') {
+            setRoleProfileDetailId(null);
+          }
+          setActiveTab(tab);
+        }}
         roles={roles}
         selectedRoleId={selectedRoleId}
         onSelectRole={setSelectedRoleId}
@@ -632,6 +638,7 @@ export default function HomePage() {
             <RoleProfileTab
               roles={roles}
               currentRole={selectedRole}
+              initialDetailRoleId={roleProfileDetailId}
               onSelectRole={(id) => {
                 setSelectedRoleId(id);
               }}
@@ -662,6 +669,11 @@ export default function HomePage() {
               }}
               onSelectRole={setSelectedRoleId}
               defaultSection={adminDefaultSection}
+              onOpenRoleProfile={(roleId) => {
+                setRoleProfileDetailId(roleId);
+                setSelectedRoleId(roleId);
+                setActiveTab('role-profile');
+              }}
             />
           )}
 
