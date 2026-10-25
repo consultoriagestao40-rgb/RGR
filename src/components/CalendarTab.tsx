@@ -21,7 +21,19 @@ import {
   Eye,
   X,
   Briefcase,
-  Coffee
+  Coffee,
+  Search,
+  Check,
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Activity,
+  TrendingUp,
+  BarChart3,
+  CalendarCheck,
+  ListTodo,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   OperationalRole, 
@@ -61,10 +73,10 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onGoToDispatch,
   onGoToTimeline
 }) => {
-  // Calendar View Mode: 'month' (Monthly Grid) or 'week' (Weekly Schedule Planner)
-  const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
+  // View Modes: 'month' (Interactive Month Grid), 'week' (Weekly Timetable), 'day' (Executive Day Feed)
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   
-  // Navigation state (month/year or active date cursor)
+  // Navigation state (year/month cursor)
   const [currentYear, setCurrentYear] = useState<number>(() => {
     return Number(selectedDate.split('-')[0]) || 2026;
   });
@@ -72,61 +84,86 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     return Number(selectedDate.split('-')[1]) || 10; // 1-12
   });
 
-  // Selected Day in Calendar to inspect in sidebar drawer
+  // Inspected date for side inspector panel & day feed
   const [inspectedDate, setInspectedDate] = useState<string>(selectedDate);
 
-  // Filters
+  // Filters & Search
   const [roleFilter, setRoleFilter] = useState<string>('all'); // 'all' or roleId
   const [typeFilter, setTypeFilter] = useState<'all' | 'rituals' | 'blocks'>('all');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'daily' | 'weekly' | 'monthly'>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Filtered Roles
-  const activeRoles = useMemo(() => {
-    if (roleFilter === 'all') return roles;
-    return roles.filter(r => r.id === roleFilter);
-  }, [roles, roleFilter]);
+  // Interactive Detail Modals
+  const [selectedRitualForModal, setSelectedRitualForModal] = useState<DailyRitual | null>(null);
+  const [selectedBlockForModal, setSelectedBlockForModal] = useState<RoutineBlock | null>(null);
 
-  // Color mapper by role
+  // Interactive checklist state for ritual pautas
+  const [checkedPautaItems, setCheckedPautaItems] = useState<{ [ritualId: string]: { [index: number]: boolean } }>({});
+
+  const togglePautaItem = (ritualId: string, itemIdx: number) => {
+    setCheckedPautaItems(prev => {
+      const currentRitualChecks = prev[ritualId] || {};
+      return {
+        ...prev,
+        [ritualId]: {
+          ...currentRitualChecks,
+          [itemIdx]: !currentRitualChecks[itemIdx]
+        }
+      };
+    });
+  };
+
+  // Color & Badge Tokens by Chair / Role
   const getRoleColor = (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     const code = role?.code || '';
     if (code.includes('FIN')) {
       return {
-        bg: 'bg-blue-50/80 dark:bg-blue-950/40',
+        bg: 'bg-blue-50/90 dark:bg-blue-950/40',
         text: 'text-blue-700 dark:text-blue-300',
-        border: 'border-blue-200/80 dark:border-blue-800/80',
-        dot: 'bg-blue-500'
+        border: 'border-blue-200/90 dark:border-blue-800/80',
+        dot: 'bg-blue-500 shadow-blue-500/50',
+        accent: 'from-blue-600 to-indigo-600',
+        tag: 'bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200'
       };
     }
     if (code.includes('DP') || code.includes('RH')) {
       return {
-        bg: 'bg-amber-50/80 dark:bg-amber-950/40',
-        text: 'text-amber-750 dark:text-amber-300',
-        border: 'border-amber-200/80 dark:border-amber-800/80',
-        dot: 'bg-amber-500'
+        bg: 'bg-amber-50/90 dark:bg-amber-950/40',
+        text: 'text-amber-800 dark:text-amber-300',
+        border: 'border-amber-200/90 dark:border-amber-800/80',
+        dot: 'bg-amber-500 shadow-amber-500/50',
+        accent: 'from-amber-600 to-orange-600',
+        tag: 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200'
       };
     }
     if (code.includes('OPS') || code.includes('COO')) {
       return {
-        bg: 'bg-purple-50/80 dark:bg-purple-950/40',
+        bg: 'bg-purple-50/90 dark:bg-purple-950/40',
         text: 'text-purple-700 dark:text-purple-300',
-        border: 'border-purple-200/80 dark:border-purple-800/80',
-        dot: 'bg-purple-500'
+        border: 'border-purple-200/90 dark:border-purple-800/80',
+        dot: 'bg-purple-500 shadow-purple-500/50',
+        accent: 'from-purple-600 to-pink-600',
+        tag: 'bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200'
       };
     }
     if (code.includes('OPE') || code.includes('DIR') || code.includes('HEAD')) {
       return {
-        bg: 'bg-emerald-50/80 dark:bg-emerald-950/40',
+        bg: 'bg-emerald-50/90 dark:bg-emerald-950/40',
         text: 'text-emerald-700 dark:text-emerald-300',
-        border: 'border-emerald-200/80 dark:border-emerald-800/80',
-        dot: 'bg-emerald-500'
+        border: 'border-emerald-200/90 dark:border-emerald-800/80',
+        dot: 'bg-emerald-500 shadow-emerald-500/50',
+        accent: 'from-emerald-600 to-teal-600',
+        tag: 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200'
       };
     }
     return {
       bg: 'bg-slate-50 dark:bg-slate-800/80',
       text: 'text-slate-700 dark:text-slate-300',
       border: 'border-slate-200/80 dark:border-slate-700/80',
-      dot: 'bg-slate-400'
+      dot: 'bg-slate-400',
+      accent: 'from-slate-600 to-slate-700',
+      tag: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
     };
   };
 
@@ -158,17 +195,52 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     onSelectDate(today);
   };
 
+  const handleQuickJump = (daysOffset: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${day}`;
+    setCurrentYear(y);
+    setCurrentMonth(d.getMonth() + 1);
+    setInspectedDate(dateStr);
+    onSelectDate(dateStr);
+  };
+
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
 
-  // Helper to generate monthly grid matrix (including leading empty days)
+  // Helper for full Brazilian Portuguese date display
+  const getFullDateDisplay = (dateStr: string): string => {
+    try {
+      const d = parseLocalDate(dateStr);
+      const dayOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][d.getDay()];
+      const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      return `${dayOfWeek}, ${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
+    } catch {
+      return formatDateBR(dateStr);
+    }
+  };
+
+  // Helper to match search query
+  const matchesSearch = (title: string, code?: string) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return title.toLowerCase().includes(q) || (code && code.toLowerCase().includes(q));
+  };
+
+  // Monthly Grid Generation
   const monthGrid = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth, 0);
     const totalDaysInMonth = lastDayOfMonth.getDate();
-    const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 is Sun, 1 is Mon...
+    const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sun
 
     const days: { 
       dayNumber: number | null; 
@@ -177,10 +249,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       rituals: DailyRitual[]; 
       blocks: RoutineBlock[];
       hasMonthlySpecial: boolean;
+      hasCouncilSpecial: boolean;
       hasWeeklySpecial: boolean;
     }[] = [];
 
-    // Empty padding slots for days before the 1st of the month
+    // Empty slots before 1st of month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push({
         dayNumber: null,
@@ -189,32 +262,34 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         rituals: [],
         blocks: [],
         hasMonthlySpecial: false,
+        hasCouncilSpecial: false,
         hasWeeklySpecial: false
       });
     }
 
-    // Days of the month
+    // Days in current month
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const dayStr = String(day).padStart(2, '0');
       const monthStr = String(currentMonth).padStart(2, '0');
       const dateStr = `${currentYear}-${monthStr}-${dayStr}`;
       const isWeekendDay = isWeekend(dateStr);
 
-      // Filter rituals scheduled for this date and matching role/frequency filters
       const dayRituals = rituals.filter(r => {
         if (roleFilter !== 'all' && r.roleId !== roleFilter) return false;
         if (frequencyFilter !== 'all' && r.frequency !== frequencyFilter) return false;
+        if (!matchesSearch(r.title, r.code)) return false;
         return isRitualScheduledForDate(r, dateStr);
       });
 
-      // Filter blocks scheduled for this date and matching role/frequency filters
       const dayBlocks = blocks.filter(b => {
         if (roleFilter !== 'all' && b.roleId !== roleFilter) return false;
         if (frequencyFilter !== 'all' && b.frequency !== frequencyFilter) return false;
+        if (!matchesSearch(b.title, b.code)) return false;
         return isBlockScheduledForDate(b, dateStr);
       });
 
       const hasMonthlySpecial = dayRituals.some(r => r.frequency === 'monthly') || dayBlocks.some(b => b.frequency === 'monthly');
+      const hasCouncilSpecial = dayRituals.some(r => r.type === 'board_council' || r.title.toLowerCase().includes('conselho'));
       const hasWeeklySpecial = dayRituals.some(r => r.frequency === 'weekly') || dayBlocks.some(b => b.frequency === 'weekly');
 
       days.push({
@@ -224,14 +299,15 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         rituals: dayRituals,
         blocks: dayBlocks,
         hasMonthlySpecial,
+        hasCouncilSpecial,
         hasWeeklySpecial
       });
     }
 
     return days;
-  }, [currentYear, currentMonth, rituals, blocks, roleFilter, frequencyFilter]);
+  }, [currentYear, currentMonth, rituals, blocks, roleFilter, frequencyFilter, searchQuery]);
 
-  // Compute Weekly Grid for the inspected/selected date
+  // Weekly Grid Computation
   const weekDays = useMemo(() => {
     const baseDate = parseLocalDate(inspectedDate);
     const dayOfWeek = baseDate.getDay();
@@ -254,12 +330,14 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       const dayRituals = rituals.filter(r => {
         if (roleFilter !== 'all' && r.roleId !== roleFilter) return false;
         if (frequencyFilter !== 'all' && r.frequency !== frequencyFilter) return false;
+        if (!matchesSearch(r.title, r.code)) return false;
         return isRitualScheduledForDate(r, dateStr);
       });
 
       const dayBlocks = blocks.filter(b => {
         if (roleFilter !== 'all' && b.roleId !== roleFilter) return false;
         if (frequencyFilter !== 'all' && b.frequency !== frequencyFilter) return false;
+        if (!matchesSearch(b.title, b.code)) return false;
         return isBlockScheduledForDate(b, dateStr);
       });
 
@@ -274,37 +352,26 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       });
     }
     return result;
-  }, [inspectedDate, rituals, blocks, roleFilter, frequencyFilter]);
-
-  // Helper for full Brazilian Portuguese date display
-  const getFullDateDisplay = (dateStr: string): string => {
-    try {
-      const d = parseLocalDate(dateStr);
-      const dayOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][d.getDay()];
-      const months = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-      ];
-      return `${dayOfWeek}, ${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
-    } catch {
-      return formatDateBR(dateStr);
-    }
-  };
+  }, [inspectedDate, rituals, blocks, roleFilter, frequencyFilter, searchQuery]);
 
   // Data for the Inspected Date details
   const inspectedData = useMemo(() => {
     const isWeekendDay = isWeekend(inspectedDate);
     const dayRituals = rituals.filter(r => {
       if (roleFilter !== 'all' && r.roleId !== roleFilter) return false;
+      if (!matchesSearch(r.title, r.code)) return false;
       return isRitualScheduledForDate(r, inspectedDate);
     });
     const dayBlocks = blocks.filter(b => {
       if (roleFilter !== 'all' && b.roleId !== roleFilter) return false;
+      if (!matchesSearch(b.title, b.code)) return false;
       return isBlockScheduledForDate(b, inspectedDate);
     });
 
     const nextBusinessDayStr = isWeekendDay ? getNextBusinessDay(inspectedDate) : null;
     const nextBusinessDayFormatted = nextBusinessDayStr ? formatDateBR(nextBusinessDayStr) : null;
+
+    const totalTopics = dayRituals.reduce((acc, r) => acc + (r.agendaItems?.length || 0), 0);
 
     return {
       dateStr: inspectedDate,
@@ -314,9 +381,10 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       nextBusinessDayStr,
       nextBusinessDayFormatted,
       rituals: dayRituals,
-      blocks: dayBlocks
+      blocks: dayBlocks,
+      totalTopics
     };
-  }, [inspectedDate, rituals, blocks, roleFilter]);
+  }, [inspectedDate, rituals, blocks, roleFilter, searchQuery]);
 
   // Overall counts for summary
   const summaryCounts = useMemo(() => {
@@ -342,77 +410,97 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   }, [monthGrid]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-7xl mx-auto space-y-5 pb-16">
       
-      {/* Top Calendar Executive Banner */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-all">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          <div className="space-y-1">
+      {/* ========================================================================= */}
+      {/* 1. HERO CADENCE HEADER (Atlas Executive Glassmorphism) */}
+      {/* ========================================================================= */}
+      <div className="bg-gradient-to-r from-white via-slate-50 to-white dark:from-[#0f172a] dark:via-[#111c33] dark:to-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative overflow-hidden transition-all">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-atlas-500/15 via-blue-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-full blur-2xl pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-atlas-50 dark:bg-atlas-950/60 text-atlas-700 dark:text-atlas-300 border border-atlas-200/80 dark:border-atlas-800 flex items-center gap-1.5 shadow-2xs">
-                <CalendarDays className="w-3.5 h-3.5 text-atlas-600 dark:text-atlas-400" />
-                Governança RGR • Agenda Executiva
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-atlas-50 dark:bg-atlas-950/80 text-atlas-700 dark:text-atlas-300 border border-atlas-200/90 dark:border-atlas-800/80 flex items-center gap-1.5 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Governança RGR • Cadência Executiva
               </span>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
-                {viewMode === 'month' ? 'Visão Mensal Consolidada' : 'Grade Semanal Detalhada'}
+              <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                {viewMode === 'month' && '📅 Visão Mensal Consolidada'}
+                {viewMode === 'week' && '📆 Grade Semanal com Horários'}
+                {viewMode === 'day' && '⚡ Pauta & Cadência do Dia'}
               </span>
             </div>
 
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               Agenda de Ritos & Calendário Operacional
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
-              Cadência integrada de <strong>Ritos de Despacho</strong>, <strong>Comitês Deliberativos</strong> e <strong>Entregas de Rotina (POPs)</strong> de todas as diretorias.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
+              Consolidação interativa de <strong>Ritos de Despacho</strong>, <strong>Sessões de Conselho & Comitês</strong> e <strong>Entregas Operacionais (POPs)</strong>.
             </p>
           </div>
 
-          {/* Navigation Month/Week & View Switcher */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 shrink-0">
-            {/* View Mode Buttons */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
+          {/* Controls: View Switcher & Month Navigation */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+            {/* View Mode Segmented Control */}
+            <div className="flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs shadow-inner">
               <button
                 type="button"
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   viewMode === 'month'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-bold scale-[1.02]'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
-                <span>Mensal</span>
+                <span>Mês</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   viewMode === 'week'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-bold scale-[1.02]'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span>Semanal</span>
+                <span>Semana</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('day')}
+                className={`px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'day'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-bold scale-[1.02]'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                <span>Dia</span>
               </button>
             </div>
 
             {/* Date Navigator */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 title="Mês Anterior"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 px-2.5 min-w-[130px] text-center font-mono">
+              <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 px-3 min-w-[130px] text-center font-mono">
                 {monthNames[currentMonth - 1]} / {currentYear}
               </span>
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 title="Próximo Mês"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -420,7 +508,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               <button
                 type="button"
                 onClick={handleToday}
-                className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs transition-colors cursor-pointer ml-0.5"
+                className="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-xs transition-transform active:scale-95 cursor-pointer ml-1"
               >
                 Hoje
               </button>
@@ -428,88 +516,142 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
         </div>
 
-        {/* Filters Toolbar */}
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-          
-          <div className="flex flex-wrap items-center gap-2.5 text-xs">
-            {/* Chair Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <Building2 className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-500 font-medium">Cadeira:</span>
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
-              >
-                <option value="all" className="dark:bg-slate-900">Visão Geral ({roles.length} Cadeiras)</option>
-                {roles.map(r => (
-                  <option key={r.id} value={r.id} className="dark:bg-slate-900">
-                    {r.code || 'CAD'}: {r.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Type Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <Layers className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-500 font-medium">Tipo:</span>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as any)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
-              >
-                <option value="all" className="dark:bg-slate-900">Ritos & Entregáveis</option>
-                <option value="rituals" className="dark:bg-slate-900">Apenas Ritos Executivos</option>
-                <option value="blocks" className="dark:bg-slate-900">Apenas Entregáveis (POPs)</option>
-              </select>
-            </div>
-
-            {/* Periodicidade Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-500 font-medium">Frequência:</span>
-              <select
-                value={frequencyFilter}
-                onChange={(e) => setFrequencyFilter(e.target.value as any)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
-              >
-                <option value="all" className="dark:bg-slate-900">Todas as Frequências</option>
-                <option value="daily" className="dark:bg-slate-900">Diários (Seg a Sex)</option>
-                <option value="weekly" className="dark:bg-slate-900">Semanais (Conselho / Comitês)</option>
-                <option value="monthly" className="dark:bg-slate-900">Mensais (Tributos, Ponto, VT, Folha, DRE)</option>
-              </select>
-            </div>
+        {/* Quick Date Jumps (Ontem, Hoje, Amanhã, Próxima Segunda) */}
+        <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+            <span className="text-[11px] font-mono uppercase text-slate-400">Atalhos:</span>
+            <button
+              type="button"
+              onClick={() => handleQuickJump(0)}
+              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer font-medium"
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickJump(1)}
+              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer font-medium"
+            >
+              Amanhã
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const nextMon = getNextBusinessDay(new Date().toISOString().split('T')[0]);
+                setInspectedDate(nextMon);
+                onSelectDate(nextMon);
+              }}
+              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer font-medium"
+            >
+              Próx. Dia Útil
+            </button>
           </div>
 
-          {/* Quick Metrics in Header */}
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-300">
-              <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyRitualsCount}</strong> ritos
-            </span>
-            <span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-300">
-              <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyBlocksCount}</strong> entregas POP
-            </span>
+          <div className="flex items-center gap-3 text-xs font-mono text-slate-500 dark:text-slate-400">
+            <span>Ritos no Mês: <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyRitualsCount}</strong></span>
+            <span>•</span>
+            <span>Entregas POP: <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyBlocksCount}</strong></span>
+            <span>•</span>
+            <span>Dias Críticos: <strong className="text-amber-600 dark:text-amber-400 font-bold">{summaryCounts.daysWithSpecial}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. INTERACTIVE CHAIRS PILL STRIP & SEARCH TOOLBAR */}
+      {/* ========================================================================= */}
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        
+        {/* Interactive Chairs Carousel */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-thin">
+          <button
+            type="button"
+            onClick={() => setRoleFilter('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+              roleFilter === 'all'
+                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs scale-[1.02]'
+                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Todas as Cadeiras ({roles.length})</span>
+          </button>
+
+          {roles.map(r => {
+            const colors = getRoleColor(r.id);
+            const isSelected = roleFilter === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setRoleFilter(isSelected ? 'all' : r.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border ${
+                  isSelected
+                    ? `${colors.bg} ${colors.text} border-current shadow-xs ring-2 ring-current/20 scale-[1.02]`
+                    : 'bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                <span className="font-mono">{r.code || 'CAD'}:</span>
+                <span>{r.title.split(' ')[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Live Search & Filter Selectors */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="relative flex-1 sm:w-56">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar rito ou POP..."
+              className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-atlas-500 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
+          <div className="flex items-center bg-slate-50 dark:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+              className="bg-transparent font-semibold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="all" className="dark:bg-slate-900">Ritos & POPs</option>
+              <option value="rituals" className="dark:bg-slate-900">Apenas Ritos</option>
+              <option value="blocks" className="dark:bg-slate-900">Apenas POPs</option>
+            </select>
+          </div>
         </div>
 
       </div>
 
-      {/* Main Calendar View Area */}
+      {/* ========================================================================= */}
+      {/* 3. MAIN INTERACTIVE CONTENT AREA (Grid vs Schedule vs Feed + Inspector) */}
+      {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Calendar Grid Container (8 or 9 cols) */}
+        {/* Main Calendar Space (8 or 9 cols) */}
         <div className="lg:col-span-8 xl:col-span-9 space-y-4">
           
-          {/* ========================================================================= */}
-          {/* VIEW MODE 1: MONTHLY GRID */}
-          {/* ========================================================================= */}
+          {/* --------------------------------------------------------------------- */}
+          {/* VIEW 1: MONTHLY INTERACTIVE GRID */}
+          {/* --------------------------------------------------------------------- */}
           {viewMode === 'month' && (
-            <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs transition-all">
               
               {/* Day of Week Headers */}
-              <div className="grid grid-cols-7 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-[#090d16] text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2.5 tracking-wider uppercase">
+              <div className="grid grid-cols-7 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-[#090d16] text-center text-xs font-bold text-slate-500 dark:text-slate-400 py-3 tracking-wider uppercase">
                 <span className="text-slate-400">Dom</span>
                 <span>Seg</span>
                 <span>Ter</span>
@@ -524,7 +666,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                 {monthGrid.map((day, idx) => {
                   if (!day.dayNumber || !day.dateStr) {
                     return (
-                      <div key={idx} className="min-h-[118px] p-2 bg-slate-50/30 dark:bg-slate-900/10" />
+                      <div key={idx} className="min-h-[125px] p-2 bg-slate-50/30 dark:bg-slate-900/10" />
                     );
                   }
 
@@ -532,10 +674,12 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                   const isSelected = day.dateStr === inspectedDate;
                   const isSystemActiveDate = day.dateStr === selectedDate;
 
-                  // Visible items respecting typeFilter
                   const visibleRituals = typeFilter === 'blocks' ? [] : day.rituals;
                   const visibleBlocks = typeFilter === 'rituals' ? [] : day.blocks;
                   const totalItems = visibleRituals.length + visibleBlocks.length;
+
+                  // Workload density (for progress line at cell bottom)
+                  const densityScore = Math.min(100, totalItems * 18);
 
                   return (
                     <div
@@ -544,7 +688,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         setInspectedDate(day.dateStr!);
                         onSelectDate(day.dateStr!);
                       }}
-                      className={`min-h-[120px] p-2 flex flex-col justify-between transition-all cursor-pointer relative group ${
+                      className={`min-h-[125px] p-2 flex flex-col justify-between transition-all cursor-pointer relative group hover:-translate-y-0.5 hover:shadow-md ${
                         isSelected 
                           ? 'ring-2 ring-atlas-500 bg-atlas-50/30 dark:bg-atlas-950/30 z-10' 
                           : isToday
@@ -556,7 +700,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     >
                       {/* Cell Header: Day Number and Indicators */}
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-transform group-hover:scale-105 ${
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-transform group-hover:scale-110 ${
                           isToday 
                             ? 'bg-blue-600 text-white shadow-xs' 
                             : isSelected
@@ -571,19 +715,22 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         </span>
 
                         <div className="flex items-center gap-1">
-                          {day.hasMonthlySpecial && (
+                          {day.hasCouncilSpecial && (
                             <span 
-                              className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs" 
-                              title="Contém marco mensal crítico (tributos, ponto, salários ou DRE)"
+                              className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shadow-2xs flex items-center gap-0.5" 
+                              title="Sessão de Conselho / Comitê Deliberativo"
+                            >
+                              <Landmark className="w-2.5 h-2.5" />
+                              <span>Conselho</span>
+                            </span>
+                          )}
+                          {day.hasMonthlySpecial && !day.hasCouncilSpecial && (
+                            <span 
+                              className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs" 
+                              title="Marco Crítico Mensal (Tributos, Ponto, Salários ou DRE)"
                             >
                               ★ Mensal
                             </span>
-                          )}
-                          {day.hasWeeklySpecial && !day.hasMonthlySpecial && (
-                            <span 
-                              className="w-2 h-2 rounded-full bg-purple-500 shrink-0" 
-                              title="Contém rito semanal de conselho ou comitê" 
-                            />
                           )}
                           {day.isWeekendDay && (
                             <span className="text-[10px] text-slate-400 font-mono">Pausa</span>
@@ -596,15 +743,15 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         
                         {/* Weekend State */}
                         {day.isWeekendDay ? (
-                          <div className="h-full flex items-center justify-center py-3 opacity-40 group-hover:opacity-75 transition-opacity">
+                          <div className="h-full flex items-center justify-center py-4 opacity-40 group-hover:opacity-80 transition-opacity">
                             <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
-                              <Coffee className="w-3 h-3" />
+                              <Coffee className="w-3.5 h-3.5" />
                               <span>Pausa</span>
                             </span>
                           </div>
                         ) : (
                           <>
-                            {/* Rituals List: Clean presentation */}
+                            {/* Rituals List: Clickable to open Modal! */}
                             {visibleRituals.slice(0, 2).map((rit) => {
                               const colors = getRoleColor(rit.roleId);
                               const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
@@ -613,47 +760,52 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                                 .trim();
 
                               return (
-                                <div
+                                <button
                                   key={rit.id}
-                                  className="px-1.5 py-0.5 rounded-md text-[10.5px] font-medium flex items-center gap-1.5 border border-slate-200/70 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-2xs hover:border-slate-300 transition-colors"
-                                  title={`${rit.timeSlot} • ${rit.title}`}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInspectedDate(day.dateStr!);
+                                    setSelectedRitualForModal(rit);
+                                  }}
+                                  className="w-full text-left px-1.5 py-0.5 rounded-md text-[10.5px] font-medium flex items-center gap-1.5 border border-slate-200/70 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-2xs hover:border-slate-400 dark:hover:border-slate-600 transition-all cursor-pointer group/rit"
+                                  title={`Clique para inspecionar pauta: ${rit.timeSlot} • ${rit.title}`}
                                 >
                                   <span className={`w-2 h-2 rounded-full shrink-0 ${colors.dot}`} />
                                   <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 shrink-0">
                                     {rit.timeSlot}
                                   </span>
-                                  <span className="truncate text-slate-800 dark:text-slate-200">
+                                  <span className="truncate text-slate-800 dark:text-slate-200 flex-1">
                                     {cleanTitle}
                                   </span>
-                                  {isCouncil && (
-                                    <Landmark className="w-2.5 h-2.5 shrink-0 text-amber-500 ml-auto" />
-                                  )}
-                                </div>
+                                  <Maximize2 className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover/rit:opacity-100 transition-opacity shrink-0" />
+                                </button>
                               );
                             })}
 
                             {/* More rituals badge if > 2 */}
                             {visibleRituals.length > 2 && (
                               <span className="text-[9px] font-mono text-slate-400 font-semibold pl-1 block">
-                                +{visibleRituals.length - 2} outro{visibleRituals.length - 2 > 1 ? 's' : ''} rito{visibleRituals.length - 2 > 1 ? 's' : ''}
+                                +{visibleRituals.length - 2} outros ritos
                               </span>
                             )}
 
-                            {/* POPs Deliverables: Clean summary badge instead of messy broken list */}
+                            {/* POPs Deliverables Chip */}
                             {typeFilter === 'blocks' ? (
-                              visibleBlocks.slice(0, 3).map((b) => {
-                                const colors = getRoleColor(b.roleId);
-                                return (
-                                  <div
-                                    key={b.id}
-                                    className={`px-1.5 py-0.5 rounded text-[10px] truncate font-medium flex items-center gap-1 border ${colors.bg} ${colors.text} ${colors.border}`}
-                                    title={`${b.timeWindow} • ${b.title}`}
-                                  >
-                                    <FileText className="w-2.5 h-2.5 shrink-0 opacity-70" />
-                                    <span className="truncate">{b.title}</span>
-                                  </div>
-                                );
-                              })
+                              visibleBlocks.slice(0, 2).map((b) => (
+                                <button
+                                  key={b.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBlockForModal(b);
+                                  }}
+                                  className="w-full text-left px-1.5 py-0.5 rounded text-[10px] truncate font-medium flex items-center gap-1 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                                >
+                                  <FileText className="w-2.5 h-2.5 shrink-0 opacity-70" />
+                                  <span className="truncate">{b.title}</span>
+                                </button>
+                              ))
                             ) : (
                               visibleBlocks.length > 0 && (
                                 <div className="mt-1 px-1.5 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/80 text-[10px] font-mono text-slate-600 dark:text-slate-300 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
@@ -678,6 +830,22 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
                       </div>
 
+                      {/* Workload Density Bar at bottom */}
+                      {!day.isWeekendDay && totalItems > 0 && (
+                        <div className="mt-1 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              densityScore > 60 
+                                ? 'bg-purple-500' 
+                                : densityScore > 30 
+                                ? 'bg-blue-500' 
+                                : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${densityScore}%` }}
+                          />
+                        </div>
+                      )}
+
                     </div>
                   );
                 })}
@@ -686,9 +854,9 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* VIEW MODE 2: WEEKLY SCHEDULE PLANNER */}
-          {/* ========================================================================= */}
+          {/* --------------------------------------------------------------------- */}
+          {/* VIEW 2: WEEKLY INTERACTIVE TIMETABLE */}
+          {/* --------------------------------------------------------------------- */}
           {viewMode === 'week' && (
             <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
               
@@ -696,10 +864,10 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <CalendarDays className="w-4 h-4 text-atlas-500" />
-                    Grade da Semana: {weekDays[0]?.dateFormatted} a {weekDays[6]?.dateFormatted}
+                    Grade Semanal: {weekDays[0]?.dateFormatted} a {weekDays[6]?.dateFormatted}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Cronograma executivo detalhado dia a dia com horários deliberativos e entregas operacionais
+                    Cronograma executivo com horários deliberativos e entregas por dia
                   </p>
                 </div>
               </div>
@@ -717,7 +885,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         setInspectedDate(wDay.dateStr);
                         onSelectDate(wDay.dateStr);
                       }}
-                      className={`p-3 min-h-[350px] flex flex-col justify-start transition-colors cursor-pointer ${
+                      className={`p-3 min-h-[380px] flex flex-col justify-start transition-colors cursor-pointer ${
                         isSelected 
                           ? 'bg-atlas-50/25 dark:bg-atlas-950/25 ring-2 ring-atlas-500 z-10' 
                           : isToday
@@ -758,9 +926,15 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                               const colors = getRoleColor(rit.roleId);
                               const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
                               return (
-                                <div 
+                                <button 
                                   key={rit.id}
-                                  className={`p-2 rounded-lg border text-xs ${colors.bg} ${colors.text} ${colors.border}`}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInspectedDate(wDay.dateStr);
+                                    setSelectedRitualForModal(rit);
+                                  }}
+                                  className={`w-full text-left p-2 rounded-xl border text-xs ${colors.bg} ${colors.text} ${colors.border} shadow-2xs hover:shadow-md transition-all cursor-pointer`}
                                 >
                                   <div className="flex items-center justify-between font-bold">
                                     <span className="flex items-center gap-1">
@@ -774,7 +948,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                                   <p className="text-[11px] font-semibold mt-1 leading-snug truncate">
                                     {rit.title}
                                   </p>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -784,7 +958,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         {wDay.blocks.length > 0 && typeFilter !== 'rituals' && (
                           <div className="space-y-1.5 pt-2">
                             <span className="text-[9px] font-mono uppercase font-bold text-slate-400 tracking-wider block">
-                              Entregáveis ({wDay.blocks.length})
+                              Entregas ({wDay.blocks.length})
                             </span>
                             {wDay.blocks.slice(0, 4).map(b => {
                               const colors = getRoleColor(b.roleId);
@@ -800,7 +974,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                             })}
                             {wDay.blocks.length > 4 && (
                               <span className="text-[10px] font-mono text-slate-400 block text-center">
-                                +{wDay.blocks.length - 4} entregáveis
+                                +{wDay.blocks.length - 4} entregas
                               </span>
                             )}
                           </div>
@@ -822,19 +996,202 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             </div>
           )}
 
+          {/* --------------------------------------------------------------------- */}
+          {/* VIEW 3: EXECUTIVE DAY FEED / CADÊNCIA DO DIA */}
+          {/* --------------------------------------------------------------------- */}
+          {viewMode === 'day' && (
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
+              
+              {/* Day Feed Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-3">
+                <div>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800">
+                    Cadência Executiva do Dia
+                  </span>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
+                    {inspectedData.fullDateDisplay}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {inspectedData.rituals.length} ritos deliberativos • {inspectedData.blocks.length} entregas de rotina
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectDate(inspectedDate);
+                      onGoToDispatch();
+                    }}
+                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <span>Despachar Agora</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Day Feed Timeline */}
+              {inspectedData.isWeekendDay ? (
+                <div className="py-12 text-center max-w-md mx-auto space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-sm">
+                    <Coffee className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                      Fim de Semana Livre
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Não há ritos de governança corporativa agendados para este dia.
+                    </p>
+                  </div>
+                  {inspectedData.nextBusinessDayStr && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInspectedDate(inspectedData.nextBusinessDayStr!);
+                        onSelectDate(inspectedData.nextBusinessDayStr!);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-atlas-600 hover:bg-atlas-700 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
+                    >
+                      <span>Ir para Segunda-feira ({inspectedData.nextBusinessDayFormatted})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {inspectedData.rituals.length === 0 ? (
+                    <div className="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-400">
+                      Nenhum rito corporativo marcado para este dia.
+                    </div>
+                  ) : (
+                    <div className="space-y-4 relative before:absolute before:inset-0 before:left-5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+                      {inspectedData.rituals.map(rit => {
+                        const colors = getRoleColor(rit.roleId);
+                        const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
+                        const ritualChecks = checkedPautaItems[rit.id] || {};
+
+                        return (
+                          <div key={rit.id} className="relative pl-12">
+                            {/* Glowing Timeline Node */}
+                            <div className="absolute left-3.5 top-3 w-3.5 h-3.5 rounded-full bg-white dark:bg-slate-900 border-2 border-atlas-500 shadow-sm" />
+
+                            <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/80 shadow-xs space-y-4 hover:border-slate-300 transition-all">
+                              
+                              {/* Header */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <Clock className="w-4 h-4 text-atlas-500" />
+                                    {rit.timeSlot}
+                                  </span>
+                                  <span className="text-[11px] font-mono text-slate-400">
+                                    ({rit.durationMinutes} min)
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+                                    {rit.code || 'RIT'}
+                                  </span>
+                                  {isCouncil && (
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                      <Landmark className="w-3 h-3" />
+                                      Conselho
+                                    </span>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedRitualForModal(rit)}
+                                  className="text-xs font-semibold text-atlas-600 dark:text-atlas-400 hover:underline flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                                >
+                                  <span>Inspecionar Pauta Completa</span>
+                                  <Maximize2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              {/* Title */}
+                              <div>
+                                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                                  {rit.title}
+                                </h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                  {formatRitualFrequency(rit)} • Rito obrigatório de cadência executiva
+                                </p>
+                              </div>
+
+                              {/* Interactive Pauta Checklist Preview */}
+                              {rit.agendaItems && rit.agendaItems.length > 0 && (
+                                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                  <span className="text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider block">
+                                    Pauta Deliberativa ({rit.agendaItems.length} tópicos):
+                                  </span>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {rit.agendaItems.map((item, idx) => {
+                                      const isChecked = !!ritualChecks[idx];
+                                      return (
+                                        <div
+                                          key={idx}
+                                          onClick={() => togglePautaItem(rit.id, idx)}
+                                          className={`p-2.5 rounded-xl border text-xs flex items-start gap-2.5 transition-all cursor-pointer ${
+                                            isChecked 
+                                              ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 line-through opacity-75' 
+                                              : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                                          }`}
+                                        >
+                                          <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 mt-0.5 border ${
+                                            isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'
+                                          }`}>
+                                            {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                                          </div>
+                                          <span className="leading-snug">{item}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Dispatch CTA */}
+                              <div className="pt-2 flex items-center justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onSelectDate(inspectedDate);
+                                    onGoToDispatch();
+                                  }}
+                                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <span>Despachar este Rito</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          )}
+
           {/* Legend Strip */}
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
             <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-atlas-500" />
               <span>Cadeiras & Diretorias:</span>
             </span>
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               {roles.map(r => {
                 const colors = getRoleColor(r.id);
                 return (
-                  <div key={r.id} className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
+                  <div key={r.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
-                    <span className="font-mono text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-200">
                       {r.code || 'CAD'}:
                     </span>
                     <span className="text-[11px] text-slate-600 dark:text-slate-400">
@@ -848,7 +1205,9 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
         </div>
 
-        {/* Sidebar Panel: Details of Inspected Date */}
+        {/* --------------------------------------------------------------------- */}
+        {/* 4. SIDEBAR INSPECTOR PANEL (Sticky Right Column) */}
+        {/* --------------------------------------------------------------------- */}
         <div className="lg:col-span-4 xl:col-span-3 space-y-4">
           
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs sticky top-4 space-y-4">
@@ -856,7 +1215,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             {/* Header of Inspector */}
             <div className="pb-3 border-b border-slate-100 dark:border-slate-800 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-atlas-50 dark:bg-atlas-950/80 text-atlas-700 dark:text-atlas-300 border border-atlas-200/80 dark:border-atlas-800">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-atlas-50 dark:bg-atlas-950/80 text-atlas-700 dark:text-atlas-300 border border-atlas-200/80 dark:border-atlas-800">
                   Data Selecionada
                 </span>
                 {inspectedData.isWeekendDay ? (
@@ -881,21 +1240,29 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             </div>
 
             {/* Quick Metrics Cards */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
-                <span className="text-[10px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center">
+                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
                   Ritos
                 </span>
                 <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
                   {inspectedData.rituals.length}
                 </span>
               </div>
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
-                <span className="text-[10px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
-                  Entregas POP
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center">
+                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
+                  Entregas
                 </span>
                 <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
                   {inspectedData.blocks.length}
+                </span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center">
+                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
+                  Pauta
+                </span>
+                <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                  {inspectedData.totalTopics}
                 </span>
               </div>
             </div>
@@ -908,7 +1275,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                   onSelectDate(inspectedDate);
                   onGoToDispatch();
                 }}
-                className="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
                 title="Abrir Mesa de Despacho com esta data"
               >
                 <span>Despachar</span>
@@ -921,7 +1288,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                   onSelectDate(inspectedDate);
                   onGoToTimeline();
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 title="Abrir Linha do Tempo com esta data"
               >
                 <span>Timeline</span>
@@ -982,7 +1349,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                           return (
                             <div 
                               key={rit.id} 
-                              className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900 text-xs space-y-1.5 shadow-2xs"
+                              onClick={() => setSelectedRitualForModal(rit)}
+                              className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900 text-xs space-y-1.5 shadow-2xs hover:border-slate-400 dark:hover:border-slate-700 transition-all cursor-pointer group"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-mono font-bold text-slate-900 dark:text-white flex items-center gap-1">
@@ -994,13 +1362,16 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                                 </span>
                               </div>
 
-                              <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
+                              <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug group-hover:text-atlas-600 dark:group-hover:text-atlas-400 transition-colors">
                                 {rit.title}
                               </h5>
 
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                {rit.agendaItems.length} tópicos na pauta deliberativa
-                              </p>
+                              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                                <span>{rit.agendaItems.length} tópicos na pauta</span>
+                                <span className="text-atlas-600 dark:text-atlas-400 text-[10px] font-semibold flex items-center gap-0.5">
+                                  Ver pauta <ArrowRight className="w-2.5 h-2.5" />
+                                </span>
+                              </div>
                             </div>
                           );
                         })}
@@ -1029,7 +1400,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         {inspectedData.blocks.slice(0, 6).map(b => (
                           <div 
                             key={b.id} 
-                            className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-xs shadow-2xs"
+                            onClick={() => setSelectedBlockForModal(b)}
+                            className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-xs shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
                           >
                             <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-0.5">
                               <span className="font-semibold text-slate-600 dark:text-slate-300">{b.code || 'POP'}</span>
@@ -1062,6 +1434,198 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* 5. INTERACTIVE RITUAL DETAIL MODAL (Glassmorphic Popover) */}
+      {/* ========================================================================= */}
+      {selectedRitualForModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedRitualForModal(null)}
+        >
+          <div 
+            className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-atlas-500 via-blue-500 to-indigo-500" />
+
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800">
+                    {selectedRitualForModal.code || 'RIT-01'}
+                  </span>
+                  {selectedRitualForModal.type === 'board_council' ? (
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                      <Landmark className="w-3 h-3" />
+                      Sessão de Conselho
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Cadência Operacional
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight mt-1">
+                  {selectedRitualForModal.title}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRitualForModal(null)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Meta Tags Grid */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-atlas-500 shrink-0" />
+                <div>
+                  <span className="text-[10px] font-mono uppercase text-slate-400 block">Horário & Duração</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    {selectedRitualForModal.timeSlot} ({selectedRitualForModal.durationMinutes} min)
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center gap-2.5">
+                <CalendarCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div>
+                  <span className="text-[10px] font-mono uppercase text-slate-400 block">Frequência</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    {formatRitualFrequency(selectedRitualForModal)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Agenda Items Checklist */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                  Pauta Deliberativa ({selectedRitualForModal.agendaItems?.length || 0} tópicos)
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Clique para marcar como visto
+                </span>
+              </div>
+
+              <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                {selectedRitualForModal.agendaItems && selectedRitualForModal.agendaItems.map((item, idx) => {
+                  const isChecked = !!(checkedPautaItems[selectedRitualForModal.id]?.[idx]);
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => togglePautaItem(selectedRitualForModal.id, idx)}
+                      className={`p-2.5 rounded-xl border text-xs flex items-start gap-2.5 transition-all cursor-pointer ${
+                        isChecked 
+                          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 line-through opacity-75' 
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 mt-0.5 border ${
+                        isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'
+                      }`}>
+                        {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                      <span className="leading-snug">{item}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectDate(inspectedDate);
+                  setSelectedRitualForModal(null);
+                  onGoToDispatch();
+                }}
+                className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <span>Despachar este Rito</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectDate(inspectedDate);
+                  setSelectedRitualForModal(null);
+                  onGoToTimeline();
+                }}
+                className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Ver na Linha do Tempo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. INTERACTIVE POP BLOCK DETAIL MODAL */}
+      {/* ========================================================================= */}
+      {selectedBlockForModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedBlockForModal(null)}
+        >
+          <div 
+            className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  {selectedBlockForModal.code || 'POP'}
+                </span>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1 leading-tight">
+                  {selectedBlockForModal.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedBlockForModal(null)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                <span className="font-mono text-slate-400">Janela de Horário:</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{selectedBlockForModal.timeWindow}</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                <span className="font-mono text-slate-400">Periodicidade:</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{selectedBlockForModal.frequency}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedBlockForModal(null)}
+              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
