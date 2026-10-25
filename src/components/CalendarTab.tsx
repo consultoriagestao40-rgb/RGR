@@ -20,7 +20,8 @@ import {
   Users,
   Eye,
   X,
-  Briefcase
+  Briefcase,
+  Coffee
 } from 'lucide-react';
 import { 
   OperationalRole, 
@@ -91,41 +92,41 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     const code = role?.code || '';
     if (code.includes('FIN')) {
       return {
-        bg: 'bg-blue-100 dark:bg-blue-950/80',
-        text: 'text-blue-800 dark:text-blue-300',
-        border: 'border-blue-200 dark:border-blue-800',
+        bg: 'bg-blue-50/80 dark:bg-blue-950/40',
+        text: 'text-blue-700 dark:text-blue-300',
+        border: 'border-blue-200/80 dark:border-blue-800/80',
         dot: 'bg-blue-500'
       };
     }
     if (code.includes('DP') || code.includes('RH')) {
       return {
-        bg: 'bg-amber-100 dark:bg-amber-950/80',
-        text: 'text-amber-800 dark:text-amber-300',
-        border: 'border-amber-200 dark:border-amber-800',
+        bg: 'bg-amber-50/80 dark:bg-amber-950/40',
+        text: 'text-amber-750 dark:text-amber-300',
+        border: 'border-amber-200/80 dark:border-amber-800/80',
         dot: 'bg-amber-500'
       };
     }
     if (code.includes('OPS') || code.includes('COO')) {
       return {
-        bg: 'bg-purple-100 dark:bg-purple-950/80',
-        text: 'text-purple-800 dark:text-purple-300',
-        border: 'border-purple-200 dark:border-purple-800',
+        bg: 'bg-purple-50/80 dark:bg-purple-950/40',
+        text: 'text-purple-700 dark:text-purple-300',
+        border: 'border-purple-200/80 dark:border-purple-800/80',
         dot: 'bg-purple-500'
       };
     }
     if (code.includes('OPE') || code.includes('DIR') || code.includes('HEAD')) {
       return {
-        bg: 'bg-emerald-100 dark:bg-emerald-950/80',
-        text: 'text-emerald-800 dark:text-emerald-300',
-        border: 'border-emerald-200 dark:border-emerald-800',
+        bg: 'bg-emerald-50/80 dark:bg-emerald-950/40',
+        text: 'text-emerald-700 dark:text-emerald-300',
+        border: 'border-emerald-200/80 dark:border-emerald-800/80',
         dot: 'bg-emerald-500'
       };
     }
     return {
-      bg: 'bg-slate-100 dark:bg-slate-800',
-      text: 'text-slate-800 dark:text-slate-300',
-      border: 'border-slate-200 dark:border-slate-700',
-      dot: 'bg-slate-500'
+      bg: 'bg-slate-50 dark:bg-slate-800/80',
+      text: 'text-slate-700 dark:text-slate-300',
+      border: 'border-slate-200/80 dark:border-slate-700/80',
+      dot: 'bg-slate-400'
     };
   };
 
@@ -275,6 +276,21 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     return result;
   }, [inspectedDate, rituals, blocks, roleFilter, frequencyFilter]);
 
+  // Helper for full Brazilian Portuguese date display
+  const getFullDateDisplay = (dateStr: string): string => {
+    try {
+      const d = parseLocalDate(dateStr);
+      const dayOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][d.getDay()];
+      const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      return `${dayOfWeek}, ${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
+    } catch {
+      return formatDateBR(dateStr);
+    }
+  };
+
   // Data for the Inspected Date details
   const inspectedData = useMemo(() => {
     const isWeekendDay = isWeekend(inspectedDate);
@@ -287,10 +303,16 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       return isBlockScheduledForDate(b, inspectedDate);
     });
 
+    const nextBusinessDayStr = isWeekendDay ? getNextBusinessDay(inspectedDate) : null;
+    const nextBusinessDayFormatted = nextBusinessDayStr ? formatDateBR(nextBusinessDayStr) : null;
+
     return {
       dateStr: inspectedDate,
       dateFormatted: formatDateBR(inspectedDate),
+      fullDateDisplay: getFullDateDisplay(inspectedDate),
       isWeekendDay,
+      nextBusinessDayStr,
+      nextBusinessDayFormatted,
       rituals: dayRituals,
       blocks: dayBlocks
     };
@@ -323,59 +345,59 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       
       {/* Top Calendar Executive Banner */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-6 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
-                <CalendarDays className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                Governança RGR • Agenda Executiva & Calendário
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-all">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-atlas-50 dark:bg-atlas-950/60 text-atlas-700 dark:text-atlas-300 border border-atlas-200/80 dark:border-atlas-800 flex items-center gap-1.5 shadow-2xs">
+                <CalendarDays className="w-3.5 h-3.5 text-atlas-600 dark:text-atlas-400" />
+                Governança RGR • Agenda Executiva
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                Visualizando: {viewMode === 'month' ? 'Visão Mensal' : 'Visão Semanal'}
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+                {viewMode === 'month' ? 'Visão Mensal Consolidada' : 'Grade Semanal Detalhada'}
               </span>
             </div>
 
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Agenda de Atividades & Ritos Corporativos
+              Agenda de Ritos & Calendário Operacional
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Consolidação de todos os <strong>Ritos de Despacho, Comitês e Sessões de Conselho</strong> e <strong>Entregas Operacionais (POPs)</strong>. Filtre por cadeira específica ou visualize a cadência integral de todas as diretorias.
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
+              Cadência integrada de <strong>Ritos de Despacho</strong>, <strong>Comitês Deliberativos</strong> e <strong>Entregas de Rotina (POPs)</strong> de todas as diretorias.
             </p>
           </div>
 
           {/* Navigation Month/Week & View Switcher */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 shrink-0">
             {/* View Mode Buttons */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
               <button
                 type="button"
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   viewMode === 'month'
                     ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                Visão Mensal
+                <CalendarIcon className="w-3.5 h-3.5" />
+                <span>Mensal</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   viewMode === 'week'
                     ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                Visão Semanal
+                <Clock className="w-3.5 h-3.5" />
+                <span>Semanal</span>
               </button>
             </div>
 
             {/* Date Navigator */}
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
               <button
                 type="button"
                 onClick={handlePrevMonth}
@@ -384,7 +406,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 px-2 min-w-[130px] text-center font-mono">
+              <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 px-2.5 min-w-[130px] text-center font-mono">
                 {monthNames[currentMonth - 1]} / {currentYear}
               </span>
               <button
@@ -398,7 +420,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               <button
                 type="button"
                 onClick={handleToday}
-                className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs transition-colors cursor-pointer ml-1"
+                className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs transition-colors cursor-pointer ml-0.5"
               >
                 Hoje
               </button>
@@ -407,19 +429,19 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         </div>
 
         {/* Filters Toolbar */}
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
           
-          <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs">
             {/* Chair Filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
               <Building2 className="w-3.5 h-3.5 text-slate-400" />
               <span className="text-slate-500 font-medium">Cadeira:</span>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-2"
+                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
               >
-                <option value="all" className="dark:bg-slate-900">Visão Total Corporativa ({roles.length} Cadeiras)</option>
+                <option value="all" className="dark:bg-slate-900">Visão Geral ({roles.length} Cadeiras)</option>
                 {roles.map(r => (
                   <option key={r.id} value={r.id} className="dark:bg-slate-900">
                     {r.code || 'CAD'}: {r.title}
@@ -429,28 +451,28 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             </div>
 
             {/* Type Filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
               <Layers className="w-3.5 h-3.5 text-slate-400" />
               <span className="text-slate-500 font-medium">Tipo:</span>
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as any)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-2"
+                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
               >
                 <option value="all" className="dark:bg-slate-900">Ritos & Entregáveis</option>
-                <option value="rituals" className="dark:bg-slate-900">Apenas Ritos de Despacho & Conselho</option>
-                <option value="blocks" className="dark:bg-slate-900">Apenas Entregáveis POPs</option>
+                <option value="rituals" className="dark:bg-slate-900">Apenas Ritos Executivos</option>
+                <option value="blocks" className="dark:bg-slate-900">Apenas Entregáveis (POPs)</option>
               </select>
             </div>
 
             {/* Periodicidade Filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span className="text-slate-500 font-medium">Frequência:</span>
               <select
                 value={frequencyFilter}
                 onChange={(e) => setFrequencyFilter(e.target.value as any)}
-                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-2"
+                className="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1 text-xs"
               >
                 <option value="all" className="dark:bg-slate-900">Todas as Frequências</option>
                 <option value="daily" className="dark:bg-slate-900">Diários (Seg a Sex)</option>
@@ -461,10 +483,13 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
 
           {/* Quick Metrics in Header */}
-          <div className="flex items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400">
-            <span>Ritos no Mês: <strong className="text-slate-800 dark:text-slate-200">{summaryCounts.monthlyRitualsCount}</strong></span>
-            <span>•</span>
-            <span>Entregas no Mês: <strong className="text-slate-800 dark:text-slate-200">{summaryCounts.monthlyBlocksCount}</strong></span>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyRitualsCount}</strong> ritos
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white font-bold">{summaryCounts.monthlyBlocksCount}</strong> entregas POP
+            </span>
           </div>
 
         </div>
@@ -481,25 +506,25 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           {/* VIEW MODE 1: MONTHLY GRID */}
           {/* ========================================================================= */}
           {viewMode === 'month' && (
-            <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
               
               {/* Day of Week Headers */}
-              <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-[#0c121e] text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-3">
-                <span>Dom</span>
+              <div className="grid grid-cols-7 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-[#090d16] text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2.5 tracking-wider uppercase">
+                <span className="text-slate-400">Dom</span>
                 <span>Seg</span>
                 <span>Ter</span>
                 <span>Qua</span>
                 <span>Qui</span>
                 <span>Sex</span>
-                <span>Sáb</span>
+                <span className="text-slate-400">Sáb</span>
               </div>
 
               {/* Month Day Cells */}
-              <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 dark:divide-slate-800/80">
                 {monthGrid.map((day, idx) => {
                   if (!day.dayNumber || !day.dateStr) {
                     return (
-                      <div key={idx} className="min-h-[110px] p-2 bg-slate-50/40 dark:bg-slate-900/20" />
+                      <div key={idx} className="min-h-[118px] p-2 bg-slate-50/30 dark:bg-slate-900/10" />
                     );
                   }
 
@@ -519,41 +544,49 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         setInspectedDate(day.dateStr!);
                         onSelectDate(day.dateStr!);
                       }}
-                      className={`min-h-[115px] p-2 flex flex-col justify-between transition-all cursor-pointer relative group ${
+                      className={`min-h-[120px] p-2 flex flex-col justify-between transition-all cursor-pointer relative group ${
                         isSelected 
-                          ? 'ring-2 ring-atlas-500 dark:ring-atlas-400 bg-atlas-50/20 dark:bg-atlas-950/20 z-10' 
+                          ? 'ring-2 ring-atlas-500 bg-atlas-50/30 dark:bg-atlas-950/30 z-10' 
                           : isToday
-                          ? 'bg-blue-50/20 dark:bg-blue-950/20'
+                          ? 'bg-blue-50/30 dark:bg-blue-950/20'
                           : day.isWeekendDay
-                          ? 'bg-slate-50/60 dark:bg-slate-900/40 text-slate-400'
-                          : 'bg-white dark:bg-[#111827] hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
+                          ? 'bg-slate-50/50 dark:bg-slate-900/30'
+                          : 'bg-white dark:bg-[#0f172a] hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
                       }`}
                     >
                       {/* Cell Header: Day Number and Indicators */}
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold ${
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-transform group-hover:scale-105 ${
                           isToday 
                             ? 'bg-blue-600 text-white shadow-xs' 
+                            : isSelected
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
                             : isSystemActiveDate
                             ? 'bg-atlas-600 text-white'
-                            : isSelected
-                            ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900'
                             : day.isWeekendDay
-                            ? 'text-slate-400'
-                            : 'text-slate-800 dark:text-slate-200'
+                            ? 'text-slate-400 dark:text-slate-500 font-normal'
+                            : 'text-slate-700 dark:text-slate-300'
                         }`}>
                           {day.dayNumber}
                         </span>
 
                         <div className="flex items-center gap-1">
                           {day.hasMonthlySpecial && (
-                            <span className="w-2 h-2 rounded-full bg-amber-500" title="Contém agenda mensal crítica (tributos, ponto, salários ou DRE)" />
+                            <span 
+                              className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs" 
+                              title="Contém marco mensal crítico (tributos, ponto, salários ou DRE)"
+                            >
+                              ★ Mensal
+                            </span>
                           )}
                           {day.hasWeeklySpecial && !day.hasMonthlySpecial && (
-                            <span className="w-2 h-2 rounded-full bg-purple-500" title="Contém rito semanal de conselho ou comitê" />
+                            <span 
+                              className="w-2 h-2 rounded-full bg-purple-500 shrink-0" 
+                              title="Contém rito semanal de conselho ou comitê" 
+                            />
                           )}
                           {day.isWeekendDay && (
-                            <span className="text-[9px] text-slate-400 font-mono">Pausa</span>
+                            <span className="text-[10px] text-slate-400 font-mono">Pausa</span>
                           )}
                         </div>
                       </div>
@@ -561,50 +594,88 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                       {/* Content pills inside the day */}
                       <div className="space-y-1 flex-1 overflow-hidden">
                         
-                        {/* Rituals Pills */}
-                        {visibleRituals.slice(0, 2).map((rit) => {
-                          const colors = getRoleColor(rit.roleId);
-                          const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
-                          return (
-                            <div
-                              key={rit.id}
-                              className={`px-1.5 py-0.5 rounded text-[10px] truncate font-medium flex items-center gap-1 border ${colors.bg} ${colors.text} ${colors.border}`}
-                              title={`${rit.timeSlot} • ${rit.title}`}
-                            >
-                              {isCouncil ? <Landmark className="w-2.5 h-2.5 shrink-0 text-amber-500" /> : <Clock className="w-2.5 h-2.5 shrink-0" />}
-                              <span className="font-mono font-bold shrink-0">{rit.timeSlot}</span>
-                              <span className="truncate">{rit.title.replace('Despacho', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').trim()}</span>
-                            </div>
-                          );
-                        })}
+                        {/* Weekend State */}
+                        {day.isWeekendDay ? (
+                          <div className="h-full flex items-center justify-center py-3 opacity-40 group-hover:opacity-75 transition-opacity">
+                            <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+                              <Coffee className="w-3 h-3" />
+                              <span>Pausa</span>
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Rituals List: Clean presentation */}
+                            {visibleRituals.slice(0, 2).map((rit) => {
+                              const colors = getRoleColor(rit.roleId);
+                              const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
+                              const cleanTitle = rit.title
+                                .replace(/^(Rito de\s+|Mesa de\s+|Sessão Deliberativa do\s+|Comitê Mensal de\s+)/i, '')
+                                .trim();
 
-                        {/* Routine Deliverables Pills */}
-                        {visibleBlocks.slice(0, Math.max(0, 3 - visibleRituals.length)).map((b) => {
-                          const colors = getRoleColor(b.roleId);
-                          return (
-                            <div
-                              key={b.id}
-                              className={`px-1.5 py-0.5 rounded text-[10px] truncate font-medium flex items-center gap-1 border ${colors.bg} ${colors.text} ${colors.border}`}
-                              title={`${b.timeWindow} • ${b.title}`}
-                            >
-                              <FileText className="w-2.5 h-2.5 shrink-0 opacity-70" />
-                              <span className="truncate">{b.title}</span>
-                            </div>
-                          );
-                        })}
+                              return (
+                                <div
+                                  key={rit.id}
+                                  className="px-1.5 py-0.5 rounded-md text-[10.5px] font-medium flex items-center gap-1.5 border border-slate-200/70 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-2xs hover:border-slate-300 transition-colors"
+                                  title={`${rit.timeSlot} • ${rit.title}`}
+                                >
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${colors.dot}`} />
+                                  <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                                    {rit.timeSlot}
+                                  </span>
+                                  <span className="truncate text-slate-800 dark:text-slate-200">
+                                    {cleanTitle}
+                                  </span>
+                                  {isCouncil && (
+                                    <Landmark className="w-2.5 h-2.5 shrink-0 text-amber-500 ml-auto" />
+                                  )}
+                                </div>
+                              );
+                            })}
 
-                        {/* More items indicator */}
-                        {totalItems > 3 && (
-                          <span className="text-[9px] font-mono text-slate-400 font-semibold pl-1 block">
-                            +{totalItems - 3} mais...
-                          </span>
+                            {/* More rituals badge if > 2 */}
+                            {visibleRituals.length > 2 && (
+                              <span className="text-[9px] font-mono text-slate-400 font-semibold pl-1 block">
+                                +{visibleRituals.length - 2} outro{visibleRituals.length - 2 > 1 ? 's' : ''} rito{visibleRituals.length - 2 > 1 ? 's' : ''}
+                              </span>
+                            )}
+
+                            {/* POPs Deliverables: Clean summary badge instead of messy broken list */}
+                            {typeFilter === 'blocks' ? (
+                              visibleBlocks.slice(0, 3).map((b) => {
+                                const colors = getRoleColor(b.roleId);
+                                return (
+                                  <div
+                                    key={b.id}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] truncate font-medium flex items-center gap-1 border ${colors.bg} ${colors.text} ${colors.border}`}
+                                    title={`${b.timeWindow} • ${b.title}`}
+                                  >
+                                    <FileText className="w-2.5 h-2.5 shrink-0 opacity-70" />
+                                    <span className="truncate">{b.title}</span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              visibleBlocks.length > 0 && (
+                                <div className="mt-1 px-1.5 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/80 text-[10px] font-mono text-slate-600 dark:text-slate-300 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                                  <span className="flex items-center gap-1 font-semibold truncate">
+                                    <FileText className="w-2.5 h-2.5 text-blue-500 shrink-0" />
+                                    <span>{visibleBlocks.length} POPs</span>
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 shrink-0">rotina</span>
+                                </div>
+                              )
+                            )}
+
+                            {totalItems === 0 && (
+                              <div className="h-full flex items-center justify-center pt-2">
+                                <span className="text-[10px] text-slate-300 dark:text-slate-600 italic">
+                                  Livre
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
 
-                        {totalItems === 0 && !day.isWeekendDay && (
-                          <span className="text-[10px] text-slate-300 dark:text-slate-600 italic block pt-2">
-                            Livre
-                          </span>
-                        )}
                       </div>
 
                     </div>
@@ -619,7 +690,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           {/* VIEW MODE 2: WEEKLY SCHEDULE PLANNER */}
           {/* ========================================================================= */}
           {viewMode === 'week' && (
-            <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
               
               <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
@@ -628,7 +699,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     Grade da Semana: {weekDays[0]?.dateFormatted} a {weekDays[6]?.dateFormatted}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Cronograma detalhado por dia da semana com horários de ritos e entregas
+                    Cronograma executivo detalhado dia a dia com horários deliberativos e entregas operacionais
                   </p>
                 </div>
               </div>
@@ -648,12 +719,12 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                       }}
                       className={`p-3 min-h-[350px] flex flex-col justify-start transition-colors cursor-pointer ${
                         isSelected 
-                          ? 'bg-atlas-50/20 dark:bg-atlas-950/20 ring-1 ring-atlas-500' 
+                          ? 'bg-atlas-50/25 dark:bg-atlas-950/25 ring-2 ring-atlas-500 z-10' 
                           : isToday
-                          ? 'bg-blue-50/15 dark:bg-blue-950/15'
+                          ? 'bg-blue-50/20 dark:bg-blue-950/20'
                           : wDay.isWeekendDay
                           ? 'bg-slate-50/50 dark:bg-slate-900/30'
-                          : 'bg-white dark:bg-[#111827] hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
+                          : 'bg-white dark:bg-[#0f172a] hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
                       }`}
                     >
                       {/* Column Header */}
@@ -663,7 +734,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                         </span>
                         <div className="flex items-center justify-center gap-1 mt-1">
                           <span className={`w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold ${
-                            isToday ? 'bg-blue-600 text-white' : isSelected ? 'bg-atlas-600 text-white' : 'text-slate-800 dark:text-slate-200'
+                            isToday 
+                              ? 'bg-blue-600 text-white shadow-xs' 
+                              : isSelected 
+                              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs' 
+                              : 'text-slate-800 dark:text-slate-200'
                           }`}>
                             {wDay.dayNumber}
                           </span>
@@ -748,16 +823,22 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           )}
 
           {/* Legend Strip */}
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
-            <span className="font-semibold text-slate-600 dark:text-slate-400">Legenda de Cadeiras & Governança:</span>
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+            <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-atlas-500" />
+              <span>Cadeiras & Diretorias:</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-2.5">
               {roles.map(r => {
                 const colors = getRoleColor(r.id);
                 return (
-                  <div key={r.id} className="flex items-center gap-1.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${colors.dot}`} />
-                    <span className="font-mono text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                      {r.code || 'CAD'}: {r.title}
+                  <div key={r.id} className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
+                    <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                    <span className="font-mono text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                      {r.code || 'CAD'}:
+                    </span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">
+                      {r.title}
                     </span>
                   </div>
                 );
@@ -767,38 +848,67 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
         </div>
 
-        {/* Sidebar Panel: Details of Inspected Date (4 or 3 cols) */}
+        {/* Sidebar Panel: Details of Inspected Date */}
         <div className="lg:col-span-4 xl:col-span-3 space-y-4">
           
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-5 shadow-xs sticky top-4">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs sticky top-4 space-y-4">
             
             {/* Header of Inspector */}
-            <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800">
+            <div className="pb-3 border-b border-slate-100 dark:border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-atlas-50 dark:bg-atlas-950/80 text-atlas-700 dark:text-atlas-300 border border-atlas-200/80 dark:border-atlas-800">
                   Data Selecionada
                 </span>
-                <span className="text-xs font-mono text-slate-400">
-                  {inspectedData.isWeekendDay ? 'Fim de Semana' : 'Dia Útil'}
+                {inspectedData.isWeekendDay ? (
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800">
+                    Fim de Semana
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800">
+                    Dia Útil
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                  {inspectedData.dateFormatted}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {inspectedData.fullDateDisplay}
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Metrics Cards */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+                <span className="text-[10px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
+                  Ritos
+                </span>
+                <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                  {inspectedData.rituals.length}
                 </span>
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">
-                {inspectedData.dateFormatted}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {inspectedData.rituals.length} ritos • {inspectedData.blocks.length} entregas POP
-              </p>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+                <span className="text-[10px] font-mono uppercase font-bold text-slate-400 block mb-0.5">
+                  Entregas POP
+                </span>
+                <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                  {inspectedData.blocks.length}
+                </span>
+              </div>
             </div>
 
             {/* Quick Actions to jump to Dispatch or Timeline */}
-            <div className="py-3.5 border-b border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => {
                   onSelectDate(inspectedDate);
                   onGoToDispatch();
                 }}
-                className="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                 title="Abrir Mesa de Despacho com esta data"
               >
                 <span>Despachar</span>
@@ -811,97 +921,139 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                   onSelectDate(inspectedDate);
                   onGoToTimeline();
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                title="Abrir Meu Dia com esta data"
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                title="Abrir Linha do Tempo com esta data"
               >
                 <span>Timeline</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Rituals of the Inspected Day */}
-            <div className="py-4 space-y-3 max-h-[450px] overflow-y-auto">
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-atlas-500" />
-                  Ritos Executivos Agendados ({inspectedData.rituals.length})
-                </h4>
-                
-                {inspectedData.rituals.length > 0 ? (
-                  <div className="space-y-2">
-                    {inspectedData.rituals.map(rit => {
-                      const colors = getRoleColor(rit.roleId);
-                      const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
-                      return (
-                        <div 
-                          key={rit.id} 
-                          className="p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900 text-xs space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                              {isCouncil ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
-                              {rit.timeSlot}
-                            </span>
-                            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
-                              {rit.code || 'RIT'}
-                            </span>
-                          </div>
-
-                          <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
-                            {rit.title}
-                          </h5>
-
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                            {rit.agendaItems.length} tópicos na pauta deliberativa
-                          </p>
-                        </div>
-                      );
-                    })}
+            {/* Details Section */}
+            <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+              
+              {/* Weekend State Presentation */}
+              {inspectedData.isWeekendDay ? (
+                <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-center space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-2xs">
+                    <Coffee className="w-5 h-5" />
                   </div>
-                ) : (
-                  <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-400">
-                    {inspectedData.isWeekendDay 
-                      ? 'Fim de semana: sem ritos operacionais agendados.' 
-                      : 'Nenhum rito executivo agendado para esta data.'}
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Fim de Semana Livre
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Não há ritos de governança ou entregas operacionais obrigatórias aos fins de semana.
+                    </p>
                   </div>
-                )}
-              </div>
+                  {inspectedData.nextBusinessDayStr && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInspectedDate(inspectedData.nextBusinessDayStr!);
+                        onSelectDate(inspectedData.nextBusinessDayStr!);
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      <span>Ir para Segunda-feira ({inspectedData.nextBusinessDayFormatted})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Rituals of the Inspected Day */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-atlas-500" />
+                        Ritos Executivos
+                      </span>
+                      <span className="font-mono text-[11px] font-semibold text-slate-400">
+                        {inspectedData.rituals.length}
+                      </span>
+                    </h4>
+                    
+                    {inspectedData.rituals.length > 0 ? (
+                      <div className="space-y-2">
+                        {inspectedData.rituals.map(rit => {
+                          const colors = getRoleColor(rit.roleId);
+                          const isCouncil = rit.type === 'board_council' || rit.title.toLowerCase().includes('conselho');
+                          return (
+                            <div 
+                              key={rit.id} 
+                              className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900 text-xs space-y-1.5 shadow-2xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-mono font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                                  {isCouncil ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
+                                  {rit.timeSlot}
+                                </span>
+                                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+                                  {rit.code || 'RIT'}
+                                </span>
+                              </div>
 
-              {/* Deliverables / POPs of the Inspected Day */}
-              <div className="pt-2">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-blue-500" />
-                  Entregas POPs ({inspectedData.blocks.length})
-                </h4>
+                              <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
+                                {rit.title}
+                              </h5>
 
-                {inspectedData.blocks.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {inspectedData.blocks.slice(0, 5).map(b => (
-                      <div 
-                        key={b.id} 
-                        className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-xs"
-                      >
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-0.5">
-                          <span>{b.code || 'POP'}</span>
-                          <span>{b.timeWindow}</span>
-                        </div>
-                        <p className="font-medium text-slate-800 dark:text-slate-200 truncate">
-                          {b.title}
-                        </p>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {rit.agendaItems.length} tópicos na pauta deliberativa
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                    {inspectedData.blocks.length > 5 && (
-                      <p className="text-[11px] text-slate-400 font-mono text-center pt-1">
-                        +{inspectedData.blocks.length - 5} outras entregas cadastradas
-                      </p>
+                    ) : (
+                      <div className="text-center py-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-400">
+                        Nenhum rito executivo agendado para esta data.
+                      </div>
                     )}
                   </div>
-                ) : (
-                  <div className="text-center py-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-400">
-                    Sem entregas para a data.
+
+                  {/* Deliverables / POPs of the Inspected Day */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-blue-500" />
+                        Entregas POPs
+                      </span>
+                      <span className="font-mono text-[11px] font-semibold text-slate-400">
+                        {inspectedData.blocks.length}
+                      </span>
+                    </h4>
+
+                    {inspectedData.blocks.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {inspectedData.blocks.slice(0, 6).map(b => (
+                          <div 
+                            key={b.id} 
+                            className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-xs shadow-2xs"
+                          >
+                            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-0.5">
+                              <span className="font-semibold text-slate-600 dark:text-slate-300">{b.code || 'POP'}</span>
+                              <span>{b.timeWindow}</span>
+                            </div>
+                            <p className="font-medium text-slate-800 dark:text-slate-200 truncate">
+                              {b.title}
+                            </p>
+                          </div>
+                        ))}
+                        {inspectedData.blocks.length > 6 && (
+                          <p className="text-[11px] text-slate-400 font-mono text-center pt-1">
+                            +{inspectedData.blocks.length - 6} outras entregas cadastradas
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-400">
+                        Sem entregas operacionais para a data.
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
 
             </div>
 
