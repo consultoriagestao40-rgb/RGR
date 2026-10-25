@@ -72,21 +72,11 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
     'Mariana Costa (Relatora Financeira)'
   ]);
 
-  // Cadence & Frequency Filtering (Entende diários, semanais e agendas mensais de Previsto x Realizado)
+  // Ritos programados estritamente para a data ativa (diários em dias úteis, semanais nos dias da semana e mensais nas datas definidas)
   const isCurrentWeekend = isWeekend(selectedDate);
-  const scheduledRituals = rituals.filter(r => isRitualScheduledForDate(r, selectedDate));
-  const monthlyRituals = rituals.filter(r => r.frequency === 'monthly');
-  const [cadenceFilter, setCadenceFilter] = useState<'today' | 'monthly' | 'all'>('today');
-
   const effectiveRituals = React.useMemo(() => {
-    if (cadenceFilter === 'today') {
-      return scheduledRituals.length > 0 ? scheduledRituals : rituals;
-    }
-    if (cadenceFilter === 'monthly') {
-      return monthlyRituals.length > 0 ? monthlyRituals : rituals;
-    }
-    return rituals;
-  }, [cadenceFilter, scheduledRituals, monthlyRituals, rituals]);
+    return rituals.filter(r => isRitualScheduledForDate(r, selectedDate));
+  }, [rituals, selectedDate]);
 
   useEffect(() => {
     if (effectiveRituals.length > 0 && (!selectedRitualId || !effectiveRituals.some(r => r.id === selectedRitualId))) {
@@ -351,78 +341,41 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
         </div>
 
-        {/* Row 2: Full-Width Ritual Selector & Cadence Filter Toolbar */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
-          
-          {/* Cadence Pills */}
-          <div className="flex items-center bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-0.5 rounded-lg text-xs shrink-0">
-            <button
-              type="button"
-              onClick={() => setCadenceFilter('today')}
-              className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
-                cadenceFilter === 'today'
-                  ? 'bg-atlas-600 text-white font-medium shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-              title="Ritos programados para a data ativa"
-            >
-              Hoje ({scheduledRituals.length})
-            </button>
-            {monthlyRituals.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setCadenceFilter('monthly')}
-                className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
-                  cadenceFilter === 'monthly'
-                    ? 'bg-atlas-600 text-white font-medium shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="Agendas mensais de fechamento de resultados (Previsto x Realizado) e folha"
-              >
-                Mensais • Previsto x Realizado ({monthlyRituals.length})
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setCadenceFilter('all')}
-              className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
-                cadenceFilter === 'all'
-                  ? 'bg-atlas-600 text-white font-medium shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-              title="Todos os ritos cadastrados na cadeira"
-            >
-              Todos ({rituals.length})
-            </button>
-          </div>
+        {/* Row 2: Ritos Agendados para a Data Ativa */}
+        {effectiveRituals.length > 0 && (
+          <div className="flex items-center gap-2.5 w-full pt-1">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1 font-mono">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              Ritos da Data ({effectiveRituals.length}):
+            </span>
 
-          {/* Ritual Switcher Buttons (Full Width Scrollable) */}
-          <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto gap-1.5 scrollbar-thin">
-            {effectiveRituals.map(rit => {
-              const isCouncilRitual = rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title?.toLowerCase().includes('conselho');
-              const isSelected = selectedRitualId === rit.id;
-              const freqText = formatRitualFrequency(rit);
-              return (
-                <button
-                  key={rit.id}
-                  onClick={() => handleSelectRitual(rit)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ${
-                    isSelected
-                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {isCouncilRitual ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
-                  <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 32)}</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
-                    {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
-                  </span>
-                </button>
-              );
-            })}
+            {/* Ritual Switcher Buttons (Full Width Scrollable) */}
+            <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto gap-1.5 scrollbar-thin">
+              {effectiveRituals.map(rit => {
+                const isCouncilRitual = rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title?.toLowerCase().includes('conselho');
+                const isSelected = selectedRitualId === rit.id;
+                const freqText = formatRitualFrequency(rit);
+                return (
+                  <button
+                    key={rit.id}
+                    onClick={() => handleSelectRitual(rit)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ${
+                      isSelected
+                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {isCouncilRitual ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
+                    <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 36)}</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
+                      {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-
-        </div>
+        )}
 
       </div>
 
@@ -439,25 +392,19 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
             {isCurrentWeekend
               ? `A data selecionada (${formatDateBR(selectedDate)}) é um final de semana. Por protocolo de governança do RGR, ritos operacionais diários ocorrem exclusivamente em dias úteis (Segunda a Sexta).`
-              : `Nenhum rito operacional ou de conselho possui frequência configurada para ${formatDateBR(selectedDate)}.`}
+              : `Nenhum rito diário, semanal ou mensal está configurado para ${formatDateBR(selectedDate)}. Os ritos executivos ocorrem estritamente nas datas e frequências programadas.`}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {isCurrentWeekend && onSelectDate && (
+          {isCurrentWeekend && onSelectDate && (
+            <div className="flex items-center justify-center">
               <button
                 onClick={() => onSelectDate(getNextBusinessDay(selectedDate))}
-                className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span>Avançar para Próximo Dia Útil ({formatDateBR(getNextBusinessDay(selectedDate))})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            )}
-            <button
-              onClick={() => setCadenceFilter('all')}
-              className="px-3.5 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-colors cursor-pointer"
-            >
-              Visualizar Todos os Ritos ({rituals.length})
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       ) : activeRitual ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
