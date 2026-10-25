@@ -75,7 +75,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
     <div className="space-y-6 max-w-6xl mx-auto">
       
       {/* Header Banner */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors no-print minutes-page-header">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -103,10 +103,10 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
       </div>
 
       {/* Two columns: Minutes Catalog on Left, Minute Viewer on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 minutes-grid-container">
         
         {/* Left Column: Minutes List (5 cols) */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="lg:col-span-5 space-y-3 no-print minutes-sidebar-col">
           <div className="relative">
             <input
               type="text"
@@ -153,10 +153,34 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
         </div>
 
         {/* Right Column: Minute Formal Document Sheet (7 cols) */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 minutes-content-col">
           {selectedMinute ? (
-            <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-6 shadow-xs text-slate-800 dark:text-slate-200 space-y-5 transition-colors">
+            <div 
+              id="printable-minute-sheet" 
+              className="printable-minute-sheet bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-6 shadow-xs text-slate-800 dark:text-slate-200 space-y-5 transition-colors"
+            >
               
+              {/* Print-Only Official Letterhead */}
+              <div className="hidden print:flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-sm font-mono tracking-tight">
+                    RGR
+                  </div>
+                  <div>
+                    <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">
+                      RGR • Gerenciamento da Rotina & Governança
+                    </h1>
+                    <p className="text-[11px] text-slate-600">
+                      Facilities Brasil S.A. • Livro Oficial de Atas e Deliberações
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[9px] font-mono text-slate-500 uppercase block">Documento Auditado</span>
+                  <span className="text-[11px] font-mono font-bold text-slate-900">Protocolo: {selectedMinute.id}</span>
+                </div>
+              </div>
+
               {/* Document Header */}
               <div className="border-b border-slate-100 dark:border-slate-800 pb-4 flex items-center justify-between">
                 <div>
@@ -172,7 +196,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
                 </div>
                 <button
                   onClick={() => window.print()}
-                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer no-print"
                   title="Imprimir Ata"
                 >
                   <Printer className="w-4 h-4" />
@@ -245,7 +269,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
                         <button
                           type="button"
                           onClick={onGoToActions}
-                          className="text-xs text-atlas-600 dark:text-atlas-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                          className="text-xs text-atlas-600 dark:text-atlas-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer no-print"
                         >
                           <span>Gerenciar na Central de Ações</span>
                           <ArrowRight className="w-3.5 h-3.5" />

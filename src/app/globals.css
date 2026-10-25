@@ -186,3 +186,115 @@ body {
   background: rgba(30, 64, 175, 0.15);
   color: #bfdbfe;
 }
+
+/* ========================================================================= */
+/* Print Stylesheet: prints ONLY the active Minute Document Sheet (A4)      */
+/* ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 15mm 15mm;
+  }
+
+  /* Reset standard page containers */
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Remove flex/scroll restrictions from Next.js layout */
+  div, main, section {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Hide app navigation chrome and non-document elements */
+  aside,
+  header,
+  nav,
+  button,
+  input,
+  iframe,
+  .no-print,
+  .minutes-sidebar-col,
+  .minutes-page-header,
+  [data-vercel-toolbar],
+  #top-navbar {
+    display: none !important;
+  }
+
+  /* Collapse two-column layout so the minute sheet fills 100% of printable page */
+  .minutes-grid-container {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .minutes-content-col {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Document sheet formatting for clean corporate PDF */
+  #printable-minute-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-inside: auto;
+  }
+
+  /* High contrast dark text on paper */
+  #printable-minute-sheet * {
+    color: #0f172a !important;
+    text-shadow: none !important;
+  }
+
+  #printable-minute-sheet .text-slate-400,
+  #printable-minute-sheet .text-slate-500 {
+    color: #475569 !important;
+  }
+
+  #printable-minute-sheet .text-emerald-600,
+  #printable-minute-sheet .text-emerald-700 {
+    color: #047857 !important;
+  }
+
+  /* Soft borders and crisp background panels in print */
+  #printable-minute-sheet .border {
+    border-color: #cbd5e1 !important;
+  }
+
+  #printable-minute-sheet .bg-slate-50,
+  #printable-minute-sheet .bg-slate-50\/70,
+  #printable-minute-sheet .bg-slate-50\/80,
+  #printable-minute-sheet .bg-slate-100 {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  #printable-minute-sheet .bg-emerald-50 {
+    background-color: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+  }
+}
+
