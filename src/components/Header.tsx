@@ -37,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
     switch (tab) {
       case 'timeline': return 'Cadência Diária';
       case 'dispatch': return 'Mesa de Despacho';
+      case 'calendar': return 'Agenda & Calendário de Ritos';
       case 'playbook': return 'Playbook de POPs';
       case 'actions': return 'Central de Ações (5W2H)';
       case 'ranking': return 'Desempenho & Ranking por Cadeira';

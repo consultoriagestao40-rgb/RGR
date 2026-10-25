@@ -23,14 +23,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ListChecks,
-  Trophy
+  Trophy,
+  CalendarDays
 } from 'lucide-react';
 import { OperationalRole, SystemUser } from '@/lib/types';
 import { RgrLogo } from './RgrLogo';
 
 interface SidebarProps {
-  activeTab: 'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users';
-  onSelectTab: (tab: 'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users') => void;
+  activeTab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users';
+  onSelectTab: (tab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users') => void;
   roles: OperationalRole[];
   selectedRoleId: string;
   onSelectRole: (roleId: string) => void;
@@ -314,6 +315,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {!isCollapsed && <span>Mesa de Despacho (CEO)</span>}
               </div>
               <span className={`${isCollapsed ? 'absolute top-1.5 right-1.5' : ''} w-2 h-2 rounded-full bg-emerald-500`} />
+            </button>
+
+            {/* Agenda & Calendário de Ritos / Atividades */}
+            <button
+              onClick={() => onSelectTab('calendar')}
+              title={isCollapsed ? 'Agenda & Calendário de Ritos e Atividades (Visão Mensal/Semanal)' : undefined}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors relative cursor-pointer ${
+                activeTab === 'calendar'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <CalendarDays className={`w-4 h-4 shrink-0 ${activeTab === 'calendar' ? 'text-white' : 'text-blue-500 dark:text-blue-400'}`} />
+                {!isCollapsed && <span>Agenda & Calendário</span>}
+              </div>
+              {!isCollapsed && (
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'calendar' ? 'bg-white/20 text-white' : 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold'
+                }`}>Agenda</span>
+              )}
             </button>
 
             {/* Central de Ações (5W2H) */}

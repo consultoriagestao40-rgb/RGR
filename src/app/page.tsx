@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { TimelineTab } from '@/components/TimelineTab';
 import { DispatchRoomTab } from '@/components/DispatchRoomTab';
+import { CalendarTab } from '@/components/CalendarTab';
 import { PlaybookTab } from '@/components/PlaybookTab';
 import { MinutesTab } from '@/components/MinutesTab';
 import { AdminTab } from '@/components/AdminTab';
@@ -53,7 +54,7 @@ export default function HomePage() {
   const [allBlocks, setAllBlocks] = useState<RoutineBlock[]>(INITIAL_BLOCKS);
   const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -576,6 +577,19 @@ export default function HomePage() {
               onSelectDate={setSelectedDate}
               onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
               onOpenMeetingAiModal={() => setIsMeetingAiModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'calendar' && (
+            <CalendarTab
+              roles={roles}
+              blocks={allBlocks}
+              rituals={allRituals}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              onSelectRole={setSelectedRoleId}
+              onGoToDispatch={() => setActiveTab('dispatch')}
+              onGoToTimeline={() => setActiveTab('timeline')}
             />
           )}
 
