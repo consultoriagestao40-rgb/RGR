@@ -52,48 +52,61 @@ body {
 
 /* Sidebar Vertical Menu: Scrollbar appears ONLY on cursor hover */
 .sidebar-scroll {
-  scrollbar-width: none; /* Firefox: completely hidden by default */
-  -ms-overflow-style: none; /* IE/Edge */
+  overflow-y: auto;
 }
 
+/* WebKit (Chrome, Chrome Beta, Safari, Edge, Opera) */
 .sidebar-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* Hidden by default: completely transparent */
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: transparent;
+  background-color: transparent;
   border-radius: 9999px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* When cursor hovers over the sidebar or the navigation menu, smoothly reveal the thumb */
-aside:hover .sidebar-scroll,
-.sidebar-scroll:hover {
-  scrollbar-width: thin; /* Firefox: reveal on hover */
-}
-
-aside:hover .sidebar-scroll::-webkit-scrollbar-thumb,
+/* Revealed when mouse hovers anywhere on the sidebar or directly on the menu */
+.sidebar-scroll.sidebar-hovered::-webkit-scrollbar-thumb,
 .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45); /* Slate 400 semi-transparent */
+  background-color: #94a3b8 !important; /* Visible Slate-400 */
 }
 
-aside:hover .sidebar-scroll::-webkit-scrollbar-thumb:hover,
+.sidebar-scroll.sidebar-hovered::-webkit-scrollbar-thumb:hover,
 .sidebar-scroll:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.8); /* Slate 500 on direct thumb hover */
+  background-color: #64748b !important; /* Slate-500 on direct grab */
 }
 
-.dark aside:hover .sidebar-scroll::-webkit-scrollbar-thumb,
+/* Dark mode */
+.dark .sidebar-scroll.sidebar-hovered::-webkit-scrollbar-thumb,
 .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.5); /* Dark slate 600 */
+  background-color: #475569 !important; /* Slate-600 */
 }
 
-.dark aside:hover .sidebar-scroll::-webkit-scrollbar-thumb:hover,
+.dark .sidebar-scroll.sidebar-hovered::-webkit-scrollbar-thumb:hover,
 .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.85);
+  background-color: #64748b !important;
+}
+
+/* Firefox standard scrollbar-color (scoped strictly to Firefox so Chrome/Safari never disable WebKit custom scrollbars) */
+@-moz-document url-prefix() {
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .sidebar-scroll.sidebar-hovered,
+  .sidebar-scroll:hover {
+    scrollbar-color: #94a3b8 transparent;
+  }
+  .dark .sidebar-scroll.sidebar-hovered,
+  .dark .sidebar-scroll:hover {
+    scrollbar-color: #475569 transparent;
+  }
 }
 
 /* Markdown SOP Formatting */

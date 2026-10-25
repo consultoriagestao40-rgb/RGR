@@ -138,8 +138,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSelectRole(value);
   };
 
+  const [isSidebarHovered, setIsSidebarHovered] = React.useState(false);
+
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out relative`}>
+    <aside 
+      onMouseEnter={() => setIsSidebarHovered(true)}
+      onMouseLeave={() => setIsSidebarHovered(false)}
+      className={`${isCollapsed ? 'w-16' : 'w-72'} bg-slate-50 dark:bg-[#0c121e] border-r border-slate-200 dark:border-[#1a2333] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out relative`}
+    >
       
       {/* Setinha discreta na linha de divisa entre menu e tela */}
       <button
@@ -258,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <div className={`flex-1 overflow-y-auto sidebar-scroll ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
+      <div className={`flex-1 overflow-y-auto sidebar-scroll ${isSidebarHovered ? 'sidebar-hovered' : ''} ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
         
         {/* Group 1: Rotina & Ritos */}
         <div>
