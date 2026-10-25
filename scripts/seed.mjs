@@ -66,6 +66,8 @@ async function main() {
         deliverable: block.deliverable,
         sopMarkdown: block.sopMarkdown,
         frequency: block.frequency || 'daily',
+        dayOfWeek: block.dayOfWeek !== undefined ? block.dayOfWeek : null,
+        dayOfMonth: block.dayOfMonth || null,
         orderIndex: block.orderIndex || 0,
       },
       create: {
@@ -79,6 +81,8 @@ async function main() {
         deliverable: block.deliverable,
         sopMarkdown: block.sopMarkdown,
         frequency: block.frequency || 'daily',
+        dayOfWeek: block.dayOfWeek !== undefined ? block.dayOfWeek : null,
+        dayOfMonth: block.dayOfMonth || null,
         orderIndex: block.orderIndex || 0,
       },
     });

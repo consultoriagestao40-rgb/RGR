@@ -138,11 +138,6 @@ export function isFifthBusinessDayOfMonth(date: Date): boolean {
  * Regra de Ouro: Avalia se um rito deve ser executado na data específica.
  */
 export function isRitualScheduledForDate(ritual: DailyRitual, dateStr: string): boolean {
-  // Não existem ritos agendados retroativamente antes da criação da plataforma
-  if (isBeforeSystemStart(dateStr)) {
-    return false;
-  }
-
   const date = parseLocalDate(dateStr);
   const dow = date.getDay(); // 0 a 6
   const isWeekendDay = dow === 0 || dow === 6;
@@ -251,7 +246,6 @@ export function formatRitualFrequency(ritual: DailyRitual): string {
  * Avalia se um bloco de rotina operacional (POP) deve ser executado na data específica.
  */
 export function isBlockScheduledForDate(block: RoutineBlock, dateStr: string): boolean {
-  if (isBeforeSystemStart(dateStr)) return false;
   const date = parseLocalDate(dateStr);
   const dow = date.getDay(); // 0 a 6
   const isWeekendDay = dow === 0 || dow === 6;

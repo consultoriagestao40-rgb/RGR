@@ -373,6 +373,8 @@ export async function createRoutineBlock(data: Omit<RoutineBlock, 'id' | 'create
           deliverable: data.deliverable,
           sopMarkdown: data.sopMarkdown,
           frequency: (data.frequency as any) || 'daily',
+          dayOfWeek: data.dayOfWeek !== undefined ? data.dayOfWeek : null,
+          dayOfMonth: data.dayOfMonth || null,
           orderIndex: data.orderIndex || 0
         }
       });
@@ -387,6 +389,8 @@ export async function createRoutineBlock(data: Omit<RoutineBlock, 'id' | 'create
         deliverable: created.deliverable,
         sopMarkdown: created.sopMarkdown,
         frequency: created.frequency as any,
+        dayOfWeek: created.dayOfWeek || undefined,
+        dayOfMonth: created.dayOfMonth || undefined,
         orderIndex: created.orderIndex,
         createdAt: created.createdAt.toISOString()
       };
@@ -421,6 +425,8 @@ export async function updateRoutineBlock(id: string, data: Partial<RoutineBlock>
           deliverable: data.deliverable,
           sopMarkdown: data.sopMarkdown,
           frequency: data.frequency as any,
+          dayOfWeek: data.dayOfWeek !== undefined ? data.dayOfWeek : undefined,
+          dayOfMonth: data.dayOfMonth !== undefined ? data.dayOfMonth : undefined,
           orderIndex: data.orderIndex
         }
       });
@@ -435,6 +441,8 @@ export async function updateRoutineBlock(id: string, data: Partial<RoutineBlock>
         deliverable: updated.deliverable,
         sopMarkdown: updated.sopMarkdown,
         frequency: updated.frequency as any,
+        dayOfWeek: updated.dayOfWeek || undefined,
+        dayOfMonth: updated.dayOfMonth || undefined,
         orderIndex: updated.orderIndex,
         createdAt: updated.createdAt.toISOString()
       };
