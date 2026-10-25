@@ -249,7 +249,8 @@ body {
   }
 
   /* Document sheet formatting for clean corporate PDF */
-  #printable-minute-sheet {
+  #printable-minute-sheet,
+  #printable-role-profile {
     display: block !important;
     position: static !important;
     width: 100% !important;
@@ -264,35 +265,46 @@ body {
   }
 
   /* High contrast dark text on paper */
-  #printable-minute-sheet * {
+  #printable-minute-sheet *,
+  #printable-role-profile * {
     color: #0f172a !important;
     text-shadow: none !important;
   }
 
   #printable-minute-sheet .text-slate-400,
-  #printable-minute-sheet .text-slate-500 {
+  #printable-minute-sheet .text-slate-500,
+  #printable-role-profile .text-slate-400,
+  #printable-role-profile .text-slate-500 {
     color: #475569 !important;
   }
 
   #printable-minute-sheet .text-emerald-600,
-  #printable-minute-sheet .text-emerald-700 {
+  #printable-minute-sheet .text-emerald-700,
+  #printable-role-profile .text-emerald-600,
+  #printable-role-profile .text-emerald-700 {
     color: #047857 !important;
   }
 
   /* Soft borders and crisp background panels in print */
-  #printable-minute-sheet .border {
+  #printable-minute-sheet .border,
+  #printable-role-profile .border {
     border-color: #cbd5e1 !important;
   }
 
   #printable-minute-sheet .bg-slate-50,
   #printable-minute-sheet .bg-slate-50\/70,
   #printable-minute-sheet .bg-slate-50\/80,
-  #printable-minute-sheet .bg-slate-100 {
+  #printable-minute-sheet .bg-slate-100,
+  #printable-role-profile .bg-slate-50,
+  #printable-role-profile .bg-slate-50\/70,
+  #printable-role-profile .bg-slate-50\/80,
+  #printable-role-profile .bg-slate-100 {
     background-color: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
   }
 
-  #printable-minute-sheet .bg-emerald-50 {
+  #printable-minute-sheet .bg-emerald-50,
+  #printable-role-profile .bg-emerald-50 {
     background-color: #f0fdf4 !important;
     border: 1px solid #bbf7d0 !important;
   }

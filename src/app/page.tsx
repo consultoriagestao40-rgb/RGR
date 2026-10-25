@@ -7,6 +7,7 @@ import { TimelineTab } from '@/components/TimelineTab';
 import { DispatchRoomTab } from '@/components/DispatchRoomTab';
 import { CalendarTab } from '@/components/CalendarTab';
 import { PlaybookTab } from '@/components/PlaybookTab';
+import { RoleProfileTab } from '@/components/RoleProfileTab';
 import { MinutesTab } from '@/components/MinutesTab';
 import { AdminTab } from '@/components/AdminTab';
 import { UsersManagementSection } from '@/components/UsersManagementSection';
@@ -54,7 +55,7 @@ export default function HomePage() {
   const [allBlocks, setAllBlocks] = useState<RoutineBlock[]>(INITIAL_BLOCKS);
   const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'admin' | 'users'>('timeline');
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -624,6 +625,20 @@ export default function HomePage() {
             <PlaybookTab
               role={selectedRole}
               blocks={blocks}
+            />
+          )}
+
+          {activeTab === 'role-profile' && (
+            <RoleProfileTab
+              roles={roles}
+              currentRole={selectedRole}
+              onSelectRole={(id) => {
+                setSelectedRoleId(id);
+              }}
+              onRoleUpdated={(updated) => {
+                setRoles(prev => prev.map(r => r.id === updated.id ? updated : r));
+                loadRoles();
+              }}
             />
           )}
 

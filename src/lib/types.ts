@@ -1,6 +1,33 @@
 export type Frequency = 'daily' | 'weekly' | 'monthly';
 export type ExecutionStatus = 'pending' | 'completed' | 'blocked';
 
+export interface RoleResponsibilityGroup {
+  category: string;
+  items: string[];
+}
+
+export interface RoleCompetencies {
+  requirements: string[];
+  hardSkills: string[];
+  softSkills: string[];
+}
+
+export interface RoleProfile {
+  roleId?: string;
+  positionTitle: string;
+  department: string;
+  directReport: string;
+  unionAffiliation?: string;
+  contractType?: string;
+  workSchedule?: string;
+  workMode?: string;
+  mission: string;
+  responsibilities: RoleResponsibilityGroup[];
+  competencies: RoleCompetencies;
+  nonNegotiableSlas?: string[];
+  updatedAt?: string;
+}
+
 export interface OperationalRole {
   id: string;
   title: string;
@@ -8,6 +35,7 @@ export interface OperationalRole {
   description: string;
   code?: string; // Ex: CAD-FIN-01
   createdAt: string;
+  profile?: RoleProfile;
 }
 
 export interface RoutineBlock {

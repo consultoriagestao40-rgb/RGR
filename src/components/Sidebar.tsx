@@ -30,8 +30,8 @@ import { OperationalRole, SystemUser } from '@/lib/types';
 import { RgrLogo } from './RgrLogo';
 
 interface SidebarProps {
-  activeTab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users';
-  onSelectTab: (tab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'minutes' | 'admin' | 'users') => void;
+  activeTab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'admin' | 'users';
+  onSelectTab: (tab: 'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'admin' | 'users') => void;
   roles: OperationalRole[];
   selectedRoleId: string;
   onSelectRole: (roleId: string) => void;
@@ -416,6 +416,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
                   activeTab === 'playbook' ? 'bg-white/20 text-white' : 'text-slate-400'
                 }`}>SOP</span>
+              )}
+            </button>
+
+            {/* Perfil da Cadeira */}
+            <button
+              onClick={() => onSelectTab('role-profile')}
+              title={isCollapsed ? 'Perfil da Cadeira (Competências, Requisitos & Atribuições)' : undefined}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
+                activeTab === 'role-profile'
+                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-normal'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <UserCheck className={`w-4 h-4 shrink-0 ${activeTab === 'role-profile' ? 'text-white' : 'text-slate-400'}`} />
+                {!isCollapsed && <span>Perfil da Cadeira</span>}
+              </div>
+              {!isCollapsed && (
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                  activeTab === 'role-profile' ? 'bg-white/20 text-white' : 'bg-atlas-50 dark:bg-atlas-950 text-atlas-600 dark:text-atlas-400 font-bold'
+                }`}>Perfil</span>
               )}
             </button>
 
