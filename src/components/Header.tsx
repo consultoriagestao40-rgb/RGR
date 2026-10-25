@@ -77,36 +77,46 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-[#0f1726] border-b border-slate-200/90 dark:border-[#1a2333] px-4 sm:px-6 flex items-center justify-between shrink-0 select-none transition-colors">
+    <header className="h-16 bg-white dark:bg-[#0f1726] border-b border-slate-200/90 dark:border-[#1a2333] px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0 select-none transition-colors overflow-hidden">
       
-      {/* Left: Clean Non-Breaking Breadcrumbs (Mapa do Site) */}
-      <div className="flex items-center gap-2.5 min-w-0">
-        <nav aria-label="Mapa do Site" className="flex items-center gap-2 text-xs whitespace-nowrap min-w-0">
-          <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">
-            {currentRole?.department || 'Departamento'}
-          </span>
+      {/* Left: Clean Non-Overlapping Breadcrumbs & Active Page Indicator */}
+      <div className="flex items-center min-w-0 flex-1 overflow-hidden">
+        <nav aria-label="Mapa do Site" className="flex items-center gap-2 text-xs min-w-0 overflow-hidden">
+          
+          {/* Optional Department on extra-large screens only if distinct */}
+          {currentRole?.department && currentRole.department !== currentRole.title && (
+            <>
+              <span className="hidden 2xl:inline-block text-slate-400 dark:text-slate-500 font-medium truncate max-w-[150px] shrink-0">
+                {currentRole.department}
+              </span>
+              <ChevronRight className="hidden 2xl:inline-block w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+            </>
+          )}
 
-          <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
-
-          <div className="flex items-center gap-1.5 whitespace-nowrap shrink-0">
-            <span className="text-slate-700 dark:text-slate-200 font-medium">
-              {currentRole?.title || 'Cadeira'}
-            </span>
-            <span className="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+          {/* Chair Badge & Name with safe truncation */}
+          <div className="flex items-center gap-1.5 min-w-0 shrink">
+            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
               {currentRole?.code || 'CAD-01'}
+            </span>
+            <span 
+              className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[130px] sm:max-w-[170px] lg:max-w-[210px]" 
+              title={currentRole?.title}
+            >
+              {currentRole?.title || 'Cadeira'}
             </span>
           </div>
 
           <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
-          <span className="text-slate-900 dark:text-white font-semibold tracking-tight whitespace-nowrap shrink-0">
+          {/* Current Active Section Name - Always fully visible, never clipped */}
+          <span className="text-slate-900 dark:text-white font-bold tracking-tight text-xs sm:text-sm whitespace-nowrap shrink-0">
             {getTabLabel(activeTab)}
           </span>
         </nav>
       </div>
 
       {/* Right: Date control, Actions, Theme Toggle */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         
         {/* Date Selector with Previous/Next Arrows */}
         <div className="flex items-center bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1e293b] rounded-lg shrink-0 shadow-xs overflow-hidden">
@@ -174,10 +184,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Action Button: Formal Meeting Minute */}
         <button
           onClick={onOpenMinuteModal}
-          className="flex items-center gap-1.5 bg-atlas-600 hover:bg-atlas-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          className="flex items-center gap-1.5 bg-atlas-600 hover:bg-atlas-700 text-white px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
           <FileCheck2 className="w-3.5 h-3.5 text-white/90" />
-          <span>Lavrar Ata do Despacho</span>
+          <span>Lavrar Ata<span className="hidden xl:inline"> do Despacho</span></span>
         </button>
 
         {/* Theme Toggle (Light / Dark) */}
