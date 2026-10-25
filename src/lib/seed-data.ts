@@ -540,3 +540,116 @@ export const INITIAL_USERS: SystemUser[] = [
     "createdAt": "2026-10-15T18:28:19.927Z"
   }
 ];
+
+export const INITIAL_ACTIONS: import('./types').GovernanceAction[] = [
+  {
+    id: "act-01",
+    title: "Auditoria de campo com Checklist Fácil em 14 postos da Zona Sul e relatório de conformidade",
+    roleId: "role-1792084692479",
+    roleTitle: "Head de Operações",
+    roleCode: "CAD-OPE-04",
+    assigneeName: "Marcos Oliveira (Head de Operações)",
+    dueDate: "2026-10-28",
+    status: "in_progress",
+    priority: "high",
+    category: "Operações & Postos",
+    notes: "Auditados 9 postos até o momento. Identificada necessidade de reposição imediata de uniformes em 2 postos.",
+    historyNotes: [
+      {
+        id: "hn-01",
+        authorName: "Cristiano Silva (CEO)",
+        content: "Alinhado no despacho operacional: exigir registro fotográfico dos maquinários.",
+        createdAt: "2026-10-24T10:30:00Z"
+      },
+      {
+        id: "hn-02",
+        authorName: "Marcos Oliveira",
+        content: "9 postos vistoriados. Restam 5 contratos com visita agendada até quinta-feira.",
+        createdAt: "2026-10-25T08:45:00Z"
+      }
+    ],
+    minuteTitle: "Despacho Operacional • Cobertura & Auditorias",
+    meetingDate: "2026-10-24",
+    createdAt: "2026-10-24T11:00:00Z"
+  },
+  {
+    id: "act-02",
+    title: "Escalonar folguistas de reserva técnica para garantir 100% de cobertura nos postos críticos",
+    roleId: "role-1792084692479",
+    roleTitle: "Head de Operações",
+    roleCode: "CAD-OPE-04",
+    assigneeName: "Marcos Oliveira (Head de Operações)",
+    dueDate: "2026-10-26",
+    status: "pending",
+    priority: "urgent",
+    category: "Operações & Postos",
+    notes: "Mesa de Operações definindo 4 diaristas reservas para contingência no contrato industrial.",
+    minuteTitle: "Despacho Operacional • Cobertura & Auditorias",
+    meetingDate: "2026-10-24",
+    createdAt: "2026-10-24T11:15:00Z"
+  },
+  {
+    id: "act-03",
+    title: "Conferência prévia de espelhos de ponto biométrico para fechamento no dia 25",
+    roleId: "role-rh-02",
+    roleTitle: "Departamento Pessoal & Folha (DP)",
+    roleCode: "CAD-DP-02",
+    assigneeName: "Lucas Ribeiro (DP Titular)",
+    dueDate: "2026-10-25",
+    status: "in_progress",
+    priority: "high",
+    category: "Ponto & Folha de Pagamento",
+    notes: "2 contratos com inconsistência nas marcações móveis. Supervisores em campo já acionados.",
+    minuteTitle: "Rito de Fechamento de Ponto e Contingências",
+    meetingDate: "2026-10-23",
+    createdAt: "2026-10-23T14:30:00Z"
+  },
+  {
+    id: "act-04",
+    title: "Homologação de 3 rescisões críticas com blindagem expressa dos 10 dias da CLT",
+    roleId: "role-rh-02",
+    roleTitle: "Departamento Pessoal & Folha (DP)",
+    roleCode: "CAD-DP-02",
+    assigneeName: "Lucas Ribeiro (DP Titular)",
+    dueDate: "2026-10-27",
+    status: "pending",
+    priority: "urgent",
+    category: "Rescisões & CLT",
+    notes: "Termos gerados no eSocial. Aguardando exames demissionais para envio ao pagamento na tarde do dia 27.",
+    minuteTitle: "Rito de Fechamento de Ponto e Contingências",
+    meetingDate: "2026-10-23",
+    createdAt: "2026-10-23T14:45:00Z"
+  },
+  {
+    id: "act-05",
+    title: "Conferência de medições de químicos e retenção de boleto com glosa até refaturamento",
+    roleId: "role-fin-01",
+    roleTitle: "Controladoria & Finanças",
+    roleCode: "CAD-FIN-01",
+    assigneeName: "Ana Beatriz (Controladoria)",
+    dueDate: "2026-10-26",
+    status: "in_progress",
+    priority: "medium",
+    category: "Contas a Pagar & Insumos",
+    notes: "Glosa de R$ 1.840,00 aprovada com fornecedor. Aguardando emissão do novo boleto no DDA para o CEO liberar à tarde.",
+    minuteTitle: "Mesa de Despacho • Finanças & Pagamentos",
+    meetingDate: "2026-10-24",
+    createdAt: "2026-10-24T16:00:00Z"
+  },
+  {
+    id: "act-06",
+    title: "Consolidação da DRE Gerencial Previsto x Realizado por Contrato",
+    roleId: "role-fin-01",
+    roleTitle: "Controladoria & Finanças",
+    roleCode: "CAD-FIN-01",
+    assigneeName: "Ana Beatriz (Controladoria)",
+    dueDate: "2026-10-31",
+    status: "pending",
+    priority: "high",
+    category: "Resultados & DRE",
+    notes: "Aguardando apuração completa da folha, encargos dia 20 e benefícios do mês para fechar margem de contribuição.",
+    minuteTitle: "Conselho de Resultados & Margens",
+    meetingDate: "2026-10-21",
+    createdAt: "2026-10-21T18:00:00Z"
+  }
+];

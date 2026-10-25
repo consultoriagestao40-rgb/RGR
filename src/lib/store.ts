@@ -8,9 +8,11 @@ import {
   RoutineBlockWithExecution,
   ExecutionStatus,
   GovernanceMinute,
-  SystemUser
+  SystemUser,
+  GovernanceAction,
+  ActionNote
 } from './types';
-import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_MINUTES, INITIAL_USERS } from './seed-data';
+import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_MINUTES, INITIAL_USERS, INITIAL_ACTIONS } from './seed-data';
 import { prisma } from './prisma';
 
 interface AppStore {
@@ -28,6 +30,7 @@ interface AppStore {
   };
   minutes: GovernanceMinute[];
   users: SystemUser[];
+  actions: GovernanceAction[];
 }
 
 // No ambiente serverless da Vercel, o diretório raiz é somente leitura (read-only)
@@ -45,7 +48,8 @@ function getInitialStore(): AppStore {
     executions: [],
     dispatchNotes: {},
     minutes: INITIAL_MINUTES,
-    users: INITIAL_USERS
+    users: INITIAL_USERS,
+    actions: INITIAL_ACTIONS
   };
 }
 
@@ -66,6 +70,9 @@ function readStore(): AppStore {
     }
     if (!parsed.users || !Array.isArray(parsed.users) || parsed.users.length === 0) {
       parsed.users = INITIAL_USERS;
+    }
+    if (!parsed.actions || !Array.isArray(parsed.actions) || parsed.actions.length === 0) {
+      parsed.actions = INITIAL_ACTIONS;
     }
     if (parsed.rituals && Array.isArray(parsed.rituals)) {
       for (const initRit of INITIAL_RITUALS) {
@@ -930,6 +937,91 @@ export async function deleteMinute(id: string): Promise<boolean> {
   store.minutes = store.minutes.filter(m => m.id !== id);
   writeStore(store);
   return true;
+}
+
+// =========================================================================
+// 6.5. GOVERNANCE ACTIONS (5W2H) & PLANOS DE AÇÃO
+// =========================================================================
+
+export async function getActions(filterRoleId?: string): Promise<GovernanceAction[]> {
+  const store = readStore();
+  let list = store.actions || [];
+  if (filterRoleId && filterRoleId !== 'all') {
+    list = list.filter(a => a.roleId === filterRoleId);
+  }
+  return list.sort((a, b) => {
+    // Ordena por status (pendentes/em curso primeiro) e depois por prazo
+    if (a.status === 'completed' && b.status !== 'completed') return 1;
+    if (a.status !== 'completed' && b.status === 'completed') return -1;
+    return a.dueDate.localeCompare(b.dueDate);
+  });
+}
+
+export async function createAction(data: Omit<GovernanceAction, 'id' | 'createdAt'>): Promise<GovernanceAction> {
+  const store = readStore();
+  if (!store.actions) {
+    store.actions = [];
+  }
+  const newAction: GovernanceAction = {
+    id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    ...data,
+    createdAt: new Date().toISOString()
+  };
+  store.actions.unshift(newAction);
+  writeStore(store);
+  return newAction;
+}
+
+export async function updateAction(id: string, updates: Partial<GovernanceAction>): Promise<GovernanceAction | null> {
+  const store = readStore();
+  if (!store.actions) return null;
+  const index = store.actions.findIndex(a => a.id === id);
+  if (index === -1) return null;
+
+  store.actions[index] = {
+    ...store.actions[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  writeStore(store);
+  return store.actions[index];
+}
+
+export async function deleteAction(id: string): Promise<boolean> {
+  const store = readStore();
+  if (!store.actions) return true;
+  store.actions = store.actions.filter(a => a.id !== id);
+  writeStore(store);
+  return true;
+}
+
+export async function addActionNote(
+  actionId: string, 
+  note: { authorName: string; content: string }
+): Promise<GovernanceAction | null> {
+  const store = readStore();
+  if (!store.actions) return null;
+  const action = store.actions.find(a => a.id === actionId);
+  if (!action) return null;
+
+  if (!action.historyNotes) {
+    action.historyNotes = [];
+  }
+
+  const newNote: ActionNote = {
+    id: `note-${Date.now()}`,
+    authorName: note.authorName || 'Diretoria / CEO',
+    content: note.content,
+    createdAt: new Date().toISOString()
+  };
+
+  action.historyNotes.unshift(newNote);
+  // Atualiza também a anotação principal rápida
+  action.notes = note.content;
+  action.updatedAt = new Date().toISOString();
+
+  writeStore(store);
+  return action;
 }
 
 // =========================================================================

@@ -35,6 +35,7 @@ interface DispatchRoomTabProps {
   selectedDate: string;
   onSelectDate?: (date: string) => void;
   onOpenMinuteModal: () => void;
+  onOpenMeetingAiModal?: () => void;
 }
 
 export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
@@ -44,7 +45,8 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
   blocks,
   selectedDate,
   onSelectDate,
-  onOpenMinuteModal
+  onOpenMinuteModal,
+  onOpenMeetingAiModal
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
   const [selectedRitualId, setSelectedRitualId] = useState<string>('');
@@ -664,18 +666,31 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
             {/* Deliberações da Diretoria & Próximos Passos */}
             <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs transition-colors">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1c2638] mb-3">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1c2638] mb-3 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <FileEdit className="w-4 h-4 text-slate-500" />
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
                     {isBoardCouncil ? 'Deliberações Oficiais do Conselho & Parecer Final' : 'Deliberações Oficiais da Diretoria'}
                   </h3>
                 </div>
-                {savedSuccess && (
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" /> Salvo no Livro
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {onOpenMeetingAiModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenMeetingAiModal}
+                      className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-atlas-600 to-emerald-600 hover:from-atlas-700 hover:to-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                      title="Gravar reunião presencial ou colar transcrição para gerar relatório e tarefas automáticas"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                      <span>Agente de Reunião com IA</span>
+                    </button>
+                  )}
+                  {savedSuccess && (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Salvo no Livro
+                    </span>
+                  )}
+                </div>
               </div>
 
               <textarea

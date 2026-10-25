@@ -9,6 +9,8 @@ import { PlaybookTab } from '@/components/PlaybookTab';
 import { MinutesTab } from '@/components/MinutesTab';
 import { AdminTab } from '@/components/AdminTab';
 import { UsersManagementSection } from '@/components/UsersManagementSection';
+import { ActionsCentralTab } from '@/components/ActionsCentralTab';
+import { MeetingAiModal } from '@/components/MeetingAiModal';
 import { SopDrawer } from '@/components/SopDrawer';
 import { ObservationModal } from '@/components/ObservationModal';
 import { MinuteDraftModal } from '@/components/MinuteDraftModal';
@@ -47,7 +49,7 @@ export default function HomePage() {
     return INITIAL_RITUALS.filter(r => r.roleId === 'role-fin-01');
   });
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'actions' | 'playbook' | 'minutes' | 'admin' | 'users'>('timeline');
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -55,6 +57,7 @@ export default function HomePage() {
   const [activeObsBlock, setActiveObsBlock] = useState<RoutineBlockWithExecution | null>(null);
   const [isObsModalOpen, setIsObsModalOpen] = useState(false);
   const [isMinuteModalOpen, setIsMinuteModalOpen] = useState(false);
+  const [isMeetingAiModalOpen, setIsMeetingAiModalOpen] = useState(false);
 
   // Global Create / Edit Role Modal
   const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false);
@@ -553,6 +556,16 @@ export default function HomePage() {
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
               onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
+              onOpenMeetingAiModal={() => setIsMeetingAiModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'actions' && (
+            <ActionsCentralTab
+              roles={roles}
+              currentRole={selectedRole}
+              onOpenMeetingAiModal={() => setIsMeetingAiModalOpen(true)}
+              onSelectRole={setSelectedRoleId}
             />
           )}
 
@@ -676,6 +689,22 @@ export default function HomePage() {
         selectedDate={selectedDate}
         onSuccess={() => {
           setActiveTab('minutes');
+        }}
+      />
+
+      {/* Meeting AI Multimodal Assistant Modal */}
+      <MeetingAiModal
+        isOpen={isMeetingAiModalOpen}
+        onClose={() => setIsMeetingAiModalOpen(false)}
+        roles={roles}
+        currentRole={selectedRole}
+        activeRitual={rituals[0] || null}
+        selectedDate={selectedDate}
+        onActionsGenerated={() => {
+          setActiveTab('actions');
+        }}
+        onMinuteSaved={() => {
+          // Recarregar atas se necessário
         }}
       />
 

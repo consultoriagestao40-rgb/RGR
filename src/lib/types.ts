@@ -127,3 +127,35 @@ export interface SystemUser {
   createdAt?: string;
 }
 
+// 5W2H • Central de Ações & Planos de Governança
+export type ActionStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type ActionPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface ActionNote {
+  id: string;
+  authorName: string;
+  content: string;
+  createdAt: string; // ISO string
+}
+
+export interface GovernanceAction {
+  id: string;
+  title: string;              // O que fazer (Ação 5W2H)
+  roleId: string;             // Cadeira Responsável
+  roleTitle?: string;         // Nome amigável da cadeira
+  roleCode?: string;          // Código CAD-OPE-04, etc.
+  assigneeName: string;       // Quem (Responsável Nominal)
+  dueDate: string;            // Quando (Prazo YYYY-MM-DD)
+  status: ActionStatus;       // 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  priority: ActionPriority;   // 'low' | 'medium' | 'high' | 'urgent'
+  category: string;           // Tema (Operações, Ponto/Folha, Finanças, Compras, etc.)
+  notes: string;              // Locação principal de anotações e acompanhamento
+  historyNotes?: ActionNote[];// Histórico de anotações datadas
+  minuteId?: string;          // Vínculo com a Ata Oficial no Livro de Atas
+  minuteTitle?: string;       // Título da reunião/Ata de origem
+  ritualId?: string;          // Rito de origem
+  meetingDate?: string;       // Data em que foi deliberada
+  createdAt: string;
+  updatedAt?: string;
+}
+
