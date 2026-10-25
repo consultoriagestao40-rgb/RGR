@@ -61,9 +61,38 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
     setTimeout(() => setCopiedId(null), 2500);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const getPlaybookExportTitle = () => {
+    if (!role) return 'Playbook & POPs';
+    const cleanCode = role.code ? ` (${role.code})` : '';
+    return `${role.title}${cleanCode} - Playbook & POPs`;
   };
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = getPlaybookExportTitle();
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
+  React.useEffect(() => {
+    const handleBeforePrint = () => {
+      if (role) {
+        document.title = getPlaybookExportTitle();
+      }
+    };
+    const handleAfterPrint = () => {
+      document.title = 'RGR - Gerenciamento da Rotina & Facilities';
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [role]);
 
   if (!role) {
     return <div className="text-center py-20 text-slate-500">Selecione uma cadeira operacional.</div>;

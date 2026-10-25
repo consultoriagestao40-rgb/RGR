@@ -101,9 +101,38 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const getExportTitle = () => {
+    if (!activeRole) return 'Perfil da Cadeira';
+    const chairName = profile.positionTitle?.trim() || activeRole.title;
+    const cleanCode = activeRole.code ? ` (${activeRole.code})` : '';
+    return `${chairName}${cleanCode} - Perfil da Cadeira`;
   };
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = getExportTitle();
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
+  // Suporte a atalhos de teclado como Cmd+P / Ctrl+P
+  React.useEffect(() => {
+    const handleBeforePrint = () => {
+      document.title = getExportTitle();
+    };
+    const handleAfterPrint = () => {
+      document.title = 'RGR - Gerenciamento da Rotina & Facilities';
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [activeRole, profile.positionTitle]);
 
   if (!activeRole) {
     return (
@@ -197,15 +226,15 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
         {/* Print-Only Formal Letterhead */}
         <div className="hidden print:flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-sm font-mono tracking-tight">
-              RGR
+            <div className="w-12 h-12 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-xs font-mono tracking-tight text-center px-1">
+              {activeRole.code || 'CAD'}
             </div>
             <div>
               <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">
-                RGR • Gerenciamento da Rotina & Facilities
+                {profile.positionTitle || activeRole.title}
               </h1>
               <p className="text-[11px] text-slate-600">
-                Facilities Brasil S.A. • Dossiê Homologado de Perfil da Cadeira
+                Perfil de Função & Requisitos de Governança • Facilities Brasil S.A.
               </p>
             </div>
           </div>

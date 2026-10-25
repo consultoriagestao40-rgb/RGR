@@ -65,6 +65,39 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
     loadData();
   }, [currentRole]);
 
+  const getMinutesExportTitle = () => {
+    if (!selectedMinute) return 'Ata de Reunião';
+    const dateFormatted = selectedMinute.date ? selectedMinute.date.split('T')[0] : '';
+    return `Ata - ${selectedMinute.title}${dateFormatted ? ` (${dateFormatted})` : ''}`;
+  };
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = getMinutesExportTitle();
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      if (selectedMinute) {
+        document.title = getMinutesExportTitle();
+      }
+    };
+    const handleAfterPrint = () => {
+      document.title = 'RGR - Gerenciamento da Rotina & Facilities';
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [selectedMinute]);
+
   const filtered = minutes.filter(m => 
     m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.deliberations.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -195,7 +228,7 @@ export const MinutesTab: React.FC<MinutesTabProps> = ({
                   </h2>
                 </div>
                 <button
-                  onClick={() => window.print()}
+                  onClick={handlePrint}
                   className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer no-print"
                   title="Imprimir Ata"
                 >
