@@ -348,83 +348,93 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
     <div className="space-y-6 max-w-5xl mx-auto">
       
       {/* Top Banner (Hidden in Print) */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors no-print">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-4 transition-colors no-print">
+        
+        {/* Top Navigation & Actions Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+          
+          {/* Left: Voltar + Código da Cadeira + Subtítulo */}
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
               onClick={() => setDetailRoleId(null)}
-              className="px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-xs whitespace-nowrap shrink-0"
               title="Voltar para a lista de todas as cadeiras"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Todas as Cadeiras</span>
             </button>
-            <span className="text-slate-300 dark:text-slate-700">|</span>
-            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+
+            <span className="text-slate-300 dark:text-slate-700 shrink-0">|</span>
+
+            <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800 whitespace-nowrap shrink-0">
               {activeRole.code || 'CAD-01'}
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap hidden sm:inline">
               Dossiê de Governança & Requisitos de Função
             </span>
           </div>
 
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
-            Perfil da Cadeira: {activeRole.title}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Matriz de competências (Hard/Soft Skills), enquadramento sindical, missão e atribuições homologadas pela Diretoria.
-          </p>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Chair Selector */}
+            <div className="relative">
+              <select
+                value={activeRole.id}
+                onChange={(e) => {
+                  setDetailRoleId(e.target.value);
+                  onSelectRole(e.target.value);
+                }}
+                className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 pr-8 cursor-pointer whitespace-nowrap"
+              >
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.title} ({r.code || 'CAD'})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-400 text-xs">
+                ▾
+              </div>
+            </div>
+
+            <button
+              onClick={handleCopyProfileText}
+              className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              title="Copiar texto formatado do perfil"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copiado!' : 'Copiar'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              title="Editar informações do perfil"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+              <span>Editar Perfil</span>
+            </button>
+
+            <button
+              onClick={handlePrint}
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-atlas-600 hover:bg-atlas-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer whitespace-nowrap"
+              title="Imprimir documento oficial em A4 ou salvar como PDF"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Imprimir A4 / PDF</span>
+            </button>
+          </div>
         </div>
 
-        {/* Header Actions */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Chair Selector */}
-          <div className="relative">
-            <select
-              value={activeRole.id}
-              onChange={(e) => {
-                setDetailRoleId(e.target.value);
-                onSelectRole(e.target.value);
-              }}
-              className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 pr-8 cursor-pointer"
-            >
-              {roles.map(r => (
-                <option key={r.id} value={r.id}>
-                  {r.title} ({r.code || 'CAD'})
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-400 text-xs">
-              ▾
-            </div>
-          </div>
-
-          <button
-            onClick={handleCopyProfileText}
-            className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Copiar texto formatado do perfil"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copiado!' : 'Copiar'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Editar informações do perfil"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-            <span>Editar Perfil</span>
-          </button>
-
-          <button
-            onClick={handlePrint}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-atlas-600 hover:bg-atlas-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-            title="Imprimir documento oficial em A4 ou salvar como PDF"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Imprimir A4 / PDF</span>
-          </button>
+        {/* Title & Description */}
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Perfil da Cadeira: {activeRole.title}
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Matriz de competências (Hard/Soft Skills), enquadramento sindical, missão e atribuições homologadas pela Diretoria.
+          </p>
         </div>
       </div>
 
