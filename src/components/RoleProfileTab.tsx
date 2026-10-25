@@ -437,8 +437,8 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
         {/* Print-Only Formal Letterhead */}
         <div className="hidden print:flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-xs font-mono tracking-tight text-center px-1">
-              {activeRole.code || 'CAD'}
+            <div className="w-10 h-10 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-xs font-mono tracking-tight text-center shrink-0">
+              RGR
             </div>
             <div>
               <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">

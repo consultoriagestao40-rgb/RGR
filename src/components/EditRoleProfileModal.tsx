@@ -162,15 +162,20 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/60">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-mono font-bold text-xs shadow-xs">
-              {role.code || 'CAD'}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-atlas-50 dark:bg-atlas-950/80 border border-atlas-200 dark:border-atlas-800 text-atlas-600 dark:text-atlas-400 flex items-center justify-center shrink-0 shadow-xs">
+              <Briefcase className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Editar Perfil da Cadeira • {role.title}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shrink-0">
+                  {role.code || 'CAD-01'}
+                </span>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  Editar Perfil da Cadeira • {role.title}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Configure os requisitos formais, CCT sindical, responsabilidades e competências exigidas para esta cadeira.
               </p>
             </div>
@@ -178,7 +183,7 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
