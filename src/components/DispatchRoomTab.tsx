@@ -341,39 +341,52 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
         </div>
 
-        {/* Row 2: Ritos Agendados para a Data Ativa */}
+        {/* Row 2: Seletor em Lista Suspensa dos Ritos Agendados para a Data Ativa */}
         {effectiveRituals.length > 0 && (
-          <div className="flex items-center gap-2.5 w-full pt-1">
-            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1 font-mono">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              Ritos da Data ({effectiveRituals.length}):
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full pt-1">
+            <div className="flex items-center gap-2.5 flex-1 max-w-2xl">
+              <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1 font-mono">
+                <Clock className="w-3.5 h-3.5 text-atlas-500" />
+                Ritos da Data ({effectiveRituals.length}):
+              </span>
 
-            {/* Ritual Switcher Buttons (Full Width Scrollable) */}
-            <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-lg overflow-x-auto gap-1.5 scrollbar-thin">
-              {effectiveRituals.map(rit => {
-                const isCouncilRitual = rit.type === 'board_council' || rit.code?.startsWith('CON') || rit.title?.toLowerCase().includes('conselho');
-                const isSelected = selectedRitualId === rit.id;
-                const freqText = formatRitualFrequency(rit);
-                return (
-                  <button
-                    key={rit.id}
-                    onClick={() => handleSelectRitual(rit)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ${
-                      isSelected
-                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {isCouncilRitual ? <Landmark className="w-3.5 h-3.5 text-amber-500" /> : <Clock className="w-3.5 h-3.5 text-slate-400" />}
-                    <span>{rit.timeSlot} • {rit.title.replace('Despacho', '').replace('Alinhamento', '').replace('Sessão Deliberativa do', '').replace('Comitê Mensal de', '').slice(0, 36)}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-slate-200/70 dark:bg-slate-800 text-slate-500">
-                      {freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText}
-                    </span>
-                  </button>
-                );
-              })}
+              <div className="flex-1 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                {isBoardCouncil ? (
+                  <Landmark className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                ) : (
+                  <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                )}
+                <select
+                  value={selectedRitualId}
+                  onChange={(e) => {
+                    const chosen = effectiveRituals.find(r => r.id === e.target.value);
+                    if (chosen) handleSelectRitual(chosen);
+                  }}
+                  className="w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer text-xs"
+                >
+                  {effectiveRituals.map(rit => {
+                    const freqText = formatRitualFrequency(rit);
+                    const shortFreq = freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText;
+                    return (
+                      <option key={rit.id} value={rit.id} className="dark:bg-slate-900">
+                        {rit.timeSlot} • {rit.title} [{shortFreq}]
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
             </div>
+
+            {activeRitual && (
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                <span className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                  {formatRitualFrequency(activeRitual)}
+                </span>
+                <span className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 font-semibold">
+                  Duração: {activeRitual.durationMinutes} min
+                </span>
+              </div>
+            )}
           </div>
         )}
 
