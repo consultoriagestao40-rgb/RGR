@@ -72,18 +72,61 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
     'Mariana Costa (Relatora Financeira)'
   ]);
 
-  // Ritos programados estritamente para a data ativa (diários em dias úteis, semanais nos dias da semana e mensais nas datas definidas)
+  // Garante que a Sessão Deliberativa do Conselho (Votação Nominal) esteja sempre disponível para deliberação
+  const allChairRituals = React.useMemo<DailyRitual[]>(() => {
+    const hasCouncil = rituals.some(
+      r => r.type === 'board_council' || r.code?.startsWith('CON') || r.title?.toLowerCase().includes('conselho')
+    );
+    if (hasCouncil) return rituals;
+
+    const defaultCouncilRitual: DailyRitual = {
+      id: 'ritual-board-01',
+      roleId: selectedRoleId || 'role-fin-01',
+      code: 'CON-DIR-01',
+      timeSlot: '14:00',
+      title: 'Sessão Deliberativa do Conselho de Administração & Diretoria',
+      durationMinutes: 45,
+      type: 'board_council',
+      frequency: 'weekly',
+      weekDays: [4],
+      includeWeekends: false,
+      agendaItems: [
+        'Homologação do Orçamento Extraordinário de Suprimentos & Químicos de Facilities',
+        'Aprovação do Novo Regulamento Interno de Escalas, Benefícios e Banco de Horas',
+        'Deliberação sobre Aporte de Capital para Aquisição de Lavadoras e Enceradeiras Industriais',
+        'Aprovação da Rescisão Contratual e Substituição de Fornecedor de Uniformes em Atraso'
+      ]
+    };
+    return [...rituals, defaultCouncilRitual];
+  }, [rituals, selectedRoleId]);
+
+  const boardCouncilRitual = React.useMemo(() => {
+    return allChairRituals.find(
+      r => r.type === 'board_council' || r.code?.startsWith('CON') || r.title?.toLowerCase().includes('conselho')
+    );
+  }, [allChairRituals]);
+
+  // Ritos programados para a data ativa vs demais ritos (Conselho / Semanais / Mensais)
   const isCurrentWeekend = isWeekend(selectedDate);
+  const scheduledTodayRituals = React.useMemo(() => {
+    return allChairRituals.filter(r => isRitualScheduledForDate(r, selectedDate));
+  }, [allChairRituals, selectedDate]);
+
+  const otherChairRituals = React.useMemo(() => {
+    return allChairRituals.filter(r => !isRitualScheduledForDate(r, selectedDate));
+  }, [allChairRituals, selectedDate]);
+
   const effectiveRituals = React.useMemo(() => {
-    return rituals.filter(r => isRitualScheduledForDate(r, selectedDate));
-  }, [rituals, selectedDate]);
+    return allChairRituals;
+  }, [allChairRituals]);
 
   useEffect(() => {
-    if (effectiveRituals.length > 0 && (!selectedRitualId || !effectiveRituals.some(r => r.id === selectedRitualId))) {
-      setSelectedRitualId(effectiveRituals[0].id);
-      setTimerSeconds((effectiveRituals[0].durationMinutes || 15) * 60);
+    if (allChairRituals.length > 0 && (!selectedRitualId || !allChairRituals.some(r => r.id === selectedRitualId))) {
+      const firstDefault = scheduledTodayRituals[0] || allChairRituals[0];
+      setSelectedRitualId(firstDefault.id);
+      setTimerSeconds((firstDefault.durationMinutes || 15) * 60);
     }
-  }, [effectiveRituals, selectedRitualId]);
+  }, [allChairRituals, scheduledTodayRituals, selectedRitualId]);
 
   useEffect(() => {
     if (!selectedRitualId) return;
@@ -341,21 +384,66 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
         </div>
 
-        {/* Row 2: Seletor em Lista Suspensa dos Ritos Agendados para a Data Ativa */}
+        {/* Row 2: Alternador Direto (Despacho vs Votação do Conselho) + Lista Suspensa de Ritos */}
         {effectiveRituals.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full pt-1">
-            <div className="flex items-center gap-2.5 flex-1 max-w-2xl">
-              <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1 font-mono">
-                <Clock className="w-3.5 h-3.5 text-atlas-500" />
-                Ritos da Data ({effectiveRituals.length}):
-              </span>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full pt-1">
+            
+            {/* Quick Mode Switcher: Despacho Operacional vs Pautas Deliberativas (Votação) */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const firstOperational = scheduledTodayRituals.find(
+                    r => r.type !== 'board_council' && !r.code?.startsWith('CON') && !r.title?.toLowerCase().includes('conselho')
+                  ) || effectiveRituals.find(
+                    r => r.type !== 'board_council' && !r.code?.startsWith('CON') && !r.title?.toLowerCase().includes('conselho')
+                  );
+                  if (firstOperational) handleSelectRitual(firstOperational);
+                }}
+                className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer whitespace-nowrap ${
+                  !isBoardCouncil
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Despacho Operacional</span>
+              </button>
 
+              {boardCouncilRitual && (
+                <button
+                  type="button"
+                  onClick={() => handleSelectRitual(boardCouncilRitual)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer whitespace-nowrap ${
+                    isBoardCouncil
+                      ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 border-amber-400 shadow-sm'
+                      : 'bg-amber-50/80 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/70 hover:bg-amber-100/80 dark:hover:bg-amber-900/40'
+                  }`}
+                >
+                  <Landmark className="w-3.5 h-3.5" />
+                  <span>Pautas Deliberativas • Votação do Conselho</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                    isBoardCouncil
+                      ? 'bg-slate-950/15 text-slate-950 font-extrabold'
+                      : 'bg-amber-200/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200'
+                  }`}>
+                    {boardCouncilRitual.agendaItems?.length || 0} Pautas
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown Selector (Lista Suspensa de Todos os Ritos da Cadeira) */}
+            <div className="flex items-center gap-2 flex-1 max-w-xl">
               <div className="flex-1 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                 {isBoardCouncil ? (
                   <Landmark className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 ) : (
-                  <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <Clock className="w-3.5 h-3.5 text-atlas-500 shrink-0" />
                 )}
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 font-mono">
+                  Rito:
+                </span>
                 <select
                   value={selectedRitualId}
                   onChange={(e) => {
@@ -364,29 +452,42 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                   }}
                   className="w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer text-xs"
                 >
-                  {effectiveRituals.map(rit => {
-                    const freqText = formatRitualFrequency(rit);
-                    const shortFreq = freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText;
-                    return (
-                      <option key={rit.id} value={rit.id} className="dark:bg-slate-900">
-                        {rit.timeSlot} • {rit.title} [{shortFreq}]
-                      </option>
-                    );
-                  })}
+                  {scheduledTodayRituals.length > 0 && (
+                    <optgroup label={`Programados para a Data (${formatDateBR(selectedDate)})`} className="dark:bg-slate-900">
+                      {scheduledTodayRituals.map(rit => {
+                        const freqText = formatRitualFrequency(rit);
+                        const shortFreq = freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText;
+                        return (
+                          <option key={rit.id} value={rit.id} className="dark:bg-slate-900">
+                            {rit.timeSlot} • {rit.title} [{shortFreq}]
+                          </option>
+                        );
+                      })}
+                    </optgroup>
+                  )}
+                  {otherChairRituals.length > 0 && (
+                    <optgroup label="Conselho & Ritos Semanais / Mensais da Cadeira" className="dark:bg-slate-900">
+                      {otherChairRituals.map(rit => {
+                        const freqText = formatRitualFrequency(rit);
+                        const shortFreq = freqText.includes('(') ? freqText.split('(')[1].replace(')', '') : freqText;
+                        return (
+                          <option key={rit.id} value={rit.id} className="dark:bg-slate-900">
+                            {rit.timeSlot} • {rit.title} [{shortFreq}]
+                          </option>
+                        );
+                      })}
+                    </optgroup>
+                  )}
                 </select>
               </div>
+
+              {activeRitual && (
+                <span className="hidden xl:inline-flex text-[10px] font-mono px-2.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 font-semibold whitespace-nowrap shrink-0">
+                  {activeRitual.durationMinutes} min
+                </span>
+              )}
             </div>
 
-            {activeRitual && (
-              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
-                  {formatRitualFrequency(activeRitual)}
-                </span>
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 font-semibold">
-                  Duração: {activeRitual.durationMinutes} min
-                </span>
-              </div>
-            )}
           </div>
         )}
 

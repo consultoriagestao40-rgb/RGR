@@ -454,6 +454,26 @@ export const INITIAL_RITUALS: DailyRitual[] = [
       "Auditar custos da semana com diárias operacionais e horas extras de cobertura",
       "Apresentar previsão de novos aditivos contratuais e cronograma de implantação de novos clientes"
     ]
+  },
+  {
+    "id": "ritual-board-01",
+    "roleId": "role-fin-01",
+    "code": "CON-DIR-01",
+    "timeSlot": "14:00",
+    "title": "Sessão Deliberativa do Conselho de Administração & Diretoria",
+    "durationMinutes": 45,
+    "type": "board_council",
+    "frequency": "weekly",
+    "weekDays": [
+      4
+    ],
+    "includeWeekends": false,
+    "agendaItems": [
+      "Homologação do Orçamento Extraordinário de Suprimentos & Químicos de Facilities",
+      "Aprovação do Novo Regulamento Interno de Escalas, Benefícios e Banco de Horas",
+      "Deliberação sobre Aporte de Capital para Aquisição de Lavadoras e Enceradeiras Industriais",
+      "Aprovação da Rescisão Contratual e Substituição de Fornecedor de Uniformes em Atraso"
+    ]
   }
 ];
 
