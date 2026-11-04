@@ -1236,69 +1236,63 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           </button>
         </div>
 
-        {/* Ordem do Dia Estruturada (Padrão Atlas Governance) */}
+        {/* Ordem do Dia em Linhas Padronizadas (Igual Atividades POP) */}
         {filteredAgendas.length === 0 ? (
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-400">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-400">
             Nenhuma pauta cadastrada nesta categoria.
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {filteredAgendas.map((agenda, idx) => {
               const summary = agenda.isDeliberative ? getVotingSummary(agenda) : null;
 
               return (
                 <div
                   key={agenda.id}
-                  className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-5 shadow-xs space-y-4 transition-colors"
+                  className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors space-y-3"
                 >
-                  {/* Linha 1: Número da Pauta, Categoria, Título e Badge de Quórum */}
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
-                    <div className="space-y-1.5 max-w-3xl">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                          PAUTA {idx + 1}.0
-                        </span>
-                        {agenda.isFixed && (
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-800">
-                            Pauta Fixa Recorrente
-                          </span>
-                        )}
-                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
-                          agenda.isDeliberative 
-                            ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800 font-bold'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200'
-                        }`}>
-                          {agenda.isDeliberative ? 'Deliberação Nominal' : 'Informativa'}
-                        </span>
-                        {agenda.category && (
-                          <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
-                            <Tag className="w-3 h-3" />
-                            {agenda.category}
-                          </span>
-                        )}
-                      </div>
+                  {/* Linha Principal: Tag Código + Categoria + Título + Badge de Quórum + Ações */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
+                      {/* Código da Pauta */}
+                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                        PAUTA {idx + 1}.0
+                      </span>
 
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
-                        {agenda.title}
-                      </h3>
+                      {/* Natureza da Pauta */}
+                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border shrink-0 ${
+                        agenda.isDeliberative 
+                          ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {agenda.isDeliberative ? 'Deliberação Nominal' : 'Informativa'}
+                      </span>
 
-                      {agenda.description && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                          {agenda.description}
-                        </p>
+                      {/* Recorrência */}
+                      {agenda.isFixed && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-900 shrink-0">
+                          Fixa (Recorrente)
+                        </span>
                       )}
+
+                      {/* Título da Pauta */}
+                      <span className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                        {agenda.title}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                    {/* Lado Direito: Status / Quórum + Excluir */}
+                    <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-auto">
                       {summary && (
-                        <span className={`text-xs px-3 py-1 rounded-full border uppercase tracking-wider font-semibold ${summary.badgeClass}`}>
+                        <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border uppercase tracking-wider ${summary.badgeClass}`}>
                           {summary.badgeText}
                         </span>
                       )}
+
                       <button
                         type="button"
                         onClick={() => handleDeleteAgenda(agenda.id)}
-                        className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                         title="Excluir Pauta"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1306,25 +1300,32 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     </div>
                   </div>
 
-                  {/* Votação Nominal em Formato de Tabela Discreta (Atlas Governance Style) */}
+                  {/* Contexto da Pauta (se houver) */}
+                  {agenda.description && (
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 pl-1 leading-relaxed">
+                      <strong className="text-slate-600 dark:text-slate-300 font-medium">Contexto:</strong> {agenda.description}
+                    </div>
+                  )}
+
+                  {/* Linha de Votação Nominal dos Conselheiros (Se for deliberativa) */}
                   {agenda.isDeliberative && (
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                        <span>Votação dos Conselheiros da Mesa:</span>
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        <span>Assentos & Votação Nominal ({voters.length} Conselheiros Aptos):</span>
                         <span className="font-mono text-slate-500">
-                          A favor: {summary?.favorable || 0} | Contra: {summary?.contrary || 0} | Abstenções: {summary?.abstention || 0}
+                          A favor: {summary?.favorable || 0} • Contra: {summary?.contrary || 0} • Abstenções: {summary?.abstention || 0}
                         </span>
                       </div>
 
-                      {/* Tabela de Votantes */}
-                      <div className="border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/40 dark:bg-slate-900/30">
+                      {/* Tabela Limpa de Votantes da Pauta */}
+                      <div className="border border-slate-200/80 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50/50 dark:bg-slate-900/40">
                         <table className="w-full text-left text-xs border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-200/70 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/80 text-[10px] uppercase font-mono text-slate-500">
-                              <th className="py-2 px-3">Conselheiro com Assento</th>
-                              <th className="py-2 px-3">Cargo / Função</th>
-                              <th className="py-2 px-3 text-center">Voto Registrado</th>
-                              <th className="py-2 px-3 text-right">Manifestação de Voto</th>
+                            <tr className="border-b border-slate-200/60 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/70 text-[10px] uppercase font-mono text-slate-400">
+                              <th className="py-2 px-3">Conselheiro da Mesa</th>
+                              <th className="py-2 px-3">Cargo / Assento</th>
+                              <th className="py-2 px-3 text-center">Status do Voto</th>
+                              <th className="py-2 px-3 text-right">Manifestação</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -1332,8 +1333,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               const vote = agenda.votes[voter.name];
 
                               return (
-                                <tr key={voter.id} className="hover:bg-white dark:hover:bg-slate-800/40 transition-colors">
-                                  <td className="py-2 px-3 font-semibold text-slate-800 dark:text-slate-200">
+                                <tr key={voter.id} className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
+                                  <td className="py-2 px-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">
                                     {voter.name}
                                   </td>
                                   <td className="py-2 px-3 text-slate-500 text-[11px]">
@@ -1408,16 +1409,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   )}
 
                   {/* Resolução e Deliberação da Pauta */}
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-                      Resolução / Deliberação Final da Mesa:
-                    </label>
+                  <div className="pt-1">
                     <input
                       type="text"
-                      placeholder="Registre a decisão formal, diretrizes e determinações aprovadas para esta pauta..."
+                      placeholder="Registre o parecer do relator ou a deliberação formal desta pauta..."
                       value={agenda.resolutionNote || ''}
                       onChange={(e) => handleUpdateResolution(agenda.id, e.target.value)}
-                      className="w-full px-3 py-2 text-xs bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
                     />
                   </div>
                 </div>
