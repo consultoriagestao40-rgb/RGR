@@ -746,7 +746,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 4. Interactive Status Pill & Priority Level */}
+                        {/* 4. Interactive Status Pill & Priority Level (Padronizados) */}
                         <td className="py-4 px-4 align-top whitespace-nowrap">
                           <div className="flex flex-col items-start gap-1.5">
                             <button
@@ -757,7 +757,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                                   action.status === 'in_progress' ? 'completed' : 'pending';
                                 handleUpdateStatus(action.id, nextStatus);
                               }}
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                              className={`w-[120px] h-[27px] flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
                                 action.status === 'completed'
                                   ? 'bg-emerald-600 text-white border-emerald-700'
                                   : action.status === 'in_progress'
@@ -784,21 +784,21 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                               )}
                             </button>
 
-                            {/* Nível de Prioridade em baixo do Status */}
+                            {/* Nível de Prioridade Padronizado (Mesma largura e arredondamento) */}
                             {action.priority === 'urgent' ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
+                              <span className="w-[120px] h-[23px] flex items-center justify-center gap-1 text-[10px] font-mono font-bold rounded-lg bg-rose-100 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
                                 <Flame className="w-3 h-3" /> URGENTE
                               </span>
                             ) : action.priority === 'high' ? (
-                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
+                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-bold rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
                                 ALTA PRIORIDADE
                               </span>
                             ) : action.priority === 'medium' ? (
-                              <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                                 MÉDIA
                               </span>
                             ) : (
-                              <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200/60 dark:border-slate-800 whitespace-nowrap">
+                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-semibold rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200/60 dark:border-slate-800 whitespace-nowrap">
                                 BAIXA
                               </span>
                             )}
