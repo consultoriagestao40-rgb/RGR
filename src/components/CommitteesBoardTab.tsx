@@ -19,21 +19,22 @@ import {
   Clock, 
   ChevronRight, 
   ShieldCheck, 
-  PieChart, 
-  TrendingUp, 
   Briefcase, 
   FolderPlus,
   Send,
-  MessageSquare,
-  Award,
-  Filter,
-  ArrowLeft,
-  Settings,
   UserCheck,
   Building2,
   CalendarDays,
   Search,
-  Check
+  Check,
+  ArrowLeft,
+  Settings,
+  MoreVertical,
+  CheckSquare,
+  Square,
+  HelpCircle,
+  FileCode,
+  Tag
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
@@ -42,7 +43,7 @@ export interface BoardMember {
   id: string;
   name: string;
   roleDescription: string;
-  isVoter: boolean; // true = conselheiro votante; false = ouvinte/secretaria
+  isVoter: boolean; // true = vota; false = ouvinte
   avatarColor?: string;
 }
 
@@ -50,8 +51,8 @@ export interface CommitteeAgendaItem {
   id: string;
   title: string;
   description?: string;
-  isFixed: boolean; // true = pauta fixa/recorrente; false = pauta extraordinária/avulsa
-  isDeliberative: boolean; // true = votação nominal; false = informativa/alinhamento
+  isFixed: boolean; // true = pauta fixa recorrente; false = avulsa
+  isDeliberative: boolean; // true = votação nominal; false = informativa
   category?: string;
   votes: { [memberName: string]: VoteChoice };
   resolutionNote?: string;
@@ -65,7 +66,7 @@ export interface CommitteeConfig {
   description: string;
   presidentName: string;
   presidentRole: string;
-  cadence: string; // Ex: 'Mensal (Última quinta-feira)', 'Quinzenal'
+  cadence: string; // Ex: 'Mensal', 'Quinzenal'
   members: BoardMember[];
   agendas: CommitteeAgendaItem[];
 }
@@ -91,7 +92,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   onNavigateToActions,
   onNavigateToMinutes
 }) => {
-  // Lista inicial padrão de Colegiados
+  // Lista Padrão de Colegiados
   const defaultCommittees: CommitteeConfig[] = [
     {
       id: 'board-01',
@@ -103,10 +104,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       presidentRole: 'Diretoria Executiva / CEO & Presidente do Conselho',
       cadence: 'Mensal (Última Quinta-feira do Mês)',
       members: [
-        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'CEO & Presidente do Conselho', isVoter: true, avatarColor: 'bg-slate-900' },
-        { id: 'm2', name: 'Ana Beatriz', roleDescription: 'Diretora de Controladoria & Finanças', isVoter: true, avatarColor: 'bg-emerald-700' },
-        { id: 'm3', name: 'Marcos Oliveira', roleDescription: 'Diretor de Operações & Facilities', isVoter: true, avatarColor: 'bg-amber-700' },
-        { id: 'm4', name: 'Secretaria de Governança', roleDescription: 'Redatora de Ata & Compliance', isVoter: false, avatarColor: 'bg-slate-500' }
+        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'CEO & Presidente do Conselho', isVoter: true },
+        { id: 'm2', name: 'Ana Beatriz', roleDescription: 'Diretora de Controladoria & Finanças', isVoter: true },
+        { id: 'm3', name: 'Marcos Oliveira', roleDescription: 'Diretor de Operações & Facilities', isVoter: true },
+        { id: 'm4', name: 'Secretaria de Governança', roleDescription: 'Redatora de Ata & Compliance', isVoter: false }
       ],
       agendas: [
         {
@@ -151,9 +152,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       presidentRole: 'Presidente do Comitê de Resultados',
       cadence: 'Quinzenal (Quartas-feiras às 15:00)',
       members: [
-        { id: 'm2', name: 'Ana Beatriz', roleDescription: 'Head de Finanças & Presidente', isVoter: true, avatarColor: 'bg-emerald-700' },
-        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'Diretoria Executiva / CEO', isVoter: true, avatarColor: 'bg-slate-900' },
-        { id: 'm5', name: 'Lucas Ribeiro', roleDescription: 'Líder de DP & Folha', isVoter: true, avatarColor: 'bg-purple-700' }
+        { id: 'm2', name: 'Ana Beatriz', roleDescription: 'Head de Finanças & Presidente', isVoter: true },
+        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'Diretoria Executiva / CEO', isVoter: true },
+        { id: 'm5', name: 'Lucas Ribeiro', roleDescription: 'Líder de DP & Folha', isVoter: true }
       ],
       agendas: [
         {
@@ -188,9 +189,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       presidentRole: 'Presidente do Comitê de Clientes & Operações',
       cadence: 'Quinzenal (Terças-feiras às 10:00)',
       members: [
-        { id: 'm3', name: 'Marcos Oliveira', roleDescription: 'Head de Operações & Presidente', isVoter: true, avatarColor: 'bg-amber-700' },
-        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'Diretoria Executiva / CEO', isVoter: true, avatarColor: 'bg-slate-900' },
-        { id: 'm6', name: 'Coordenação de Campo', roleDescription: 'Supervisor Geral de Facilities', isVoter: true, avatarColor: 'bg-blue-700' }
+        { id: 'm3', name: 'Marcos Oliveira', roleDescription: 'Head de Operações & Presidente', isVoter: true },
+        { id: 'm1', name: 'Cristiano Silva', roleDescription: 'Diretoria Executiva / CEO', isVoter: true },
+        { id: 'm6', name: 'Coordenação de Campo', roleDescription: 'Supervisor Geral de Facilities', isVoter: true }
       ],
       agendas: [
         {
@@ -217,7 +218,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }
   ];
 
-  // Estado dos colegiados
+  // Estado dos colegiados com persistência
   const [committees, setCommittees] = useState<CommitteeConfig[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('rgr_committees_state');
@@ -232,21 +233,20 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     return defaultCommittees;
   });
 
-  // Salvar no localStorage sempre que houver modificações
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('rgr_committees_state', JSON.stringify(committees));
     }
   }, [committees]);
 
-  // Colegiado atualmente aberto para sessão (null = visão geral / lista de todos os comitês)
+  // Colegiado ativo na tela (null = tabela geral; string = sessão aberta)
   const [activeCommitteeId, setActiveCommitteeId] = useState<string | null>(null);
 
-  // Busca e filtros na listagem geral
+  // Filtros da tabela geral
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'board' | 'committee'>('all');
 
-  // Modais de Criação e Configuração
+  // Modais
   const [isNewCommitteeModalOpen, setIsNewCommitteeModalOpen] = useState(false);
   const [newComName, setNewComName] = useState('');
   const [newComCode, setNewComCode] = useState('');
@@ -256,7 +256,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [newComCadence, setNewComCadence] = useState('Mensal');
   const [newComType, setNewComType] = useState<'board' | 'committee'>('committee');
 
-  // Modal para Gerenciar Assentos do Colegiado Selecionado
+  // Modal para Gerenciar Assentos
   const [managingCommitteeId, setManagingCommitteeId] = useState<string | null>(null);
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberRole, setNewMemberRole] = useState('');
@@ -273,7 +273,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   // Filtro de Pautas da Sessão
   const [agendaFilter, setAgendaFilter] = useState<'all' | 'deliberative' | 'informative' | 'fixed'>('all');
 
-  // Mensagens de status
+  // Status
   const [minuteSuccessMessage, setMinuteSuccessMessage] = useState(false);
   const [isSavingMinute, setIsSavingMinute] = useState(false);
 
@@ -287,7 +287,6 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     return committees.find(c => c.id === managingCommitteeId) || null;
   }, [committees, managingCommitteeId]);
 
-  // Colegiados filtrados na tela inicial
   const filteredCommittees = useMemo(() => {
     return committees.filter(c => {
       const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -346,7 +345,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }));
   };
 
-  // Resumo de quórum de uma pauta deliberativa
+  // Quórum Oficial (Atlas Governance)
   const getVotingSummary = (agenda: CommitteeAgendaItem) => {
     if (!activeCommittee) return { favorable: 0, contrary: 0, abstention: 0, badgeText: '', badgeClass: '' };
     const voters = activeCommittee.members.filter(m => m.isVoter);
@@ -364,26 +363,26 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     const totalVoters = voters.length;
     const votedCount = favorable + contrary + abstention;
 
-    let badgeText = `Votação Pendente (${votedCount}/${totalVoters})`;
-    let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700';
+    let badgeText = `Aguardando Votos (${votedCount}/${totalVoters})`;
+    let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
 
     if (votedCount === totalVoters && totalVoters > 0) {
       if (favorable === totalVoters) {
         badgeText = 'Aprovado por Unanimidade';
-        badgeClass = 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 font-bold';
+        badgeClass = 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 font-bold';
       } else if (favorable > contrary) {
         badgeText = `Aprovado por Maioria (${favorable} a ${contrary})`;
-        badgeClass = 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 font-bold';
+        badgeClass = 'bg-blue-50 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800 font-bold';
       } else if (contrary > favorable) {
-        badgeText = `Rejeitado (${contrary} a ${favorable})`;
-        badgeClass = 'bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 font-bold';
+        badgeText = `Rejeitado pelo Conselho (${contrary} a ${favorable})`;
+        badgeClass = 'bg-rose-50 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800 font-bold';
       } else {
-        badgeText = `Empate (${favorable} a ${contrary}) - Voto de Minerva`;
-        badgeClass = 'bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 font-bold';
+        badgeText = `Empate (${favorable}x${contrary}) - Minerva`;
+        badgeClass = 'bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 font-bold';
       }
     } else if (votedCount > 0) {
-      badgeText = `Em Votação (${votedCount}/${totalVoters})`;
-      badgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+      badgeText = `Em Deliberação (${votedCount}/${totalVoters})`;
+      badgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800';
     }
 
     return { favorable, contrary, abstention, totalVoters, votedCount, badgeText, badgeClass };
@@ -397,42 +396,42 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       const voters = activeCommittee.members.filter(m => m.isVoter);
       const listeners = activeCommittee.members.filter(m => !m.isVoter);
 
-      let deliberationsText = `## ATA DA SESSÃO OFICIAL • ${activeCommittee.name.toUpperCase()}\n`;
+      let deliberationsText = `## ATA OFICIAL DE GOVERNANÇA • ${activeCommittee.name.toUpperCase()}\n`;
       deliberationsText += `**Data da Sessão:** ${formatDateBR(selectedDate)}\n`;
-      deliberationsText += `**Presidente / Condutor:** ${activeCommittee.presidentName} (${activeCommittee.presidentRole})\n`;
-      deliberationsText += `**Periodicidade do Órgão:** ${activeCommittee.cadence}\n\n`;
+      deliberationsText += `**Presidência:** ${activeCommittee.presidentName} (${activeCommittee.presidentRole})\n`;
+      deliberationsText += `**Periodicidade:** ${activeCommittee.cadence}\n\n`;
 
-      deliberationsText += `### 1. QUÓRUM E COMPOSIÇÃO DA MESA:\n`;
+      deliberationsText += `### 1. QUÓRUM E COMPOSIÇÃO DOS ASSENTOS:\n`;
       deliberationsText += `• CONSELHEIROS VOTANTES (${voters.length}):\n`;
       voters.forEach(v => {
         deliberationsText += `  - ${v.name} (${v.roleDescription})\n`;
       });
       if (listeners.length > 0) {
-        deliberationsText += `• OUVINTES & ASSESSORES (${listeners.length}):\n`;
+        deliberationsText += `• PARTICIPANTES OUVINTES & ASSESSORIA (${listeners.length}):\n`;
         listeners.forEach(l => {
           deliberationsText += `  - ${l.name} (${l.roleDescription})\n`;
         });
       }
-      deliberationsText += `\n### 2. DELIBERAÇÕES E VOTAÇÕES NOMINAIS:\n\n`;
+      deliberationsText += `\n### 2. DELIBERAÇÕES E EXTRATO DE VOTAÇÃO NOMINAL:\n\n`;
       activeCommittee.agendas.forEach((agenda, idx) => {
         deliberationsText += `PAUTA ${idx + 1}.0 [${agenda.isDeliberative ? 'DELIBERATIVA' : 'INFORMATIVA'}]: "${agenda.title}"\n`;
         if (agenda.description) {
-          deliberationsText += `Contexto: ${agenda.description}\n`;
+          deliberationsText += `Contextualização: ${agenda.description}\n`;
         }
 
         if (agenda.isDeliberative) {
           const summary = getVotingSummary(agenda);
-          deliberationsText += `• DESFECHO DO QUÓRUM: ${summary.badgeText.toUpperCase()}\n`;
+          deliberationsText += `• RESULTADO DO QUÓRUM: ${summary.badgeText.toUpperCase()}\n`;
           deliberationsText += `• VOTOS NOMINAIS:\n`;
           voters.forEach(v => {
             const vote = agenda.votes[v.name];
-            const label = vote === 'favorable' ? 'A FAVOR' : vote === 'contrary' ? 'CONTRA' : vote === 'abstention' ? 'ABSTENÇÃO' : 'NÃO COMPUTADO';
+            const label = vote === 'favorable' ? 'A FAVOR' : vote === 'contrary' ? 'CONTRA' : vote === 'abstention' ? 'ABSTENÇÃO' : 'NÃO VOTOU';
             deliberationsText += `  - ${v.name}: [${label}]\n`;
           });
         }
 
         if (agenda.resolutionNote) {
-          deliberationsText += `• PARECER REGIMENTAL / DIRETRIZES: ${agenda.resolutionNote}\n`;
+          deliberationsText += `• RESOLUÇÃO FORMAL: ${agenda.resolutionNote}\n`;
         }
         deliberationsText += `\n`;
       });
@@ -467,21 +466,20 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   };
 
   // =========================================================================
-  // CENÁRIO 1: VISÃO GERAL DE TODOS OS COLEGIADOS (Conselho & Comitês)
-  // Estrutura em gavetas / cards executivos com gerenciamento de assentos
+  // CENÁRIO 1: TABELA CORPORATIVA DE ÓRGÃOS COLEGIADOS (Conselho & Comitês)
   // =========================================================================
   if (!activeCommittee) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
-        {/* Banner Executivo de Governança Superior */}
+        {/* Banner Superior */}
         <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                GOVERNANÇA CORPORATIVA & ESTATUTÁRIA
+                GOVERNANÇA CORPORATIVA • ATLAS FRAMEWORK
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-                Atlas Governance Framework
+                Matriz Homologada de Órgãos Colegiados
               </span>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -489,7 +487,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               <span>Conselho de Administração & Comitês Estratégicos</span>
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Mantenha o Conselho e Comitês organizados como órgãos colegiados: configure os integrantes de cada mesa, defina quóruns e abra a sessão quando houver deliberação.
+              Gerencie a composição dos assentos, conselheiros com direito a voto e acesse as pautas deliberativas de cada colegiado.
             </p>
           </div>
 
@@ -518,7 +516,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           </div>
         </div>
 
-        {/* Barra de Filtros & Busca */}
+        {/* Filtros e Busca */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -565,7 +563,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           </div>
         </div>
 
-        {/* Tabela Corporativa de Colegiados & Comitês */}
+        {/* Tabela de Colegiados */}
         <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -574,7 +572,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   <th className="py-3.5 px-4">Órgão Colegiado & Sigla</th>
                   <th className="py-3.5 px-4">Presidência & Cadência</th>
                   <th className="py-3.5 px-4">Membros da Mesa (Assentos)</th>
-                  <th className="py-3.5 px-4 text-center">Pautas Registradas</th>
+                  <th className="py-3.5 px-4 text-center">Ordem do Dia</th>
                   <th className="py-3.5 px-4 text-center">Deliberações</th>
                   <th className="py-3.5 px-4 text-right">Ações</th>
                 </tr>
@@ -592,7 +590,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         isBoard ? 'bg-amber-50/20 dark:bg-amber-950/10' : ''
                       }`}
                     >
-                      {/* Órgão Colegiado & Sigla */}
+                      {/* Sigla e Nome */}
                       <td className="py-4 px-4 align-middle">
                         <div className="flex items-center gap-2.5">
                           <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
@@ -629,7 +627,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Membros da Mesa (Assentos) */}
+                      {/* Assentos na Mesa */}
                       <td className="py-4 px-4 align-middle">
                         <div className="flex items-center gap-1.5 flex-wrap max-w-md">
                           {com.members.map(m => (
@@ -640,7 +638,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                                   ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium' 
                                   : 'bg-slate-100/60 dark:bg-slate-800/40 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 italic'
                               }`}
-                              title={`${m.name} (${m.roleDescription}) - ${m.isVoter ? 'Direito a Voto' : 'Ouvinte/Sem voto'}`}
+                              title={`${m.name} (${m.roleDescription}) - ${m.isVoter ? 'Direito a Voto' : 'Ouvinte'}`}
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                               <span className="truncate max-w-[90px]">{m.name.split(' ')[0]}</span>
@@ -657,7 +655,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Pautas Registradas */}
+                      {/* Pautas */}
                       <td className="py-4 px-4 align-middle text-center">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px]">
                           <FileText className="w-3 h-3 text-slate-400" />
@@ -665,7 +663,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </span>
                       </td>
 
-                      {/* Deliberações */}
+                      {/* Votações */}
                       <td className="py-4 px-4 align-middle text-center">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60 font-semibold text-[11px]">
                           <Vote className="w-3 h-3 text-amber-600" />
@@ -785,10 +783,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Finalidade / Descrição Estatutária</label>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Finalidade / Descrição</label>
                   <textarea
                     rows={3}
-                    placeholder="Descreva a missão deste comitê e matérias de assessoramento..."
+                    placeholder="Descreva a finalidade e escopo de atuação do comitê..."
                     value={newComDesc}
                     onChange={(e) => setNewComDesc(e.target.value)}
                     className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
@@ -846,10 +844,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   <Settings className="w-5 h-5 text-amber-500" />
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Assentos da Mesa: {managingCommittee.name}
+                      Configurar Assentos: {managingCommittee.name}
                     </h3>
                     <span className="text-[11px] text-slate-500 font-mono">
-                      Código: {managingCommittee.code}
+                      Sigla: {managingCommittee.code}
                     </span>
                   </div>
                 </div>
@@ -865,7 +863,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               {/* Lista dos Membros Cadastrados */}
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
-                  Membros Registrados ({managingCommittee.members.length}):
+                  Integrantes com Assento ({managingCommittee.members.length}):
                 </span>
 
                 {managingCommittee.members.map(member => (
@@ -913,7 +911,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         type="button"
                         onClick={() => {
                           if (managingCommittee.members.length <= 1) {
-                            alert('O comitê precisa ter pelo menos um membro na mesa.');
+                            alert('O colegiado precisa ter pelo menos um membro na mesa.');
                             return;
                           }
                           setCommittees(prev => prev.map(c => {
@@ -937,10 +935,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               {/* Formulário: Adicionar Novo Membro */}
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
                 <span className="text-[11px] font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <span>+ Adicionar Novo Integrante</span>
+                  <span>+ Adicionar Novo Assento na Mesa</span>
                 </span>
 
-                {/* Importar de Usuários do Sistema */}
                 {users && users.length > 0 && (
                   <div>
                     <label className="text-[10px] text-slate-500 font-medium block mb-1">
@@ -951,7 +948,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         const u = users.find(usr => usr.id === e.target.value);
                         if (u) {
                           setNewMemberName(u.name);
-                          setNewMemberRole(u.jobTitle || 'Membro do Comitê');
+                          setNewMemberRole(u.jobTitle || 'Membro do Colegiado');
                         }
                       }}
                       defaultValue=""
@@ -977,10 +974,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Papel na Mesa</label>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Função</label>
                     <input
                       type="text"
-                      placeholder="Ex: Relatora Financeira"
+                      placeholder="Ex: Conselheira Independente"
                       value={newMemberRole}
                       onChange={(e) => setNewMemberRole(e.target.value)}
                       className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
@@ -1011,7 +1008,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       const newM: BoardMember = {
                         id: `mb-${Date.now()}`,
                         name: newMemberName.trim(),
-                        roleDescription: newMemberRole.trim() || (newMemberIsVoter ? 'Conselheiro Votante' : 'Participante'),
+                        roleDescription: newMemberRole.trim() || (newMemberIsVoter ? 'Conselheiro Votante' : 'Participante Ouvinte'),
                         isVoter: newMemberIsVoter
                       };
                       setCommittees(prev => prev.map(c => {
@@ -1046,8 +1043,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   }
 
   // =========================================================================
-  // CENÁRIO 2: SALA DE SESSÃO / REUNIÃO DO COLEGIADO SELECIONADO
-  // Permite deliberar pautas, colher votos nominais e lavrar ata
+  // CENÁRIO 2: SALA DE SESSÃO OFICIAL (Atlas Governance Style)
+  // Ordem do dia linear, votação nominal discreta e elegante
   // =========================================================================
   const isBoard = activeCommittee.type === 'board';
   const voters = activeCommittee.members.filter(m => m.isVoter);
@@ -1062,7 +1059,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Botão Superior de Navegação para Voltar a Todos os Comitês */}
+      {/* Barra Superior de Navegação */}
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -1074,12 +1071,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
+          {/* Botão de Configurar Assentos */}
           <button
             type="button"
             onClick={() => setManagingCommitteeId(activeCommittee.id)}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer hover:border-slate-400"
+            className="px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
           >
-            <Settings className="w-3.5 h-3.5 text-slate-400" />
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
             <span>Configurar Assentos / Votantes</span>
           </button>
 
@@ -1087,7 +1085,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             type="button"
             onClick={handleGenerateMinute}
             disabled={isSavingMinute}
-            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
             <FileCheck2 className="w-4 h-4" />
             <span>{isSavingMinute ? 'Lavrando Ata...' : 'Lavrar Ata da Sessão'}</span>
@@ -1105,9 +1103,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         </div>
       )}
 
-      {/* Cabeçalho do Colegiado em Sessão */}
+      {/* Header Institucional do Colegiado */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-6 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <div className="space-y-1.5 max-w-3xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`font-mono text-xs font-bold px-2.5 py-0.5 rounded-md border ${
@@ -1118,7 +1116,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 {activeCommittee.code}
               </span>
               <span className="text-xs text-slate-500 font-mono">
-                Cadência: <strong className="text-slate-800 dark:text-slate-200">{activeCommittee.cadence}</strong>
+                Cadência Oficial: <strong className="text-slate-800 dark:text-slate-200">{activeCommittee.cadence}</strong>
               </span>
             </div>
 
@@ -1144,56 +1142,41 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           </div>
         </div>
 
-        {/* Composição da Mesa: Votantes e Ouvintes */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-slate-500" />
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                Assentos na Mesa ({activeCommittee.members.length} participantes):
-              </span>
-            </div>
-            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-              {voters.length} Conselheiros Votantes Habilitados
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {activeCommittee.members.map(member => (
-              <div
-                key={member.id}
-                className={`p-2 rounded-xl border flex items-center gap-2 text-xs transition-colors ${
-                  member.isVoter
-                    ? 'bg-slate-50/80 dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200'
-                    : 'bg-slate-100/60 dark:bg-slate-800/40 border-dashed border-slate-200 dark:border-slate-700 text-slate-400 italic'
+        {/* Barra de Quórum e Presença da Mesa */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">Assentos da Mesa:</span>
+            {activeCommittee.members.map(m => (
+              <span
+                key={m.id}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs ${
+                  m.isVoter
+                    ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                    : 'bg-slate-100/50 dark:bg-slate-800/40 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 italic'
                 }`}
               >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${
-                  member.avatarColor || (member.isVoter ? 'bg-slate-800' : 'bg-slate-400')
+                <span className={`w-2 h-2 rounded-full ${m.isVoter ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                <span className="font-medium">{m.name}</span>
+                <span className={`text-[9px] font-mono px-1 rounded ${
+                  m.isVoter ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-400'
                 }`}>
-                  {member.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="font-semibold leading-tight">{member.name}</div>
-                  <div className="text-[10px] text-slate-400">{member.roleDescription}</div>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ml-1 ${
-                  member.isVoter
-                    ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-medium'
-                }`}>
-                  {member.isVoter ? 'VOTA' : 'OUVINTE'}
+                  {m.isVoter ? 'VOTA' : 'OUV'}
                 </span>
-              </div>
+              </span>
             ))}
+          </div>
+
+          <div className="shrink-0 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
+            Quórum Habilitado: {voters.length} Votantes
           </div>
         </div>
       </div>
 
-      {/* Ordem do Dia & Pautas da Sessão */}
+      {/* Ordem do Dia (Pautas no Estilo Atlas Governance) */}
       <div className="space-y-4">
+        {/* Barra de Filtros de Pauta */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setAgendaFilter('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
@@ -1246,17 +1229,17 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               setNewAgendaIsFixed(false);
               setIsAddAgendaModalOpen(true);
             }}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+            className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>+ Adicionar Pauta</span>
           </button>
         </div>
 
-        {/* Lista de Pautas */}
+        {/* Ordem do Dia Estruturada (Padrão Atlas Governance) */}
         {filteredAgendas.length === 0 ? (
           <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-400">
-            Nenhuma pauta cadastrada nesta categoria. Clique no botão acima para adicionar.
+            Nenhuma pauta cadastrada nesta categoria.
           </div>
         ) : (
           <div className="space-y-4">
@@ -1268,10 +1251,11 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   key={agenda.id}
                   className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-5 shadow-xs space-y-4 transition-colors"
                 >
+                  {/* Linha 1: Número da Pauta, Categoria, Título e Badge de Quórum */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
-                    <div className="space-y-1">
+                    <div className="space-y-1.5 max-w-3xl">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-bold text-slate-400">
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                           PAUTA {idx + 1}.0
                         </span>
                         {agenda.isFixed && (
@@ -1287,18 +1271,19 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           {agenda.isDeliberative ? 'Deliberação Nominal' : 'Informativa'}
                         </span>
                         {agenda.category && (
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
                             {agenda.category}
                           </span>
                         )}
                       </div>
 
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
                         {agenda.title}
                       </h3>
 
                       {agenda.description && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-0.5">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                           {agenda.description}
                         </p>
                       )}
@@ -1306,7 +1291,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
                     <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                       {summary && (
-                        <span className={`text-[10px] px-3 py-1 rounded-full border uppercase tracking-wider font-semibold ${summary.badgeClass}`}>
+                        <span className={`text-xs px-3 py-1 rounded-full border uppercase tracking-wider font-semibold ${summary.badgeClass}`}>
                           {summary.badgeText}
                         </span>
                       )}
@@ -1321,89 +1306,115 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     </div>
                   </div>
 
-                  {/* Votação Nominal dos Integrantes com Assento */}
+                  {/* Votação Nominal em Formato de Tabela Discreta (Atlas Governance Style) */}
                   {agenda.isDeliberative && (
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        <span>Votos Nominais dos Membros com Assento:</span>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        <span>Votação dos Conselheiros da Mesa:</span>
                         <span className="font-mono text-slate-500">
                           A favor: {summary?.favorable || 0} | Contra: {summary?.contrary || 0} | Abstenções: {summary?.abstention || 0}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                        {voters.map(voter => {
-                          const vote = agenda.votes[voter.name];
+                      {/* Tabela de Votantes */}
+                      <div className="border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/40 dark:bg-slate-900/30">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-200/70 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/80 text-[10px] uppercase font-mono text-slate-500">
+                              <th className="py-2 px-3">Conselheiro com Assento</th>
+                              <th className="py-2 px-3">Cargo / Função</th>
+                              <th className="py-2 px-3 text-center">Voto Registrado</th>
+                              <th className="py-2 px-3 text-right">Manifestação de Voto</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                            {voters.map(voter => {
+                              const vote = agenda.votes[voter.name];
 
-                          return (
-                            <div
-                              key={voter.id}
-                              className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex flex-col justify-between gap-2"
-                            >
-                              <div className="min-w-0">
-                                <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs block truncate" title={voter.name}>
-                                  {voter.name}
-                                </span>
-                                <span className="text-[10px] text-slate-400 block truncate">
-                                  {voter.roleDescription}
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-3 gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => handleVote(agenda.id, voter.name, 'favorable')}
-                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
-                                    vote === 'favorable'
-                                      ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
-                                  }`}
-                                  title="A Favor"
-                                >
-                                  <ThumbsUp className="w-2.5 h-2.5" />
-                                  <span>Sim</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleVote(agenda.id, voter.name, 'contrary')}
-                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
-                                    vote === 'contrary'
-                                      ? 'bg-rose-600 text-white border-rose-700 font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-rose-400'
-                                  }`}
-                                  title="Contra"
-                                >
-                                  <ThumbsDown className="w-2.5 h-2.5" />
-                                  <span>Não</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleVote(agenda.id, voter.name, 'abstention')}
-                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
-                                    vote === 'abstention'
-                                      ? 'bg-slate-800 text-white border-slate-900 font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400'
-                                  }`}
-                                  title="Abster"
-                                >
-                                  <MinusCircle className="w-2.5 h-2.5" />
-                                  <span>Abster</span>
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                              return (
+                                <tr key={voter.id} className="hover:bg-white dark:hover:bg-slate-800/40 transition-colors">
+                                  <td className="py-2 px-3 font-semibold text-slate-800 dark:text-slate-200">
+                                    {voter.name}
+                                  </td>
+                                  <td className="py-2 px-3 text-slate-500 text-[11px]">
+                                    {voter.roleDescription}
+                                  </td>
+                                  <td className="py-2 px-3 text-center">
+                                    {vote === 'favorable' && (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                                        <Check className="w-3.5 h-3.5 stroke-[3]" /> A Favor
+                                      </span>
+                                    )}
+                                    {vote === 'contrary' && (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 dark:text-rose-400">
+                                        ✕ Contra
+                                      </span>
+                                    )}
+                                    {vote === 'abstention' && (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                                        — Abstenção
+                                      </span>
+                                    )}
+                                    {!vote && (
+                                      <span className="text-[11px] text-slate-400 italic">
+                                        Pendente
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-2 px-3 text-right">
+                                    <div className="inline-flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 rounded-lg">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVote(agenda.id, voter.name, 'favorable')}
+                                        className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                                          vote === 'favorable'
+                                            ? 'bg-emerald-600 text-white font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
+                                        }`}
+                                      >
+                                        A Favor
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVote(agenda.id, voter.name, 'contrary')}
+                                        className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                                          vote === 'contrary'
+                                            ? 'bg-rose-600 text-white font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-rose-600'
+                                        }`}
+                                      >
+                                        Contra
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVote(agenda.id, voter.name, 'abstention')}
+                                        className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                                          vote === 'abstention'
+                                            ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                        }`}
+                                      >
+                                        Abster
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}
 
-                  {/* Resolução & Diretriz da Pauta */}
+                  {/* Resolução e Deliberação da Pauta */}
                   <div>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+                      Resolução / Deliberação Final da Mesa:
+                    </label>
                     <input
                       type="text"
-                      placeholder="Parecer do relator ou diretriz deliberada para esta pauta..."
+                      placeholder="Registre a decisão formal, diretrizes e determinações aprovadas para esta pauta..."
                       value={agenda.resolutionNote || ''}
                       onChange={(e) => handleUpdateResolution(agenda.id, e.target.value)}
                       className="w-full px-3 py-2 text-xs bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
@@ -1528,9 +1539,213 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   }));
                   setIsAddAgendaModalOpen(false);
                 }}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
               >
                 Adicionar à Ordem do Dia
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Gerenciar Assentos do Colegiado em Sessão */}
+      {managingCommittee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-500" />
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Configurar Assentos: {managingCommittee.name}
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Sigla: {managingCommittee.code}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setManagingCommitteeId(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Lista dos Membros Cadastrados */}
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                Integrantes com Assento ({managingCommittee.members.length}):
+              </span>
+
+              {managingCommittee.members.map(member => (
+                <div
+                  key={member.id}
+                  className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900 dark:text-white truncate">
+                        {member.name}
+                      </span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                        member.isVoter
+                          ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {member.isVoter ? 'VOTANTE' : 'OUVINTE'}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+                      {member.roleDescription}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCommittees(prev => prev.map(c => {
+                          if (c.id !== managingCommittee.id) return c;
+                          return {
+                            ...c,
+                            members: c.members.map(m => m.id === member.id ? { ...m, isVoter: !m.isVoter } : m)
+                          };
+                        }));
+                      }}
+                      className="px-2 py-1 text-[10px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-400 cursor-pointer"
+                      title={member.isVoter ? 'Tornar ouvinte (sem voto)' : 'Conceder direito a voto'}
+                    >
+                      {member.isVoter ? 'Tornar Ouvinte' : 'Conceder Voto'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (managingCommittee.members.length <= 1) {
+                          alert('O colegiado precisa ter pelo menos um membro na mesa.');
+                          return;
+                        }
+                        setCommittees(prev => prev.map(c => {
+                          if (c.id !== managingCommittee.id) return c;
+                          return {
+                            ...c,
+                            members: c.members.filter(m => m.id !== member.id)
+                          };
+                        }));
+                      }}
+                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                      title="Remover assento"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Formulário: Adicionar Novo Membro */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <span className="text-[11px] font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>+ Adicionar Novo Assento na Mesa</span>
+              </span>
+
+              {users && users.length > 0 && (
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">
+                    Importar da Base de Usuários:
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      const u = users.find(usr => usr.id === e.target.value);
+                      if (u) {
+                        setNewMemberName(u.name);
+                        setNewMemberRole(u.jobTitle || 'Membro do Colegiado');
+                      }
+                    }}
+                    defaultValue=""
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  >
+                    <option value="" disabled>Selecionar usuário existente...</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.name} ({u.jobTitle || u.email})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Dra. Mariana Costa"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Função</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Conselheira Independente"
+                    value={newMemberRole}
+                    onChange={(e) => setNewMemberRole(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newMemberIsVoter}
+                    onChange={(e) => setNewMemberIsVoter(e.target.checked)}
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                    Possui Direito a Voto (Conselheiro Votante)
+                  </span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!newMemberName.trim()) {
+                      alert('Informe o nome do participante.');
+                      return;
+                    }
+                    const newM: BoardMember = {
+                      id: `mb-${Date.now()}`,
+                      name: newMemberName.trim(),
+                      roleDescription: newMemberRole.trim() || (newMemberIsVoter ? 'Conselheiro Votante' : 'Participante Ouvinte'),
+                      isVoter: newMemberIsVoter
+                    };
+                    setCommittees(prev => prev.map(c => {
+                      if (c.id !== managingCommittee.id) return c;
+                      return { ...c, members: [...c.members, newM] };
+                    }));
+                    setNewMemberName('');
+                    setNewMemberRole('');
+                    setNewMemberIsVoter(true);
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors cursor-pointer shadow-xs"
+                >
+                  Adicionar Assento
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setManagingCommitteeId(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+              >
+                Concluir Configuração
               </button>
             </div>
           </div>
