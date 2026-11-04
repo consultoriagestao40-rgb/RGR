@@ -742,31 +742,6 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                             })}
                           </div>
                         </div>
-                                      title="Contra"
-                                    >
-                                      <ThumbsDown className="w-2.5 h-2.5" />
-                                      <span>Contra</span>
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => handleVote(idx, member, 'abstention')}
-                                      className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
-                                        choice === 'abstention'
-                                          ? 'bg-slate-800 text-white border-slate-900 shadow-xs'
-                                          : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-400'
-                                      }`}
-                                      title="Abstenção"
-                                    >
-                                      <MinusCircle className="w-2.5 h-2.5" />
-                                      <span>Abster</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
 
                         {/* Optional resolution / dissent notes */}
                         <div className="pt-1.5">
