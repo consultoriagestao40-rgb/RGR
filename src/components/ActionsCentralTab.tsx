@@ -667,20 +667,10 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           action.status === 'completed' ? 'opacity-70 bg-slate-50/30 dark:bg-slate-900/10' : ''
                         }`}
                       >
-                        {/* 1. O Quê (Title, Priority, Category & Origin Minute) */}
+                        {/* 1. O Quê (Category, Title & Origin Minute) */}
                         <td className="py-4 px-4 align-top min-w-[260px] max-w-md">
                           <div className="space-y-1.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {action.priority === 'urgent' ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
-                                  <Flame className="w-3 h-3" /> URGENTE
-                                </span>
-                              ) : action.priority === 'high' ? (
-                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
-                                  ALTA PRIORIDADE
-                                </span>
-                              ) : null}
-
+                            <div>
                               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 whitespace-nowrap">
                                 {action.category || 'Governança'}
                               </span>
@@ -756,42 +746,63 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 4. Interactive Status Pill */}
+                        {/* 4. Interactive Status Pill & Priority Level */}
                         <td className="py-4 px-4 align-top whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextStatus: ActionStatus = 
-                                action.status === 'pending' ? 'in_progress' :
-                                action.status === 'in_progress' ? 'completed' : 'pending';
-                              handleUpdateStatus(action.id, nextStatus);
-                            }}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                              action.status === 'completed'
-                                ? 'bg-emerald-600 text-white border-emerald-700'
-                                : action.status === 'in_progress'
-                                ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
-                            }`}
-                            title="Clique para alternar o status (A Fazer → Em Execução → Concluída)"
-                          >
-                            {action.status === 'completed' ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 shrink-0" />
-                                <span>Concluída</span>
-                              </>
-                            ) : action.status === 'in_progress' ? (
-                              <>
-                                <Clock className="w-3.5 h-3.5 shrink-0 text-blue-500" />
-                                <span>Em Execução</span>
-                              </>
+                          <div className="flex flex-col items-start gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextStatus: ActionStatus = 
+                                  action.status === 'pending' ? 'in_progress' :
+                                  action.status === 'in_progress' ? 'completed' : 'pending';
+                                handleUpdateStatus(action.id, nextStatus);
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                                action.status === 'completed'
+                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  : action.status === 'in_progress'
+                                  ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                              }`}
+                              title="Clique para alternar o status (A Fazer → Em Execução → Concluída)"
+                            >
+                              {action.status === 'completed' ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Concluída</span>
+                                </>
+                              ) : action.status === 'in_progress' ? (
+                                <>
+                                  <Clock className="w-3.5 h-3.5 shrink-0 text-blue-500" />
+                                  <span>Em Execução</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+                                  <span>A Fazer</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* Nível de Prioridade em baixo do Status */}
+                            {action.priority === 'urgent' ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
+                                <Flame className="w-3 h-3" /> URGENTE
+                              </span>
+                            ) : action.priority === 'high' ? (
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
+                                ALTA PRIORIDADE
+                              </span>
+                            ) : action.priority === 'medium' ? (
+                              <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                                MÉDIA
+                              </span>
                             ) : (
-                              <>
-                                <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
-                                <span>A Fazer</span>
-                              </>
+                              <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200/60 dark:border-slate-800 whitespace-nowrap">
+                                BAIXA
+                              </span>
                             )}
-                          </button>
+                          </div>
                         </td>
 
                         {/* 5. Acompanhamento & Follow-up */}
