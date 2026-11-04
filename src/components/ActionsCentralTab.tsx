@@ -703,17 +703,17 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 2. Quem (Cadeira & Responsável - Sem quebra de linha no código!) */}
+                        {/* 2. Quem (Cadeira em cima, Nome em baixo para reduzir largura) */}
                         <td className="py-4 px-4 align-top whitespace-nowrap">
-                          <div className="flex items-start gap-2.5">
-                            <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border whitespace-nowrap shrink-0 ${getRoleBadgeStyle(action.roleCode)}`}>
+                          <div className="flex flex-col items-start gap-1">
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${getRoleBadgeStyle(action.roleCode)}`}>
                               {action.roleCode || 'CAD-01'}
                             </span>
                             <div className="min-w-0">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white block leading-tight">
                                 {(action.assigneeName || action.roleTitle || 'Responsável').split('(')[0].trim()}
                               </span>
-                              <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">
                                 {action.roleTitle || 'Governança'}
                               </span>
                             </div>
