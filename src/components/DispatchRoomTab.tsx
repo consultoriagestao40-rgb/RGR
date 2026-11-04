@@ -277,8 +277,6 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
       }
       transcript += '\n';
     });
-      transcript += '\n';
-    });
 
     setNotes(prev => {
       if (prev.includes('=== EXTRATO DE DELIBERAÇÕES')) {
@@ -1067,7 +1065,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                       const u = users.find(usr => usr.id === e.target.value);
                       if (u) {
                         setNewMemberName(u.name);
-                        setNewMemberRole(u.roleName || (u.role === 'admin' ? 'Diretor / Conselheiro' : 'Membro'));
+                        setNewMemberRole(u.jobTitle || (u.roleType === 'admin' ? 'Diretor / Conselheiro' : 'Membro'));
                       }
                     }}
                     defaultValue=""
@@ -1075,7 +1073,7 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                   >
                     <option value="" disabled>Selecionar usuário existente...</option>
                     {users.map(u => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.roleName || u.email})</option>
+                      <option key={u.id} value={u.id}>{u.name} ({u.jobTitle || u.email})</option>
                     ))}
                   </select>
                 </div>
