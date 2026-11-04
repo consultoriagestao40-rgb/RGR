@@ -23,8 +23,15 @@ import {
   Filter,
   ArrowRight
 } from 'lucide-react';
-import { DailyRitual, OperationalRole, RoutineBlockWithExecution, VoteChoice } from '@/lib/types';
+import { DailyRitual, OperationalRole, RoutineBlockWithExecution, VoteChoice, SystemUser } from '@/lib/types';
 import { isRitualScheduledForDate, isWeekend, formatRitualFrequency, getNextBusinessDay, formatDateBR } from '@/lib/frequency';
+
+export interface CouncilMemberConfig {
+  id: string;
+  name: string;
+  roleDescription: string;
+  isVoter: boolean; // se true = vota; se false = ouvinte/secretário/assessor
+}
 
 interface DispatchRoomTabProps {
   roles: OperationalRole[];
@@ -36,6 +43,8 @@ interface DispatchRoomTabProps {
   onSelectDate?: (date: string) => void;
   onOpenMinuteModal: () => void;
   onOpenMeetingAiModal?: () => void;
+  users?: SystemUser[];
+  onRefreshRituals?: () => void;
 }
 
 export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
@@ -46,7 +55,9 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
   selectedDate,
   onSelectDate,
   onOpenMinuteModal,
-  onOpenMeetingAiModal
+  onOpenMeetingAiModal,
+  users = [],
+  onRefreshRituals
 }) => {
   const currentRole = roles.find(r => r.id === selectedRoleId) || roles[0];
   const [selectedRitualId, setSelectedRitualId] = useState<string>('');
@@ -65,12 +76,19 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
   const [boardVotes, setBoardVotes] = useState<{ [agendaIndex: number]: { [voterName: string]: VoteChoice } }>({});
   const [resolutionNotes, setResolutionNotes] = useState<{ [agendaIndex: number]: string }>({});
   
-  // Board Voters (Conselheiros Votantes)
-  const [councilMembers, setCouncilMembers] = useState<string[]>([
-    'Cristiano Silva (Presidente do Conselho)',
-    'Carlos Mendes (Diretor de Operações)',
-    'Mariana Costa (Relatora Financeira)'
+  // Board Voters (Conselheiros Votantes e Ouvintes da Mesa)
+  const [councilMembers, setCouncilMembers] = useState<CouncilMemberConfig[]>([
+    { id: '1', name: 'Cristiano Silva', roleDescription: 'Presidente do Conselho', isVoter: true },
+    { id: '2', name: 'Carlos Mendes', roleDescription: 'Diretor de Operações', isVoter: true },
+    { id: '3', name: 'Mariana Costa', roleDescription: 'Relatora Financeira', isVoter: true },
+    { id: '4', name: 'Secretaria de Governança', roleDescription: 'Apoio / Redação de Ata', isVoter: false }
   ]);
+
+  // Modal para Gerenciamento de Membros da Mesa / Conselho
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState('');
+  const [newMemberIsVoter, setNewMemberIsVoter] = useState(true);
 
   // Garante que a Sessão Deliberativa do Conselho (Votação Nominal) esteja sempre disponível para deliberação
   const allChairRituals = React.useMemo<DailyRitual[]>(() => {
@@ -192,22 +210,25 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
     });
   };
 
-  // Calculate vote tally and quorum for a council item
+  // Calculate vote tally and quorum for a council item (apenas votantes)
+  const votingMembers = councilMembers.filter(m => m.isVoter);
+  const nonVotingMembers = councilMembers.filter(m => !m.isVoter);
+
   const getVotingSummary = (agendaIdx: number) => {
     const votes = boardVotes[agendaIdx] || {};
     let favorable = 0;
     let contrary = 0;
     let abstention = 0;
 
-    councilMembers.forEach(m => {
-      const v = votes[m];
+    votingMembers.forEach(m => {
+      const v = votes[m.name];
       if (v === 'favorable') favorable++;
       else if (v === 'contrary') contrary++;
       else if (v === 'abstention') abstention++;
     });
 
     const votedCount = favorable + contrary + abstention;
-    const totalVoters = councilMembers.length;
+    const totalVoters = votingMembers.length;
 
     let badgeText = `Votação Pendente (${votedCount}/${totalVoters})`;
     let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700';
@@ -242,15 +263,20 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
       const summary = getVotingSummary(idx);
       transcript += `PAUTA ${idx + 1}.0: "${item}"\n`;
       transcript += `• DESFECHO DO QUÓRUM: ${summary.badgeText.toUpperCase()}\n`;
-      transcript += `• VOTOS NOMINAIS:\n`;
-      councilMembers.forEach(m => {
-        const v = boardVotes[idx]?.[m];
+      transcript += `• VOTOS NOMINAIS DOS CONSELHEIROS:\n`;
+      votingMembers.forEach(m => {
+        const v = boardVotes[idx]?.[m.name];
         const vLabel = v === 'favorable' ? 'A Favor' : v === 'contrary' ? 'Contra' : v === 'abstention' ? 'Abstenção' : 'Não Votou';
-        transcript += `  - ${m}: [${vLabel}]\n`;
+        transcript += `  - ${m.name} (${m.roleDescription}): [${vLabel}]\n`;
       });
+      if (nonVotingMembers.length > 0) {
+        transcript += `• PARTICIPANTES OUVIENTES / SECRETARIA: ${nonVotingMembers.map(nv => `${nv.name} (${nv.roleDescription})`).join(', ')}\n`;
+      }
       if (resolutionNotes[idx]) {
         transcript += `• PARECER / RESSALVAS: ${resolutionNotes[idx]}\n`;
       }
+      transcript += '\n';
+    });
       transcript += '\n';
     });
 
@@ -556,22 +582,56 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                 </div>
               </div>
 
-              {/* Council Quorum Notice */}
+              {/* Council Quorum Notice & Mesa Management */}
               {isBoardCouncil && (
-                <div className="mb-4 p-3 rounded-lg bg-amber-50/50 dark:bg-[#141a24] border border-amber-200/70 dark:border-amber-900/40 text-xs">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <div className="mb-4 p-3.5 rounded-xl bg-amber-50/50 dark:bg-[#141a24] border border-amber-200/70 dark:border-amber-900/40 text-xs space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-200/50 dark:border-amber-900/30">
+                    <div className="flex items-center gap-2">
+                      <Landmark className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        Composição da Mesa do Conselho
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-800">
+                        {votingMembers.length} Votantes
+                      </span>
+                      {nonVotingMembers.length > 0 && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium border border-slate-200 dark:border-slate-700">
+                          {nonVotingMembers.length} Ouvinte(s)
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMembersModalOpen(true)}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-600 flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+                    >
                       <Users className="w-3.5 h-3.5 text-amber-600" />
-                      Membros Votantes do Conselho:
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-500 font-medium">
-                      {councilMembers.length} Conselheiros Aptos
-                    </span>
+                      <span>Gerenciar Conselheiros & Votantes</span>
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    <span className="text-[11px] text-slate-500 font-medium mr-1">Presentes:</span>
                     {councilMembers.map(m => (
-                      <span key={m} className="px-2 py-0.5 rounded-md text-[11px] bg-white dark:bg-[#0c121e] border border-slate-200 dark:border-[#24334d] font-normal text-slate-700 dark:text-slate-300">
-                        {m}
+                      <span 
+                        key={m.id} 
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-normal border flex items-center gap-1 ${
+                          m.isVoter 
+                            ? 'bg-white dark:bg-[#0c121e] border-amber-200/80 dark:border-amber-900/60 text-slate-800 dark:text-slate-200' 
+                            : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 italic'
+                        }`}
+                        title={`${m.name} - ${m.roleDescription} (${m.isVoter ? 'Com direito a voto' : 'Ouvinte/Sem voto'})`}
+                      >
+                        <span className="font-semibold not-italic">{m.name}</span>
+                        <span className="text-[10px] text-slate-400">({m.roleDescription})</span>
+                        <span className={`text-[9px] px-1 py-0.2 rounded font-mono ${
+                          m.isVoter 
+                            ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-bold' 
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500 font-medium'
+                        }`}>
+                          {m.isVoter ? 'VOTA' : 'OUVINTE'}
+                        </span>
                       </span>
                     ))}
                   </div>
@@ -609,30 +669,35 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
                           </span>
                         </div>
 
-                        {/* Nominal Voter Buttons */}
+                        {/* Nominal Voter Buttons (Apenas Votantes do Conselho) */}
                         <div className="space-y-2 pt-1">
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
-                            Votação Nominal:
+                            Votação Nominal ({votingMembers.length} Conselheiros Aptos):
                           </span>
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            {councilMembers.map(member => {
-                              const choice = itemVotes[member];
+                            {votingMembers.map(member => {
+                              const choice = itemVotes[member.name];
 
                               return (
                                 <div 
-                                  key={member}
+                                  key={member.id}
                                   className="p-2.5 rounded-lg border border-slate-200/80 dark:border-[#1a2333] bg-white dark:bg-[#0a0f1a] flex flex-col justify-between gap-2"
                                 >
-                                  <span className="text-[11px] font-medium text-slate-800 dark:text-slate-200 truncate" title={member}>
-                                    {member.split('(')[0].trim()}
-                                  </span>
+                                  <div>
+                                    <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate block" title={member.name}>
+                                      {member.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 truncate block">
+                                      {member.roleDescription}
+                                    </span>
+                                  </div>
 
                                   {/* 3 Buttons */}
                                   <div className="grid grid-cols-3 gap-1">
                                     <button
                                       type="button"
-                                      onClick={() => handleVote(idx, member, 'favorable')}
+                                      onClick={() => handleVote(idx, member.name, 'favorable')}
                                       className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
                                         choice === 'favorable'
                                           ? 'bg-atlas-600 text-white border-atlas-700 shadow-xs'
@@ -646,12 +711,37 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
                                     <button
                                       type="button"
-                                      onClick={() => handleVote(idx, member, 'contrary')}
+                                      onClick={() => handleVote(idx, member.name, 'contrary')}
                                       className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
                                         choice === 'contrary'
                                           ? 'bg-rose-600 text-white border-rose-700 shadow-xs'
                                           : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-rose-400'
                                       }`}
+                                      title="Contra"
+                                    >
+                                      <ThumbsDown className="w-2.5 h-2.5" />
+                                      <span>Contra</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVote(idx, member.name, 'abstention')}
+                                      className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
+                                        choice === 'abstention'
+                                          ? 'bg-slate-800 text-white border-slate-900 shadow-xs'
+                                          : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-400'
+                                      }`}
+                                      title="Abstenção"
+                                    >
+                                      <MinusCircle className="w-2.5 h-2.5" />
+                                      <span>Abster</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                                       title="Contra"
                                     >
                                       <ThumbsDown className="w-2.5 h-2.5" />
@@ -896,6 +986,201 @@ export const DispatchRoomTab: React.FC<DispatchRoomTabProps> = ({
 
         </div>
       ) : null}
+
+      {/* Modal de Gestão da Mesa e Conselheiros (Estilo Atlas Governance) */}
+      {isMembersModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Composição da Mesa do Conselho
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Defina quem são os membros votantes e os participantes ouvintes da sessão.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMembersModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Lista dos Membros Cadastrados */}
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                Membros Atuais na Mesa ({councilMembers.length}):
+              </span>
+
+              {councilMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900 dark:text-white truncate">
+                        {member.name}
+                      </span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                        member.isVoter
+                          ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {member.isVoter ? 'VOTANTE' : 'OUVINTE'}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+                      {member.roleDescription}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCouncilMembers(prev =>
+                          prev.map(m => m.id === member.id ? { ...m, isVoter: !m.isVoter } : m)
+                        );
+                      }}
+                      className="px-2 py-1 text-[10px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-400 cursor-pointer"
+                      title={member.isVoter ? 'Alterar para Ouvinte (sem voto)' : 'Alterar para Membro Votante'}
+                    >
+                      {member.isVoter ? 'Tornar Ouvinte' : 'Conceder Voto'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (councilMembers.length <= 1) {
+                          alert('A mesa precisa ter pelo menos um membro.');
+                          return;
+                        }
+                        setCouncilMembers(prev => prev.filter(m => m.id !== member.id));
+                      }}
+                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                      title="Remover da mesa"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Formulário: Adicionar Novo Membro */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <span className="text-[11px] font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>+ Adicionar Conselheiro ou Participante</span>
+              </span>
+
+              {/* Seletor rápido de Usuário do Sistema (se houver) */}
+              {users && users.length > 0 && (
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">
+                    Importar da Base de Usuários:
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      const u = users.find(usr => usr.id === e.target.value);
+                      if (u) {
+                        setNewMemberName(u.name);
+                        setNewMemberRole(u.roleName || (u.role === 'admin' ? 'Diretor / Conselheiro' : 'Membro'));
+                      }
+                    }}
+                    defaultValue=""
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none"
+                  >
+                    <option value="" disabled>Selecionar usuário existente...</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.name} ({u.roleName || u.email})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Dra. Helena Vasconcelos"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Papel no Conselho</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Conselheira Independente"
+                    value={newMemberRole}
+                    onChange={(e) => setNewMemberRole(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newMemberIsVoter}
+                    onChange={(e) => setNewMemberIsVoter(e.target.checked)}
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                    Possui Direito a Voto (Conselheiro Votante)
+                  </span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!newMemberName.trim()) {
+                      alert('Informe o nome do participante.');
+                      return;
+                    }
+                    const newMember: CouncilMemberConfig = {
+                      id: `cm-${Date.now()}`,
+                      name: newMemberName.trim(),
+                      roleDescription: newMemberRole.trim() || (newMemberIsVoter ? 'Conselheiro' : 'Participante'),
+                      isVoter: newMemberIsVoter
+                    };
+                    setCouncilMembers(prev => [...prev, newMember]);
+                    setNewMemberName('');
+                    setNewMemberRole('');
+                    setNewMemberIsVoter(true);
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors cursor-pointer shadow-xs"
+                >
+                  Adicionar à Mesa
+                </button>
+              </div>
+
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsMembersModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              >
+                Concluir Composição da Mesa
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
