@@ -818,16 +818,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
 
                         {/* 6. Ações */}
                         <td className="py-4 px-4 align-top text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setActiveActionForNotes(action)}
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-semibold transition-colors cursor-pointer inline-flex items-center gap-1"
-                              title="Abrir Histórico de Follow-up"
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span>Notas</span>
-                            </button>
+                          <div className="flex items-center justify-end">
                             <button
                               type="button"
                               onClick={() => handleDeleteAction(action.id)}
