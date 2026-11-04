@@ -12,7 +12,7 @@ import {
   Clock
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, DailyRitual, SystemUser, RitualType, RitualFrequency, MonthlyScheduleType } from '@/lib/types';
-import { WEEK_DAYS, formatRitualFrequency } from '@/lib/frequency';
+import { WEEK_DAYS, formatRitualFrequency, formatBlockFrequency } from '@/lib/frequency';
 
 interface AdminTabProps {
   roles: OperationalRole[];
@@ -59,6 +59,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   const [blockDeliverable, setBlockDeliverable] = useState('');
   const [blockSopMarkdown, setBlockSopMarkdown] = useState('');
   const [blockFrequency, setBlockFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [blockDayOfWeek, setBlockDayOfWeek] = useState<number>(5);
+  const [blockDayOfMonth, setBlockDayOfMonth] = useState<number>(20);
   const [blockVersion, setBlockVersion] = useState('v1.0');
   const [blockHomologated, setBlockHomologated] = useState('Diretoria Executiva');
 
@@ -169,7 +171,9 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       setBlockTitle(block.title);
       setBlockDeliverable(block.deliverable);
       setBlockSopMarkdown(block.sopMarkdown);
-      setBlockFrequency(block.frequency);
+      setBlockFrequency(block.frequency || 'daily');
+      setBlockDayOfWeek(block.dayOfWeek ?? 5);
+      setBlockDayOfMonth(block.dayOfMonth ?? 20);
       setBlockVersion(block.version || 'v1.0');
       setBlockHomologated(block.homologatedBy || 'Diretoria Executiva');
     } else {
@@ -180,6 +184,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       setBlockDeliverable('');
       setBlockSopMarkdown('### Procedimento Operacional Padrão (POP)\n\n**Objetivo:** ...\n\n1. Passo um\n2. Passo dois');
       setBlockFrequency('daily');
+      setBlockDayOfWeek(5);
+      setBlockDayOfMonth(20);
       setBlockVersion('v1.0');
       setBlockHomologated('Diretoria Executiva');
     }
@@ -190,20 +196,24 @@ export const AdminTab: React.FC<AdminTabProps> = ({
     e.preventDefault();
     if (!blockTitle || !blockDeliverable || !blockTimeWindow || !currentRole) return;
 
+    const blockPayload = {
+      code: blockCode,
+      timeWindow: blockTimeWindow,
+      title: blockTitle,
+      deliverable: blockDeliverable,
+      sopMarkdown: blockSopMarkdown,
+      frequency: blockFrequency,
+      dayOfWeek: blockFrequency === 'weekly' ? Number(blockDayOfWeek) : undefined,
+      dayOfMonth: blockFrequency === 'monthly' ? Number(blockDayOfMonth) : undefined,
+      version: blockVersion,
+      homologatedBy: blockHomologated
+    };
+
     if (editingBlock) {
       await fetch(`/api/blocks/${editingBlock.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: blockCode,
-          timeWindow: blockTimeWindow,
-          title: blockTitle,
-          deliverable: blockDeliverable,
-          sopMarkdown: blockSopMarkdown,
-          frequency: blockFrequency,
-          version: blockVersion,
-          homologatedBy: blockHomologated
-        })
+        body: JSON.stringify(blockPayload)
       });
     } else {
       await fetch('/api/blocks', {
@@ -211,14 +221,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roleId: currentRole.id,
-          code: blockCode,
-          timeWindow: blockTimeWindow,
-          title: blockTitle,
-          deliverable: blockDeliverable,
-          sopMarkdown: blockSopMarkdown,
-          frequency: blockFrequency,
-          version: blockVersion,
-          homologatedBy: blockHomologated
+          ...blockPayload
         })
       });
     }
@@ -370,16 +373,27 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       {/* SECTION: BLOCKS */}
       {activeSection === 'blocks' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Procedimentos de: <strong className="text-slate-900 dark:text-white">{currentRole?.title}</strong> ({currentRole?.code})
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-3.5 shadow-xs">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-slate-500 dark:text-slate-400 font-medium">Cadeira Selecionada:</span>
+              <select
+                value={selectedRoleId}
+                onChange={(e) => onSelectRole(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 font-semibold text-slate-900 dark:text-white cursor-pointer"
+              >
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.code || 'CAD'} • {r.title}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
               onClick={() => handleOpenBlockModal()}
-              className="px-3.5 py-1.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-3.5 py-2 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Novo Procedimento (POP)</span>
+              <span>+ Nova Atividade / POP (Diária, Semanal ou Mensal)</span>
             </button>
           </div>
 
@@ -387,16 +401,23 @@ export const AdminTab: React.FC<AdminTabProps> = ({
             {blocks.map(block => (
               <div
                 key={block.id}
-                className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 flex items-center justify-between text-xs shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 flex items-center justify-between text-xs shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-start sm:items-center gap-3">
+                  <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                     {block.code || 'POP-01'}
                   </span>
-                  <span className="font-mono text-slate-500 dark:text-slate-400">{block.timeWindow}</span>
+                  <span className="font-mono font-semibold text-atlas-600 dark:text-atlas-400 whitespace-nowrap">
+                    {block.timeWindow}
+                  </span>
                   <div>
-                    <h4 className="font-semibold text-slate-900 dark:text-white">{block.title}</h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-slate-900 dark:text-white">{block.title}</h4>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 whitespace-nowrap">
+                        {formatBlockFrequency(block).label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       <strong className="text-slate-700 dark:text-slate-300">Entregável:</strong> {block.deliverable}
                     </p>
                   </div>
@@ -698,7 +719,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Título do Macroprocesso</label>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Título da Atividade / Macroprocesso</label>
                 <input
                   type="text"
                   value={blockTitle}
@@ -706,6 +727,81 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   required
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
+              </div>
+
+              {/* Periodicidade da Atividade: Diária, Semanal ou Mensal */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 space-y-2.5">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5 text-xs">
+                  <Calendar className="w-3.5 h-3.5 text-atlas-500" />
+                  Periodicidade da Atividade (Diária, Semanal ou Mensal)
+                </label>
+
+                <div className="grid grid-cols-3 gap-1.5 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setBlockFrequency('daily')}
+                    className={`py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                      blockFrequency === 'daily'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    Diária (Seg a Sex)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBlockFrequency('weekly')}
+                    className={`py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                      blockFrequency === 'weekly'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    Semanal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBlockFrequency('monthly')}
+                    className={`py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                      blockFrequency === 'monthly'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    Mensal
+                  </button>
+                </div>
+
+                {blockFrequency === 'weekly' && (
+                  <div className="pt-1">
+                    <label className="text-[11px] text-slate-500 block mb-1 font-medium">Dia da Semana:</label>
+                    <select
+                      value={blockDayOfWeek}
+                      onChange={(e) => setBlockDayOfWeek(Number(e.target.value))}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                    >
+                      <option value={1}>Segunda-feira</option>
+                      <option value={2}>Terça-feira</option>
+                      <option value={3}>Quarta-feira</option>
+                      <option value={4}>Quinta-feira</option>
+                      <option value={5}>Sexta-feira</option>
+                    </select>
+                  </div>
+                )}
+
+                {blockFrequency === 'monthly' && (
+                  <div className="pt-1">
+                    <label className="text-[11px] text-slate-500 block mb-1 font-medium">Dia do Mês (1 a 31):</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={blockDayOfMonth}
+                      onChange={(e) => setBlockDayOfMonth(Number(e.target.value))}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
