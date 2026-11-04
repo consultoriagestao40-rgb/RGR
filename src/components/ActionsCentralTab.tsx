@@ -819,16 +819,16 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 6. Ações */}
-                        <td className="py-3.5 px-4 align-top text-right whitespace-nowrap w-12">
-                          <div className="flex items-center justify-end">
+                        {/* 6. Ações (Centralizada na vertical da linha) */}
+                        <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap w-12">
+                          <div className="flex items-center justify-center">
                             <button
                               type="button"
                               onClick={() => handleDeleteAction(action.id)}
-                              className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-colors cursor-pointer"
+                              className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                               title="Excluir diretriz"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
