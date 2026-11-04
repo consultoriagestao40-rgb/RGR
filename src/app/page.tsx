@@ -584,6 +584,11 @@ export default function HomePage() {
               onSelectDate={setSelectedDate}
               onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
               onOpenMeetingAiModal={() => setIsMeetingAiModalOpen(true)}
+              users={users}
+              onRefreshRituals={() => {
+                loadRoleData(selectedRoleId, selectedDate);
+                loadCompanyWideData();
+              }}
             />
           )}
 
@@ -639,12 +644,19 @@ export default function HomePage() {
               roles={roles}
               currentRole={selectedRole}
               initialDetailRoleId={roleProfileDetailId}
+              allBlocks={allBlocks}
+              allRituals={allRituals}
               onSelectRole={(id) => {
                 setSelectedRoleId(id);
               }}
               onRoleUpdated={(updated) => {
                 setRoles(prev => prev.map(r => r.id === updated.id ? updated : r));
                 loadRoles();
+              }}
+              onRefreshData={() => {
+                loadRoles();
+                loadRoleData(selectedRoleId, selectedDate);
+                loadCompanyWideData();
               }}
             />
           )}
