@@ -635,20 +635,20 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
       {/* VIEW 1: MATRIZ EXECUTIVA 5W2H (TABELA DE ALTA DENSIDADE)                  */}
       {/* ========================================================================= */}
       {activeViewTab === 'table' && (
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider">
-                  <th className="py-3.5 px-4">O Quê (Diretriz / Tarefa 5W2H)</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap">Quem (Cadeira & Responsável)</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap">Quando (Prazo & SLA)</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
-                  <th className="py-3.5 px-4">Acompanhamento & Follow-up</th>
-                  <th className="py-3.5 px-4 text-right whitespace-nowrap">Ações</th>
+                <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+                  <th className="py-3 px-4">Diretriz & Contexto (5W2H)</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Responsável</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Prazo & SLA</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Status & Prioridade</th>
+                  <th className="py-3 px-4">Acompanhamento & Follow-up</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap w-12"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {filteredActions.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-14 text-center text-slate-400">
@@ -663,47 +663,45 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                     return (
                       <tr 
                         key={action.id}
-                        className={`group hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors ${
-                          action.status === 'completed' ? 'opacity-70 bg-slate-50/30 dark:bg-slate-900/10' : ''
+                        className={`group hover:bg-slate-50/60 dark:hover:bg-slate-900/30 transition-colors ${
+                          action.status === 'completed' ? 'opacity-65 bg-slate-50/20 dark:bg-slate-900/10' : ''
                         }`}
                       >
                         {/* 1. O Quê (Category, Title & Origin Minute) */}
-                        <td className="py-4 px-4 align-top min-w-[260px] max-w-md">
-                          <div className="space-y-1.5">
-                            <div>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 whitespace-nowrap">
-                                {action.category || 'Governança'}
-                              </span>
-                            </div>
+                        <td className="py-3.5 px-4 align-top min-w-[260px] max-w-md">
+                          <div className="space-y-1">
+                            <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 uppercase tracking-wider">
+                              {action.category || 'Governança'}
+                            </span>
 
-                            <p className={`text-xs font-bold leading-snug ${
+                            <p className={`text-[13px] font-semibold leading-snug tracking-tight ${
                               action.status === 'completed' 
                                 ? 'line-through text-slate-400 dark:text-slate-500' 
-                                : 'text-slate-900 dark:text-white'
+                                : 'text-slate-900 dark:text-slate-100 group-hover:text-atlas-700 dark:group-hover:text-atlas-300 transition-colors'
                             }`}>
                               {action.title}
                             </p>
 
                             {action.minuteTitle && (
-                              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
-                                <FileCheck2 className="w-3.5 h-3.5 text-atlas-500 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 pt-0.5">
+                                <FileCheck2 className="w-3 h-3 text-atlas-500/80 shrink-0" />
                                 <span className="truncate">{action.minuteTitle}</span>
                               </div>
                             )}
                           </div>
                         </td>
 
-                        {/* 2. Quem (Cadeira em cima, Nome em baixo para reduzir largura) */}
-                        <td className="py-4 px-4 align-top whitespace-nowrap">
+                        {/* 2. Quem (Cadeira em cima, Nome em baixo) */}
+                        <td className="py-3.5 px-4 align-top whitespace-nowrap">
                           <div className="flex flex-col items-start gap-1">
-                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${getRoleBadgeStyle(action.roleCode)}`}>
+                            <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border tracking-tight ${getRoleBadgeStyle(action.roleCode)}`}>
                               {action.roleCode || 'CAD-01'}
                             </span>
                             <div className="min-w-0">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white block leading-tight">
+                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block leading-tight">
                                 {(action.assigneeName || action.roleTitle || 'Responsável').split('(')[0].trim()}
                               </span>
-                              <span className="text-[10px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight mt-0.5">
                                 {action.roleTitle || 'Governança'}
                               </span>
                             </div>
@@ -711,43 +709,37 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                         </td>
 
                         {/* 3. Quando (Prazo & SLA Status) */}
-                        <td className="py-4 px-4 align-top whitespace-nowrap">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5">
+                        <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                               <Calendar className={`w-3.5 h-3.5 shrink-0 ${
                                 isOverdue ? 'text-rose-500' : isToday ? 'text-amber-500' : 'text-slate-400'
                               }`} />
-                              <span className={`font-mono text-xs font-bold ${
-                                isOverdue ? 'text-rose-600 dark:text-rose-400' :
-                                isToday ? 'text-amber-600 dark:text-amber-400' :
-                                'text-slate-800 dark:text-slate-200'
-                              }`}>
-                                {formatDateBR(action.dueDate)}
-                              </span>
+                              <span>{formatDateBR(action.dueDate)}</span>
                             </div>
 
                             {action.status === 'completed' ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 whitespace-nowrap">
                                 <ShieldCheck className="w-3 h-3" /> Entregue
                               </span>
                             ) : isOverdue ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/60 whitespace-nowrap">
                                 <AlertTriangle className="w-3 h-3" /> Em Atraso
                               </span>
                             ) : isToday ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/60 whitespace-nowrap">
                                 <Clock className="w-3 h-3" /> Vence Hoje
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 No Prazo
                               </span>
                             )}
                           </div>
                         </td>
 
-                        {/* 4. Interactive Status Pill & Priority Level (Padronizados) */}
-                        <td className="py-4 px-4 align-top whitespace-nowrap">
+                        {/* 4. Status & Prioridade (Harmonizados e Alinhados) */}
+                        <td className="py-3.5 px-4 align-top whitespace-nowrap">
                           <div className="flex flex-col items-start gap-1.5">
                             <button
                               type="button"
@@ -757,48 +749,48 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                                   action.status === 'in_progress' ? 'completed' : 'pending';
                                 handleUpdateStatus(action.id, nextStatus);
                               }}
-                              className={`w-[120px] h-[27px] flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                              className={`w-[116px] h-[26px] flex items-center justify-center gap-1.5 rounded-md text-[11px] font-semibold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
                                 action.status === 'completed'
-                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  ? 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800'
                                   : action.status === 'in_progress'
-                                  ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                  ? 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200/80 dark:border-sky-800'
+                                  : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                               }`}
                               title="Clique para alternar o status (A Fazer → Em Execução → Concluída)"
                             >
                               {action.status === 'completed' ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 shrink-0" />
+                                  <Check className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
                                   <span>Concluída</span>
                                 </>
                               ) : action.status === 'in_progress' ? (
                                 <>
-                                  <Clock className="w-3.5 h-3.5 shrink-0 text-blue-500" />
+                                  <Clock className="w-3.5 h-3.5 shrink-0 text-sky-600" />
                                   <span>Em Execução</span>
                                 </>
                               ) : (
                                 <>
-                                  <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
                                   <span>A Fazer</span>
                                 </>
                               )}
                             </button>
 
-                            {/* Nível de Prioridade Padronizado (Mesma largura e arredondamento) */}
+                            {/* Nível de Prioridade Harmonizado */}
                             {action.priority === 'urgent' ? (
-                              <span className="w-[120px] h-[23px] flex items-center justify-center gap-1 text-[10px] font-mono font-bold rounded-lg bg-rose-100 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 whitespace-nowrap">
-                                <Flame className="w-3 h-3" /> URGENTE
+                              <span className="w-[116px] h-[22px] flex items-center justify-center gap-1 text-[10px] font-semibold rounded-md bg-rose-50/70 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 whitespace-nowrap">
+                                <Flame className="w-3 h-3 text-rose-500" /> URGENTE
                               </span>
                             ) : action.priority === 'high' ? (
-                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-bold rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
+                              <span className="w-[116px] h-[22px] flex items-center justify-center gap-1 text-[10px] font-semibold rounded-md bg-amber-50/70 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/40 whitespace-nowrap">
                                 ALTA PRIORIDADE
                               </span>
                             ) : action.priority === 'medium' ? (
-                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                              <span className="w-[116px] h-[22px] flex items-center justify-center text-[10px] font-medium rounded-md bg-slate-50/80 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/50 whitespace-nowrap">
                                 MÉDIA
                               </span>
                             ) : (
-                              <span className="w-[120px] h-[23px] flex items-center justify-center text-[10px] font-mono font-semibold rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200/60 dark:border-slate-800 whitespace-nowrap">
+                              <span className="w-[116px] h-[22px] flex items-center justify-center text-[10px] font-normal rounded-md text-slate-400 dark:text-slate-500 border border-transparent whitespace-nowrap">
                                 BAIXA
                               </span>
                             )}
@@ -806,34 +798,34 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                         </td>
 
                         {/* 5. Acompanhamento & Follow-up */}
-                        <td className="py-4 px-4 align-top min-w-[260px] max-w-sm">
+                        <td className="py-3.5 px-4 align-top min-w-[260px] max-w-sm">
                           <div 
                             onClick={() => setActiveActionForNotes(action)}
-                            className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 hover:border-atlas-400 dark:hover:border-atlas-600 transition-all cursor-pointer"
+                            className="p-2.5 rounded-lg bg-slate-50/60 hover:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-800/80 border border-slate-200/70 dark:border-slate-800/90 hover:border-atlas-300 dark:hover:border-atlas-700 hover:shadow-xs transition-all cursor-pointer group"
                             title="Clique para abrir o histórico e registrar novo despacho de acompanhamento"
                           >
-                            <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                            <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                               {action.notes || 'Sem anotações registradas. Clique para registrar follow-up.'}
                             </p>
-                            <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px]">
-                              <span className="inline-flex items-center gap-1 font-semibold text-atlas-600 dark:text-atlas-400">
+                            <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/50 dark:border-slate-800/60 text-[10px]">
+                              <span className="inline-flex items-center gap-1 font-semibold text-atlas-600 dark:text-atlas-400 group-hover:text-atlas-700">
                                 <MessageSquare className="w-3 h-3" />
                                 {action.historyNotes && action.historyNotes.length > 0 
                                   ? `${action.historyNotes.length} registro(s) de follow-up` 
                                   : 'Registrar follow-up'}
                               </span>
-                              <ArrowUpRight className="w-3 h-3 text-slate-400" />
+                              <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-atlas-600 transition-colors" />
                             </div>
                           </div>
                         </td>
 
                         {/* 6. Ações */}
-                        <td className="py-4 px-4 align-top text-right whitespace-nowrap">
+                        <td className="py-3.5 px-4 align-top text-right whitespace-nowrap w-12">
                           <div className="flex items-center justify-end">
                             <button
                               type="button"
                               onClick={() => handleDeleteAction(action.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-colors cursor-pointer"
                               title="Excluir diretriz"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
