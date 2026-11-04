@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Landmark, 
   Users, 
@@ -26,7 +26,14 @@ import {
   Send,
   MessageSquare,
   Award,
-  Filter
+  Filter,
+  ArrowLeft,
+  Settings,
+  UserCheck,
+  Building2,
+  CalendarDays,
+  Search,
+  Check
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
@@ -84,7 +91,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   onNavigateToActions,
   onNavigateToMinutes
 }) => {
-  // Lista inicial padrão de Colegiados (Conselho Superior + Comitês de Apoio)
+  // Lista inicial padrão de Colegiados
   const defaultCommittees: CommitteeConfig[] = [
     {
       id: 'board-01',
@@ -161,13 +168,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         },
         {
           id: 'ag-c2',
-          title: 'Acompanhamento do Prazo Médio de Recebimento e Cobrança de Faturas',
-          description: 'Posição de títulos em aberto e negociação com clientes corporativos em atraso.',
-          isFixed: true,
-          isDeliberative: false,
-          category: 'Tesouraria',
-          votes: {},
-          resolutionNote: 'Taxa de inadimplência mantida abaixo da meta corporativa de 1,8%.'
+          title: 'Estratégia de Renegociação e Redução de Inadimplência Superior a 30 dias',
+          description: 'Avaliação dos contratos sob risco com notificação extrajudicial expedida.',
+          isFixed: false,
+          isDeliberative: true,
+          category: 'Crédito & Cobrança',
+          votes: { 'Ana Beatriz': 'favorable', 'Cristiano Silva': 'favorable' },
+          resolutionNote: 'Aprovada retenção preventiva de emissão de NF para dois tomadores em atraso crônico.'
         }
       ]
     },
@@ -176,73 +183,84 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       name: 'Comitê de Gestão de Clientes & Qualidade',
       code: 'COM-CLI',
       type: 'committee',
-      description: 'Comitê focado no nível de serviço (SLA), retenção de contratos, resolução de notificações de clientes e expansão de escopo.',
+      description: 'Comitê dedicado à experiência dos contratantes, cumprimento estrito de SLAs de limpeza e facilities, retenção de contratos e auditoria de campo.',
       presidentName: 'Marcos Oliveira',
       presidentRole: 'Presidente do Comitê de Clientes & Operações',
-      cadence: 'Semanal (Segundas-feiras às 10:00)',
+      cadence: 'Quinzenal (Terças-feiras às 10:00)',
       members: [
         { id: 'm3', name: 'Marcos Oliveira', roleDescription: 'Head de Operações & Presidente', isVoter: true, avatarColor: 'bg-amber-700' },
         { id: 'm1', name: 'Cristiano Silva', roleDescription: 'Diretoria Executiva / CEO', isVoter: true, avatarColor: 'bg-slate-900' },
-        { id: 'm6', name: 'Supervisores Regionais', roleDescription: 'Ouvintes Operacionais', isVoter: false, avatarColor: 'bg-slate-600' }
+        { id: 'm6', name: 'Coordenação de Campo', roleDescription: 'Supervisor Geral de Facilities', isVoter: true, avatarColor: 'bg-blue-700' }
       ],
       agendas: [
         {
-          id: 'ag-cli1',
-          title: 'Avaliação dos Resultados das Auditorias de Checklist Fácil nos Postos',
-          description: 'Apresentação do índice de conformidade dos 14 contratos de alta complexidade.',
+          id: 'ag-cl1',
+          title: 'Matriz de Auditorias de Qualidade (Checklist Fácil) dos 10 Maiores Contratos',
+          description: 'Índice de conformidade geral atingiu 94,2% no último ciclo quinzenal.',
           isFixed: true,
           isDeliberative: false,
-          category: 'Qualidade & SLA',
+          category: 'Qualidade & SLAs',
           votes: {},
-          resolutionNote: 'Índice de conformidade atingiu 96,4% na última amostragem.'
+          resolutionNote: 'Atingida a meta de auditoria preventiva sem notificações de glosas técnicas.'
         },
         {
-          id: 'ag-cli2',
-          title: 'Homologação de Plano de Ação para Posto Crítico Hospitalar',
-          description: 'Readequação de escala e reforço de encarregada para blindagem contra notificações.',
+          id: 'ag-cl2',
+          title: 'Homologação do Plano de Ação Preventivo de Retenção do Contrato Alfa Facilities',
+          description: 'Plano de alocação de encarregada sênior e reforço de cronograma de tratamento de piso.',
           isFixed: false,
           isDeliberative: true,
-          category: 'Contingência Operacional',
-          votes: { 'Marcos Oliveira': 'favorable', 'Cristiano Silva': 'favorable' },
-          resolutionNote: 'Aprovado remanejamento imediato de 2 colaboradores da reserva técnica.'
+          category: 'Retenção & CS',
+          votes: { 'Marcos Oliveira': 'favorable', 'Cristiano Silva': 'favorable', 'Coordenação de Campo': 'favorable' },
+          resolutionNote: 'Aprovada alocação imediata com avaliação formal de satisfação em 15 dias.'
         }
       ]
     }
   ];
 
-  // Estado dos Comitês com persistência local
+  // Estado dos colegiados
   const [committees, setCommittees] = useState<CommitteeConfig[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('rgr_committees_state');
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Error loading committees from localStorage:', e);
+        }
       }
     }
     return defaultCommittees;
   });
 
-  const [activeCommitteeId, setActiveCommitteeId] = useState<string>(() => {
-    return committees[0]?.id || 'board-01';
-  });
-
-  // Salvar no localStorage sempre que houver alteração
-  useEffect(() => {
+  // Salvar no localStorage sempre que houver modificações
+  React.useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('rgr_committees_state', JSON.stringify(committees));
     }
   }, [committees]);
 
-  const activeCommittee = useMemo(() => {
-    return committees.find(c => c.id === activeCommitteeId) || committees[0];
-  }, [committees, activeCommitteeId]);
+  // Colegiado atualmente aberto para sessão (null = visão geral / lista de todos os comitês)
+  const [activeCommitteeId, setActiveCommitteeId] = useState<string | null>(null);
 
-  // Modais de Criação e Edição
+  // Busca e filtros na listagem geral
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'board' | 'committee'>('all');
+
+  // Modais de Criação e Configuração
   const [isNewCommitteeModalOpen, setIsNewCommitteeModalOpen] = useState(false);
   const [newComName, setNewComName] = useState('');
   const [newComCode, setNewComCode] = useState('');
   const [newComDesc, setNewComDesc] = useState('');
   const [newComPresident, setNewComPresident] = useState('');
+  const [newComRole, setNewComRole] = useState('');
   const [newComCadence, setNewComCadence] = useState('Mensal');
+  const [newComType, setNewComType] = useState<'board' | 'committee'>('committee');
+
+  // Modal para Gerenciar Assentos do Colegiado Selecionado
+  const [managingCommitteeId, setManagingCommitteeId] = useState<string | null>(null);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState('');
+  const [newMemberIsVoter, setNewMemberIsVoter] = useState(true);
 
   // Modal para Adicionar Pauta
   const [isAddAgendaModalOpen, setIsAddAgendaModalOpen] = useState(false);
@@ -252,31 +270,38 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [newAgendaIsDeliberative, setNewAgendaIsDeliberative] = useState(true);
   const [newAgendaIsFixed, setNewAgendaIsFixed] = useState(false);
 
-  // Modal de Membros
-  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
-  const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState('');
-  const [newMemberIsVoter, setNewMemberIsVoter] = useState(true);
+  // Filtro de Pautas da Sessão
+  const [agendaFilter, setAgendaFilter] = useState<'all' | 'deliberative' | 'informative' | 'fixed'>('all');
 
-  // Mensagem de sucesso ao lavrar ata
+  // Mensagens de status
   const [minuteSuccessMessage, setMinuteSuccessMessage] = useState(false);
   const [isSavingMinute, setIsSavingMinute] = useState(false);
 
-  // Filtro de Pautas (Todas / Deliberativas / Informativas / Fixas)
-  const [agendaFilter, setAgendaFilter] = useState<'all' | 'deliberative' | 'informative' | 'fixed'>('all');
+  const activeCommittee = useMemo(() => {
+    if (!activeCommitteeId) return null;
+    return committees.find(c => c.id === activeCommitteeId) || null;
+  }, [committees, activeCommitteeId]);
 
-  const filteredAgendas = useMemo(() => {
-    if (!activeCommittee) return [];
-    return activeCommittee.agendas.filter(ag => {
-      if (agendaFilter === 'deliberative') return ag.isDeliberative;
-      if (agendaFilter === 'informative') return !ag.isDeliberative;
-      if (agendaFilter === 'fixed') return ag.isFixed;
-      return true;
+  const managingCommittee = useMemo(() => {
+    if (!managingCommitteeId) return null;
+    return committees.find(c => c.id === managingCommitteeId) || null;
+  }, [committees, managingCommitteeId]);
+
+  // Colegiados filtrados na tela inicial
+  const filteredCommittees = useMemo(() => {
+    return committees.filter(c => {
+      const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.presidentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchType = typeFilter === 'all' || c.type === typeFilter;
+      return matchSearch && matchType;
     });
-  }, [activeCommittee, agendaFilter]);
+  }, [committees, searchTerm, typeFilter]);
 
   // Votação Nominal em uma pauta
   const handleVote = (agendaId: string, voterName: string, choice: VoteChoice) => {
+    if (!activeCommittee) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
       return {
@@ -298,6 +323,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   // Atualizar parecer da pauta
   const handleUpdateResolution = (agendaId: string, note: string) => {
+    if (!activeCommittee) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
       return {
@@ -309,6 +335,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   // Excluir pauta
   const handleDeleteAgenda = (agendaId: string) => {
+    if (!activeCommittee) return;
     if (!confirm('Deseja excluir esta pauta da ordem do dia?')) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
@@ -319,8 +346,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }));
   };
 
-  // Apuração de Quórum
+  // Resumo de quórum de uma pauta deliberativa
   const getVotingSummary = (agenda: CommitteeAgendaItem) => {
+    if (!activeCommittee) return { favorable: 0, contrary: 0, abstention: 0, badgeText: '', badgeClass: '' };
     const voters = activeCommittee.members.filter(m => m.isVoter);
     let favorable = 0;
     let contrary = 0;
@@ -333,60 +361,59 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       else if (vote === 'abstention') abstention++;
     });
 
-    const votedCount = favorable + contrary + abstention;
     const totalVoters = voters.length;
+    const votedCount = favorable + contrary + abstention;
 
-    let badgeText = `Em Votação (${votedCount}/${totalVoters})`;
-    let badgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+    let badgeText = `Votação Pendente (${votedCount}/${totalVoters})`;
+    let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700';
 
     if (votedCount === totalVoters && totalVoters > 0) {
-      if (contrary === 0 && abstention === 0) {
+      if (favorable === totalVoters) {
         badgeText = 'Aprovado por Unanimidade';
-        badgeClass = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 font-bold';
+        badgeClass = 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 font-bold';
       } else if (favorable > contrary) {
-        badgeText = 'Aprovado por Maioria';
-        badgeClass = 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 font-semibold';
+        badgeText = `Aprovado por Maioria (${favorable} a ${contrary})`;
+        badgeClass = 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 font-bold';
       } else if (contrary > favorable) {
-        badgeText = 'Rejeitado pelo Colegiado';
-        badgeClass = 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-700 font-semibold';
+        badgeText = `Rejeitado (${contrary} a ${favorable})`;
+        badgeClass = 'bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 font-bold';
       } else {
-        badgeText = 'Empate na Votação';
-        badgeClass = 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700';
+        badgeText = `Empate (${favorable} a ${contrary}) - Voto de Minerva`;
+        badgeClass = 'bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 font-bold';
       }
-    } else if (votedCount === 0) {
-      badgeText = `Votação Pendente (${totalVoters} votantes)`;
-      badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700';
+    } else if (votedCount > 0) {
+      badgeText = `Em Votação (${votedCount}/${totalVoters})`;
+      badgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700';
     }
 
-    return { favorable, contrary, abstention, votedCount, totalVoters, badgeText, badgeClass };
+    return { favorable, contrary, abstention, totalVoters, votedCount, badgeText, badgeClass };
   };
 
-  // Lavrar Ata Oficial do Colegiado
+  // Lavrar Ata Oficial
   const handleGenerateMinute = async () => {
+    if (!activeCommittee) return;
     setIsSavingMinute(true);
     try {
       const voters = activeCommittee.members.filter(m => m.isVoter);
       const listeners = activeCommittee.members.filter(m => !m.isVoter);
 
-      let deliberationsText = `=== ATA OFICIAL • ${activeCommittee.name.toUpperCase()} ===\n`;
-      deliberationsText += `Data da Sessão: ${formatDateBR(selectedDate)}\n`;
-      deliberationsText += `Presidente da Mesa: ${activeCommittee.presidentName} (${activeCommittee.presidentRole})\n`;
-      deliberationsText += `Cadência Regimental: ${activeCommittee.cadence}\n\n`;
+      let deliberationsText = `## ATA DA SESSÃO OFICIAL • ${activeCommittee.name.toUpperCase()}\n`;
+      deliberationsText += `**Data da Sessão:** ${formatDateBR(selectedDate)}\n`;
+      deliberationsText += `**Presidente / Condutor:** ${activeCommittee.presidentName} (${activeCommittee.presidentRole})\n`;
+      deliberationsText += `**Periodicidade do Órgão:** ${activeCommittee.cadence}\n\n`;
 
-      deliberationsText += `### 1. MEMBROS PRESENTES NA SESSÃO:\n`;
+      deliberationsText += `### 1. QUÓRUM E COMPOSIÇÃO DA MESA:\n`;
       deliberationsText += `• CONSELHEIROS VOTANTES (${voters.length}):\n`;
       voters.forEach(v => {
         deliberationsText += `  - ${v.name} (${v.roleDescription})\n`;
       });
       if (listeners.length > 0) {
-        deliberationsText += `• OUVIENTES & ASSESSORES (${listeners.length}):\n`;
+        deliberationsText += `• OUVINTES & ASSESSORES (${listeners.length}):\n`;
         listeners.forEach(l => {
           deliberationsText += `  - ${l.name} (${l.roleDescription})\n`;
         });
       }
-      deliberationsText += `\n`;
-
-      deliberationsText += `### 2. DELIBERAÇÕES E VOTAÇÕES NOMINAIS:\n\n`;
+      deliberationsText += `\n### 2. DELIBERAÇÕES E VOTAÇÕES NOMINAIS:\n\n`;
       activeCommittee.agendas.forEach((agenda, idx) => {
         deliberationsText += `PAUTA ${idx + 1}.0 [${agenda.isDeliberative ? 'DELIBERATIVA' : 'INFORMATIVA'}]: "${agenda.title}"\n`;
         if (agenda.description) {
@@ -410,7 +437,6 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         deliberationsText += `\n`;
       });
 
-      // Gravar na API de Atas
       const res = await fetch('/api/minutes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -440,84 +466,631 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }
   };
 
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      
-      {/* ========================================================================= */}
-      {/* 1. SELETOR DE ÓRGÃO COLEGIADO (CONSELHO + COMITÊS)                         */}
-      {/* ========================================================================= */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+  // =========================================================================
+  // CENÁRIO 1: VISÃO GERAL DE TODOS OS COLEGIADOS (Conselho & Comitês)
+  // Estrutura em gavetas / cards executivos com gerenciamento de assentos
+  // =========================================================================
+  if (!activeCommittee) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-12">
+        {/* Banner Executivo de Governança Superior */}
+        <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                GOVERNANÇA SUPERIOR
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                GOVERNANÇA CORPORATIVA & ESTATUTÁRIA
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                Órgãos Colegiados, Deliberações Estratégicas & Quórum
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                Atlas Governance Framework
               </span>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <span>Conselho & Comitês Estratégicos</span>
+              <Landmark className="w-5 h-5 text-amber-500" />
+              <span>Conselho de Administração & Comitês Estratégicos</span>
             </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Mantenha o Conselho e Comitês organizados como órgãos colegiados: configure os integrantes de cada mesa, defina quóruns e abra a sessão quando houver deliberação.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setIsNewCommitteeModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-            >
-              <FolderPlus className="w-3.5 h-3.5" />
-              <span>+ Novo Comitê</span>
-            </button>
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              {committees.length} {committees.length === 1 ? 'Colegiado' : 'Colegiados'}
+            </span>
 
             <button
               type="button"
-              onClick={handleGenerateMinute}
-              disabled={isSavingMinute}
-              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              onClick={() => {
+                setNewComName('');
+                setNewComCode('');
+                setNewComDesc('');
+                setNewComPresident('');
+                setNewComRole('');
+                setNewComCadence('Mensal');
+                setNewComType('committee');
+                setIsNewCommitteeModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
-              <FileCheck2 className="w-4 h-4" />
-              <span>{isSavingMinute ? 'Lavrando Ata...' : 'Lavrar Ata do Colegiado'}</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Criar Novo Comitê</span>
             </button>
           </div>
         </div>
 
-        {/* Abas dos Colegiados (Conselho e Comitês) */}
-        <div className="flex items-center gap-2 pt-3 overflow-x-auto no-scrollbar">
-          {committees.map(com => {
-            const isActive = com.id === activeCommittee.id;
+        {/* Barra de Filtros & Busca */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome do colegiado, código, presidente ou competência..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 shadow-xs"
+            />
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shrink-0">
+            <button
+              onClick={() => setTypeFilter('all')}
+              className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                typeFilter === 'all'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              Todos ({committees.length})
+            </button>
+            <button
+              onClick={() => setTypeFilter('board')}
+              className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                typeFilter === 'board'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              Conselho Superior
+            </button>
+            <button
+              onClick={() => setTypeFilter('committee')}
+              className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                typeFilter === 'committee'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              Comitês Temáticos
+            </button>
+          </div>
+        </div>
+
+        {/* Grade de Colegiados (Conselho e Comitês em Cards Independentes) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredCommittees.map(com => {
             const isBoard = com.type === 'board';
+            const voters = com.members.filter(m => m.isVoter);
+            const listeners = com.members.filter(m => !m.isVoter);
+            const deliberativeCount = com.agendas.filter(a => a.isDeliberative).length;
+            const fixedCount = com.agendas.filter(a => a.isFixed).length;
+
             return (
-              <button
+              <div
                 key={com.id}
-                type="button"
-                onClick={() => setActiveCommitteeId(com.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer whitespace-nowrap ${
-                  isActive
-                    ? isBoard
-                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs font-bold'
-                      : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent shadow-xs font-bold'
-                    : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                className={`bg-white dark:bg-[#111827] border rounded-2xl p-5 text-xs flex flex-col justify-between shadow-xs transition-all hover:shadow-md ${
+                  isBoard 
+                    ? 'border-amber-400/80 dark:border-amber-700/80 ring-1 ring-amber-400/20' 
+                    : 'border-slate-200/90 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
-                {isBoard ? (
-                  <Landmark className="w-4 h-4" />
-                ) : (
-                  <Briefcase className="w-3.5 h-3.5" />
-                )}
-                <span>{com.name}</span>
-                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
-                  isActive 
-                    ? isBoard ? 'bg-slate-950/20 text-slate-950' : 'bg-white/20 text-white dark:text-slate-900' 
-                    : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                }`}>
-                  {com.agendas.length}
-                </span>
-              </button>
+                <div className="space-y-3.5">
+                  {/* Top Bar: Code + Tipo + Botão Configurar Integrantes */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                        isBoard
+                          ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {com.code}
+                      </span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                        isBoard
+                          ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                      }`}>
+                        {isBoard ? 'Conselho Superior' : 'Comitê Temático'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setManagingCommitteeId(com.id)}
+                      className="px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      title="Configurar Assentos e Membros da Mesa"
+                    >
+                      <Settings className="w-3 h-3 text-slate-400" />
+                      <span>Integrantes</span>
+                    </button>
+                  </div>
+
+                  {/* Nome do Colegiado & Presidente */}
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                      {com.name}
+                    </h3>
+                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                      <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">
+                        Presidência: <strong className="text-slate-700 dark:text-slate-200">{com.presidentName}</strong>
+                      </span>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
+                      <CalendarDays className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span>{com.cadence}</span>
+                    </div>
+                  </div>
+
+                  {/* Descrição do Colegiado */}
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {com.description}
+                  </p>
+
+                  {/* Integrantes / Assentos com tags compactas */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <span>Membros da Mesa ({com.members.length}):</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400">{voters.length} Votantes</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {com.members.map(m => (
+                        <span 
+                          key={m.id}
+                          className={`px-2 py-0.5 rounded text-[10px] border flex items-center gap-1 ${
+                            m.isVoter 
+                              ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium' 
+                              : 'bg-slate-100/60 dark:bg-slate-800/40 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 italic'
+                          }`}
+                          title={`${m.name} (${m.roleDescription}) - ${m.isVoter ? 'Direito a Voto' : 'Ouvinte/Sem voto'}`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          <span className="truncate max-w-[110px]">{m.name.split(' ')[0]} {m.name.split(' ')[1] || ''}</span>
+                          <span className={`text-[8px] font-mono px-1 rounded ${
+                            m.isVoter ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-400'
+                          }`}>
+                            {m.isVoter ? 'VOTA' : 'OUV'}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Resumo de Pautas */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="flex-1 py-1 px-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 font-medium flex items-center justify-center gap-1">
+                      <FileText className="w-3 h-3 text-slate-400" />
+                      <span>{com.agendas.length} Pautas Registradas</span>
+                    </span>
+                    <span className="py-1 px-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-300 font-medium flex items-center gap-1">
+                      <Vote className="w-3 h-3 text-amber-600" />
+                      <span>{deliberativeCount} Votações</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ações do Card */}
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCommitteeId(com.id)}
+                    className="flex-1 py-2 px-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer group"
+                  >
+                    <span>Abrir Sessão & Pautas</span>
+                    <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setManagingCommitteeId(com.id)}
+                    className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+                    title="Editar assentos deste comitê"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             );
           })}
+        </div>
+
+        {/* Modal: Criar Novo Comitê */}
+        {isNewCommitteeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <FolderPlus className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Cadastrar Novo Órgão Colegiado
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewCommitteeModalOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Tipo de Órgão</label>
+                    <select
+                      value={newComType}
+                      onChange={(e) => setNewComType(e.target.value as any)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    >
+                      <option value="committee">Comitê Temático / Técnico</option>
+                      <option value="board">Conselho de Administração</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Código / Sigla</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: COM-AUD"
+                      value={newComCode}
+                      onChange={(e) => setNewComCode(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Nome do Comitê</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Comitê de Auditoria, Riscos & Compliance"
+                    value={newComName}
+                    onChange={(e) => setNewComName(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Presidente / Relator</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Carlos Mendes"
+                      value={newComPresident}
+                      onChange={(e) => setNewComPresident(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Periodicidade de Reunião</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Mensal (Última terça)"
+                      value={newComCadence}
+                      onChange={(e) => setNewComCadence(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Finalidade / Descrição Estatutária</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Descreva a missão deste comitê e matérias de assessoramento..."
+                    value={newComDesc}
+                    onChange={(e) => setNewComDesc(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsNewCommitteeModalOpen(false)}
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!newComName.trim()) {
+                      alert('Informe o nome do comitê.');
+                      return;
+                    }
+                    const newCom: CommitteeConfig = {
+                      id: `com-${Date.now()}`,
+                      name: newComName.trim(),
+                      code: newComCode.trim() || 'COM',
+                      type: newComType,
+                      description: newComDesc.trim() || 'Comitê estratégico de governança.',
+                      presidentName: newComPresident.trim() || 'A Definir',
+                      presidentRole: newComRole.trim() || 'Presidente do Comitê',
+                      cadence: newComCadence.trim() || 'Mensal',
+                      members: [
+                        { id: `m-${Date.now()}`, name: newComPresident.trim() || 'Presidente', roleDescription: 'Presidente', isVoter: true }
+                      ],
+                      agendas: []
+                    };
+                    setCommittees(prev => [...prev, newCom]);
+                    setIsNewCommitteeModalOpen(false);
+                  }}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+                >
+                  Salvar Colegiado
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Gerenciar Assentos do Colegiado */}
+        {managingCommittee && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-amber-500" />
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Assentos da Mesa: {managingCommittee.name}
+                    </h3>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      Código: {managingCommittee.code}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setManagingCommitteeId(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Lista dos Membros Cadastrados */}
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Membros Registrados ({managingCommittee.members.length}):
+                </span>
+
+                {managingCommittee.members.map(member => (
+                  <div
+                    key={member.id}
+                    className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900 dark:text-white truncate">
+                          {member.name}
+                        </span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                          member.isVoter
+                            ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                        }`}>
+                          {member.isVoter ? 'VOTANTE' : 'OUVINTE'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+                        {member.roleDescription}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCommittees(prev => prev.map(c => {
+                            if (c.id !== managingCommittee.id) return c;
+                            return {
+                              ...c,
+                              members: c.members.map(m => m.id === member.id ? { ...m, isVoter: !m.isVoter } : m)
+                            };
+                          }));
+                        }}
+                        className="px-2 py-1 text-[10px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-400 cursor-pointer"
+                        title={member.isVoter ? 'Tornar ouvinte (sem voto)' : 'Conceder direito a voto'}
+                      >
+                        {member.isVoter ? 'Tornar Ouvinte' : 'Conceder Voto'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (managingCommittee.members.length <= 1) {
+                            alert('O comitê precisa ter pelo menos um membro na mesa.');
+                            return;
+                          }
+                          setCommittees(prev => prev.map(c => {
+                            if (c.id !== managingCommittee.id) return c;
+                            return {
+                              ...c,
+                              members: c.members.filter(m => m.id !== member.id)
+                            };
+                          }));
+                        }}
+                        className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        title="Remover assento"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Formulário: Adicionar Novo Membro */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <span className="text-[11px] font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>+ Adicionar Novo Integrante</span>
+                </span>
+
+                {/* Importar de Usuários do Sistema */}
+                {users && users.length > 0 && (
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">
+                      Importar da Base de Usuários:
+                    </label>
+                    <select
+                      onChange={(e) => {
+                        const u = users.find(usr => usr.id === e.target.value);
+                        if (u) {
+                          setNewMemberName(u.name);
+                          setNewMemberRole(u.jobTitle || 'Membro do Comitê');
+                        }
+                      }}
+                      defaultValue=""
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    >
+                      <option value="" disabled>Selecionar usuário existente...</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.jobTitle || u.email})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Nome Completo</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Dra. Mariana Costa"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Papel na Mesa</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Relatora Financeira"
+                      value={newMemberRole}
+                      onChange={(e) => setNewMemberRole(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newMemberIsVoter}
+                      onChange={(e) => setNewMemberIsVoter(e.target.checked)}
+                      className="rounded text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                      Possui Direito a Voto (Conselheiro Votante)
+                    </span>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newMemberName.trim()) {
+                        alert('Informe o nome do participante.');
+                        return;
+                      }
+                      const newM: BoardMember = {
+                        id: `mb-${Date.now()}`,
+                        name: newMemberName.trim(),
+                        roleDescription: newMemberRole.trim() || (newMemberIsVoter ? 'Conselheiro Votante' : 'Participante'),
+                        isVoter: newMemberIsVoter
+                      };
+                      setCommittees(prev => prev.map(c => {
+                        if (c.id !== managingCommittee.id) return c;
+                        return { ...c, members: [...c.members, newM] };
+                      }));
+                      setNewMemberName('');
+                      setNewMemberRole('');
+                      setNewMemberIsVoter(true);
+                    }}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors cursor-pointer shadow-xs"
+                  >
+                    Adicionar Assento
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setManagingCommitteeId(null)}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+                >
+                  Concluir Configuração
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // CENÁRIO 2: SALA DE SESSÃO / REUNIÃO DO COLEGIADO SELECIONADO
+  // Permite deliberar pautas, colher votos nominais e lavrar ata
+  // =========================================================================
+  const isBoard = activeCommittee.type === 'board';
+  const voters = activeCommittee.members.filter(m => m.isVoter);
+  const listeners = activeCommittee.members.filter(m => !m.isVoter);
+
+  const filteredAgendas = activeCommittee.agendas.filter(ag => {
+    if (agendaFilter === 'deliberative') return ag.isDeliberative;
+    if (agendaFilter === 'informative') return !ag.isDeliberative;
+    if (agendaFilter === 'fixed') return ag.isFixed;
+    return true;
+  });
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Botão Superior de Navegação para Voltar a Todos os Comitês */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setActiveCommitteeId(null)}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Voltar para Lista de Colegiados & Comitês</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setManagingCommitteeId(activeCommittee.id)}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer hover:border-slate-400"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-400" />
+            <span>Configurar Assentos / Votantes</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGenerateMinute}
+            disabled={isSavingMinute}
+            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+          >
+            <FileCheck2 className="w-4 h-4" />
+            <span>{isSavingMinute ? 'Lavrando Ata...' : 'Lavrar Ata da Sessão'}</span>
+          </button>
         </div>
       </div>
 
@@ -531,297 +1104,290 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. CABEÇALHO DO COLEGIADO ATIVO & MEMBROS DA MESA                         */}
-      {/* ========================================================================= */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-4">
+      {/* Cabeçalho do Colegiado em Sessão */}
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-6 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-          <div className="space-y-1 max-w-3xl">
+          <div className="space-y-1.5 max-w-3xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border ${
-                activeCommittee.type === 'board'
-                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800'
-                  : 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-800'
+              <span className={`font-mono text-xs font-bold px-2.5 py-0.5 rounded-md border ${
+                isBoard
+                  ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700'
               }`}>
                 {activeCommittee.code}
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                Cadência: <strong>{activeCommittee.cadence}</strong>
+              <span className="text-xs text-slate-500 font-mono">
+                Cadência: <strong className="text-slate-800 dark:text-slate-200">{activeCommittee.cadence}</strong>
               </span>
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {activeCommittee.name}
-            </h2>
+            </h1>
+
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               {activeCommittee.description}
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 min-w-[240px]">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="bg-slate-50 dark:bg-[#0c121e] border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 shrink-0 text-xs space-y-1">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block font-mono">
               Presidência da Mesa
             </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-white block mt-0.5">
+            <div className="font-bold text-slate-900 dark:text-white">
               {activeCommittee.presidentName}
-            </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+            </div>
+            <div className="text-[11px] text-slate-500">
               {activeCommittee.presidentRole}
-            </span>
+            </div>
           </div>
         </div>
 
-        {/* Faixa de Membros da Mesa */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1 flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" />
-              Assentos na Mesa:
+        {/* Composição da Mesa: Votantes e Ouvintes */}
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-slate-500" />
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                Assentos na Mesa ({activeCommittee.members.length} participantes):
+              </span>
+            </div>
+            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+              {voters.length} Conselheiros Votantes Habilitados
             </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
             {activeCommittee.members.map(member => (
-              <span
+              <div
                 key={member.id}
-                className={`px-2.5 py-1 rounded-lg text-xs border flex items-center gap-1.5 ${
+                className={`p-2 rounded-xl border flex items-center gap-2 text-xs transition-colors ${
                   member.isVoter
-                    ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200'
-                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-500 italic'
+                    ? 'bg-slate-50/80 dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                    : 'bg-slate-100/60 dark:bg-slate-800/40 border-dashed border-slate-200 dark:border-slate-700 text-slate-400 italic'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${member.avatarColor || 'bg-slate-400'}`} />
-                <span className="font-semibold not-italic">{member.name}</span>
-                <span className="text-[10px] text-slate-400">({member.roleDescription})</span>
-                <span className={`text-[9px] font-mono px-1 py-0.2 rounded font-bold ${
-                  member.isVoter ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${
+                  member.avatarColor || (member.isVoter ? 'bg-slate-800' : 'bg-slate-400')
+                }`}>
+                  {member.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-semibold leading-tight">{member.name}</div>
+                  <div className="text-[10px] text-slate-400">{member.roleDescription}</div>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ml-1 ${
+                  member.isVoter
+                    ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-medium'
                 }`}>
                   {member.isVoter ? 'VOTA' : 'OUVINTE'}
                 </span>
-              </span>
+              </div>
             ))}
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsMembersModalOpen(true)}
-            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer self-start sm:self-auto"
-          >
-            Editar Assentos
-          </button>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3. ORDEM DO DIA (PAUTAS FIXAS & DELIBERATIVAS)                             */}
-      {/* ========================================================================= */}
+      {/* Ordem do Dia & Pautas da Sessão */}
       <div className="space-y-4">
-        
-        {/* Barra de Filtro de Pautas e Botão de Adição */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
-              type="button"
               onClick={() => setAgendaFilter('all')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 agendaFilter === 'all'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
               }`}
             >
               Todas as Pautas ({activeCommittee.agendas.length})
             </button>
             <button
-              type="button"
               onClick={() => setAgendaFilter('deliberative')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 agendaFilter === 'deliberative'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
               }`}
             >
-              ⚖️ Deliberativas ({activeCommittee.agendas.filter(a => a.isDeliberative).length})
+              Deliberativas ({activeCommittee.agendas.filter(a => a.isDeliberative).length})
             </button>
             <button
-              type="button"
               onClick={() => setAgendaFilter('fixed')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 agendaFilter === 'fixed'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
               }`}
             >
-              📌 Pautas Fixas ({activeCommittee.agendas.filter(a => a.isFixed).length})
+              Pautas Fixas ({activeCommittee.agendas.filter(a => a.isFixed).length})
             </button>
             <button
-              type="button"
               onClick={() => setAgendaFilter('informative')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 agendaFilter === 'informative'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
               }`}
             >
-              📢 Informativas ({activeCommittee.agendas.filter(a => !a.isDeliberative).length})
+              Informativas ({activeCommittee.agendas.filter(a => !a.isDeliberative).length})
             </button>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsAddAgendaModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-atlas-600 hover:bg-atlas-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+            onClick={() => {
+              setNewAgendaTitle('');
+              setNewAgendaDesc('');
+              setNewAgendaCategory('Geral');
+              setNewAgendaIsDeliberative(true);
+              setNewAgendaIsFixed(false);
+              setIsAddAgendaModalOpen(true);
+            }}
+            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>+ Adicionar Pauta</span>
           </button>
         </div>
 
-        {/* Lista de Cards das Pautas */}
+        {/* Lista de Pautas */}
         {filteredAgendas.length === 0 ? (
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 rounded-xl p-12 text-center text-slate-400">
-            Nenhuma pauta cadastrada com este filtro.
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-400">
+            Nenhuma pauta cadastrada nesta categoria. Clique no botão acima para adicionar.
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredAgendas.map((agenda, index) => {
-              const voters = activeCommittee.members.filter(m => m.isVoter);
+            {filteredAgendas.map((agenda, idx) => {
               const summary = agenda.isDeliberative ? getVotingSummary(agenda) : null;
 
               return (
                 <div
                   key={agenda.id}
-                  className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-4 transition-colors"
+                  className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl p-5 shadow-xs space-y-4 transition-colors"
                 >
-                  {/* Topo da Pauta */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-xs font-bold text-slate-400">
-                          PAUTA {index + 1}.0
+                          PAUTA {idx + 1}.0
                         </span>
-                        
-                        {agenda.isFixed ? (
-                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                            📌 Pauta Fixa Recorrente
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                            ⚡ Pauta Extraordinária
+                        {agenda.isFixed && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-800">
+                            Pauta Fixa Recorrente
                           </span>
                         )}
-
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
                           agenda.isDeliberative 
-                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800 font-bold'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200'
                         }`}>
-                          {agenda.isDeliberative ? '⚖️ Deliberação Nominal' : '📢 Pauta Informativa'}
+                          {agenda.isDeliberative ? 'Deliberação Nominal' : 'Informativa'}
                         </span>
-
-                        <span className="text-[10px] font-semibold text-slate-400">
-                          {agenda.category || 'Geral'}
-                        </span>
+                        {agenda.category && (
+                          <span className="text-[10px] text-slate-400">
+                            {agenda.category}
+                          </span>
+                        )}
                       </div>
 
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
                         {agenda.title}
                       </h3>
+
                       {agenda.description && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-0.5">
                           {agenda.description}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 self-start">
+                    <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                       {summary && (
-                        <span className={`px-2.5 py-1 text-xs rounded-lg border ${summary.badgeClass}`}>
+                        <span className={`text-[10px] px-3 py-1 rounded-full border uppercase tracking-wider font-semibold ${summary.badgeClass}`}>
                           {summary.badgeText}
                         </span>
                       )}
                       <button
                         type="button"
                         onClick={() => handleDeleteAgenda(agenda.id)}
-                        className="p-1.5 text-slate-300 hover:text-rose-600 rounded-md transition-colors"
-                        title="Remover pauta"
+                        className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        title="Excluir Pauta"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Painel de Votação Nominal (Se Deliberativa) */}
+                  {/* Votação Nominal dos Integrantes com Assento */}
                   {agenda.isDeliberative && (
-                    <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 space-y-3">
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        <span className="flex items-center gap-1.5">
-                          <Vote className="w-4 h-4 text-atlas-500" />
-                          Votos Nominais dos Membros com Assento:
-                        </span>
-                        <span className="font-mono text-[11px] text-slate-400">
-                          A favor: {summary?.favorable} | Contra: {summary?.contrary} | Abstenções: {summary?.abstention}
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        <span>Votos Nominais dos Membros com Assento:</span>
+                        <span className="font-mono text-slate-500">
+                          A favor: {summary?.favorable || 0} | Contra: {summary?.contrary || 0} | Abstenções: {summary?.abstention || 0}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        {voters.map(member => {
-                          const userVote = agenda.votes[member.name];
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {voters.map(voter => {
+                          const vote = agenda.votes[voter.name];
+
                           return (
                             <div
-                              key={member.id}
-                              className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-2 shadow-2xs"
+                              key={voter.id}
+                              className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex flex-col justify-between gap-2"
                             >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                                    {member.name}
-                                  </span>
-                                  <span className="text-[10px] text-slate-400 block">
-                                    {member.roleDescription}
-                                  </span>
-                                </div>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                  userVote === 'favorable' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                                  userVote === 'contrary' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' :
-                                  userVote === 'abstention' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300' :
-                                  'bg-slate-100 text-slate-400'
-                                }`}>
-                                  {userVote === 'favorable' ? 'A FAVOR' : userVote === 'contrary' ? 'CONTRA' : userVote === 'abstention' ? 'ABSTEVE' : 'PENDENTE'}
+                              <div className="min-w-0">
+                                <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs block truncate" title={voter.name}>
+                                  {voter.name}
+                                </span>
+                                <span className="text-[10px] text-slate-400 block truncate">
+                                  {voter.roleDescription}
                                 </span>
                               </div>
 
-                              {/* Botões de Voto para o Membro */}
-                              <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                              <div className="grid grid-cols-3 gap-1">
                                 <button
                                   type="button"
-                                  onClick={() => handleVote(agenda.id, member.name, 'favorable')}
-                                  className={`py-1 rounded text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer border ${
-                                    userVote === 'favorable'
-                                      ? 'bg-emerald-600 text-white border-emerald-700'
-                                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-emerald-50'
+                                  onClick={() => handleVote(agenda.id, voter.name, 'favorable')}
+                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
+                                    vote === 'favorable'
+                                      ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
                                   }`}
+                                  title="A Favor"
                                 >
-                                  <ThumbsUp className="w-3 h-3" />
-                                  <span>Favor</span>
+                                  <ThumbsUp className="w-2.5 h-2.5" />
+                                  <span>Sim</span>
                                 </button>
+
                                 <button
                                   type="button"
-                                  onClick={() => handleVote(agenda.id, member.name, 'contrary')}
-                                  className={`py-1 rounded text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer border ${
-                                    userVote === 'contrary'
-                                      ? 'bg-rose-600 text-white border-rose-700'
-                                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-rose-50'
+                                  onClick={() => handleVote(agenda.id, voter.name, 'contrary')}
+                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
+                                    vote === 'contrary'
+                                      ? 'bg-rose-600 text-white border-rose-700 font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-rose-400'
                                   }`}
+                                  title="Contra"
                                 >
-                                  <ThumbsDown className="w-3 h-3" />
-                                  <span>Contra</span>
+                                  <ThumbsDown className="w-2.5 h-2.5" />
+                                  <span>Não</span>
                                 </button>
+
                                 <button
                                   type="button"
-                                  onClick={() => handleVote(agenda.id, member.name, 'abstention')}
-                                  className={`py-1 rounded text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer border ${
-                                    userVote === 'abstention'
-                                      ? 'bg-slate-800 text-white border-slate-900'
-                                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                                  onClick={() => handleVote(agenda.id, voter.name, 'abstention')}
+                                  className={`py-1 rounded text-[10px] font-medium transition-colors border flex items-center justify-center gap-0.5 cursor-pointer ${
+                                    vote === 'abstention'
+                                      ? 'bg-slate-800 text-white border-slate-900 font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400'
                                   }`}
+                                  title="Abster"
                                 >
-                                  <MinusCircle className="w-3 h-3" />
+                                  <MinusCircle className="w-2.5 h-2.5" />
                                   <span>Abster</span>
                                 </button>
                               </div>
@@ -832,17 +1398,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     </div>
                   )}
 
-                  {/* Campo de Parecer / Ressalvas / Deliberações */}
+                  {/* Resolução & Diretriz da Pauta */}
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
-                      {agenda.isDeliberative ? 'Parecer Oficial da Mesa / Ressalvas Deliberadas:' : 'Anotações da Pauta / Deliberações Informativas:'}
-                    </label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
+                      placeholder="Parecer do relator ou diretriz deliberada para esta pauta..."
                       value={agenda.resolutionNote || ''}
                       onChange={(e) => handleUpdateResolution(agenda.id, e.target.value)}
-                      placeholder="Registre os desfechos, ressalvas e prazos definidos pelo colegiado..."
-                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:border-atlas-400"
+                      className="w-full px-3 py-2 text-xs bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -852,150 +1415,21 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         )}
       </div>
 
-      {/* ========================================================================= */}
-      {/* MODAL: CRIAR NOVO COMITÊ                                                  */}
-      {/* ========================================================================= */}
-      {isNewCommitteeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <FolderPlus className="w-5 h-5 text-atlas-600" />
-                Criar Novo Comitê Estratégico
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsNewCommitteeModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Nome do Comitê</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Comitê de Gente & Cultura"
-                  value={newComName}
-                  onChange={(e) => setNewComName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Código</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: COM-RH"
-                    value={newComCode}
-                    onChange={(e) => setNewComCode(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Cadência</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Quinzenal"
-                    value={newComCadence}
-                    onChange={(e) => setNewComCadence(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Presidente / Coordenador</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Lucas Ribeiro (Líder de DP)"
-                  value={newComPresident}
-                  onChange={(e) => setNewComPresident(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Objetivo & Escopo de Governança</label>
-                <textarea
-                  rows={2}
-                  placeholder="Descreva o propósito técnico e o escopo de atuação deste comitê..."
-                  value={newComDesc}
-                  onChange={(e) => setNewComDesc(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
-                />
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsNewCommitteeModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!newComName.trim()) return alert('Informe o nome do comitê');
-                  const newCom: CommitteeConfig = {
-                    id: `com-${Date.now()}`,
-                    name: newComName.trim(),
-                    code: newComCode.trim().toUpperCase() || 'COM',
-                    type: 'committee',
-                    description: newComDesc.trim() || 'Comitê estratégico de governança da RGR.',
-                    presidentName: newComPresident.trim() || 'Diretoria Executiva',
-                    presidentRole: 'Presidente do Comitê',
-                    cadence: newComCadence.trim() || 'Mensal',
-                    members: [
-                      { id: 'm-default', name: newComPresident.trim() || 'Presidente', roleDescription: 'Líder', isVoter: true }
-                    ],
-                    agendas: [
-                      {
-                        id: `ag-${Date.now()}-1`,
-                        title: 'Acompanhamento dos Indicadores Chave de Desempenho',
-                        isFixed: true,
-                        isDeliberative: false,
-                        votes: {}
-                      }
-                    ]
-                  };
-                  setCommittees(prev => [...prev, newCom]);
-                  setActiveCommitteeId(newCom.id);
-                  setIsNewCommitteeModalOpen(false);
-                  setNewComName('');
-                  setNewComCode('');
-                  setNewComDesc('');
-                  setNewComPresident('');
-                }}
-                className="px-4 py-2 text-xs font-semibold bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg"
-              >
-                Criar Comitê
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: ADICIONAR PAUTA NA ORDEM DO DIA                                    */}
-      {/* ========================================================================= */}
+      {/* Modal: Adicionar Nova Pauta */}
       {isAddAgendaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-atlas-600" />
-                Incluir Pauta na Ordem do Dia
-              </h3>
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-emerald-500" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Incluir Pauta na Ordem do Dia
+                </h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddAgendaModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
               >
                 ✕
               </button>
@@ -1003,61 +1437,61 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Título da Pauta</label>
+                <label className="text-[10px] text-slate-500 font-medium block mb-1">Título da Pauta</label>
                 <input
                   type="text"
-                  placeholder="Ex: Aprovação do Novo Fornecedor de EPIs e Uniformes"
+                  placeholder="Ex: Apreciação da Proposta de Reajuste Salarial dos Supervisores"
                   value={newAgendaTitle}
                   onChange={(e) => setNewAgendaTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
+                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Contexto & Justificativa Técnica</label>
+                <label className="text-[10px] text-slate-500 font-medium block mb-1">Contextualização / Ementa (Opcional)</label>
                 <textarea
-                  rows={2}
-                  placeholder="Detalhes para embasar os conselheiros e apoiar a decisão..."
+                  rows={3}
+                  placeholder="Explique o objeto da deliberação ou relatório..."
                   value={newAgendaDesc}
                   onChange={(e) => setNewAgendaDesc(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
+                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Categoria / Tema</label>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Categoria / Tema</label>
                   <input
                     type="text"
-                    placeholder="Ex: Suprimentos / Capex"
+                    placeholder="Ex: Finanças, Operações, Jurídico"
                     value={newAgendaCategory}
                     onChange={(e) => setNewAgendaCategory(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Tipo de Pauta</label>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Natureza da Pauta</label>
                   <select
-                    value={newAgendaIsDeliberative ? 'deliberative' : 'informative'}
-                    onChange={(e) => setNewAgendaIsDeliberative(e.target.value === 'deliberative')}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold"
+                    value={newAgendaIsDeliberative ? 'true' : 'false'}
+                    onChange={(e) => setNewAgendaIsDeliberative(e.target.value === 'true')}
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
                   >
-                    <option value="deliberative">⚖️ Deliberativa (Exige Votação Nominal)</option>
-                    <option value="informative">📢 Informativa (Apenas Alinhamento)</option>
+                    <option value="true">Deliberativa (Votação Nominal)</option>
+                    <option value="false">Informativa / Alinhamento</option>
                   </select>
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={newAgendaIsFixed}
                     onChange={(e) => setNewAgendaIsFixed(e.target.checked)}
-                    className="rounded text-atlas-600"
+                    className="rounded text-amber-600 focus:ring-amber-500"
                   />
                   <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                    📌 Definir como Pauta Fixa Recorrente (entrará em todas as sessões)
+                    Tornar esta pauta fixa (permanente em todas as sessões)
                   </span>
                 </label>
               </div>
@@ -1067,15 +1501,18 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAddAgendaModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600"
+                className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  if (!newAgendaTitle.trim()) return alert('Informe o título da pauta');
-                  const newItem: CommitteeAgendaItem = {
+                  if (!newAgendaTitle.trim()) {
+                    alert('Informe o título da pauta.');
+                    return;
+                  }
+                  const newAg: CommitteeAgendaItem = {
                     id: `ag-${Date.now()}`,
                     title: newAgendaTitle.trim(),
                     description: newAgendaDesc.trim() || undefined,
@@ -1084,158 +1521,20 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     isFixed: newAgendaIsFixed,
                     votes: {}
                   };
-                  setCommittees(prev => prev.map(com => {
-                    if (com.id !== activeCommittee.id) return com;
-                    return {
-                      ...com,
-                      agendas: [...com.agendas, newItem]
-                    };
+                  setCommittees(prev => prev.map(c => {
+                    if (c.id !== activeCommittee.id) return c;
+                    return { ...c, agendas: [...c.agendas, newAg] };
                   }));
                   setIsAddAgendaModalOpen(false);
-                  setNewAgendaTitle('');
-                  setNewAgendaDesc('');
                 }}
-                className="px-4 py-2 text-xs font-semibold bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg"
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
               >
-                Incluir Pauta
+                Adicionar à Ordem do Dia
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: GERENCIAR MEMBROS DA MESA                                          */}
-      {/* ========================================================================= */}
-      {isMembersModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-atlas-600" />
-                Assentos na Mesa • {activeCommittee.name}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsMembersModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              {activeCommittee.members.map(m => (
-                <div key={m.id} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                      {m.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 block">
-                      {m.roleDescription}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-                      m.isVoter ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                    }`}>
-                      {m.isVoter ? 'Votante' : 'Ouvinte'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCommittees(prev => prev.map(com => {
-                          if (com.id !== activeCommittee.id) return com;
-                          return {
-                            ...com,
-                            members: com.members.filter(mem => mem.id !== m.id)
-                          };
-                        }));
-                      }}
-                      className="text-slate-300 hover:text-rose-600 p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Adicionar novo membro */}
-            <div className="p-3 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
-                + Designar Novo Assento:
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="Nome do Membro"
-                  value={newMemberName}
-                  onChange={(e) => setNewMemberName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border rounded-lg"
-                />
-                <input
-                  type="text"
-                  placeholder="Cargo / Papel na Mesa"
-                  value={newMemberRole}
-                  onChange={(e) => setNewMemberRole(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border rounded-lg"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newMemberIsVoter}
-                    onChange={(e) => setNewMemberIsVoter(e.target.checked)}
-                    className="rounded text-atlas-600"
-                  />
-                  <span className="text-xs text-slate-700 dark:text-slate-300">
-                    Direito a Voto (Conselheiro Votante)
-                  </span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!newMemberName.trim()) return alert('Informe o nome');
-                    const newMem: BoardMember = {
-                      id: `mem-${Date.now()}`,
-                      name: newMemberName.trim(),
-                      roleDescription: newMemberRole.trim() || 'Membro da Mesa',
-                      isVoter: newMemberIsVoter
-                    };
-                    setCommittees(prev => prev.map(com => {
-                      if (com.id !== activeCommittee.id) return com;
-                      return {
-                        ...com,
-                        members: [...com.members, newMem]
-                      };
-                    }));
-                    setNewMemberName('');
-                    setNewMemberRole('');
-                  }}
-                  className="px-3 py-1 text-xs font-semibold bg-slate-900 text-white rounded-lg"
-                >
-                  Adicionar
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsMembersModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg"
-              >
-                Concluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

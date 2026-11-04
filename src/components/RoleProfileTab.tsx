@@ -399,138 +399,141 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Buscar cadeira por código, título, departamento ou competência..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 shadow-xs"
-          />
+        {/* Search Bar & Visualização */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar cadeira por código, título, departamento ou competência..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 shadow-xs"
+            />
+          </div>
         </div>
 
-        {/* Grid de Todas as Cadeiras */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRoles.map(role => {
-            const rProfile = getDefaultRoleProfile(role);
-            const isActive = role.id === (currentRole?.id);
-            const rBlocks = allBlocks.filter(b => b.roleId === role.id);
-            const rRituals = allRituals.filter(r => r.roleId === role.id);
+        {/* Tabela Corporativa de Cadeiras & Funções */}
+        <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                  <th className="py-3.5 px-4">Cadeira & Código</th>
+                  <th className="py-3.5 px-4">Departamento</th>
+                  <th className="py-3.5 px-4">Missão / Escopo Principal</th>
+                  <th className="py-3.5 px-4 text-center">Atividades (POPs)</th>
+                  <th className="py-3.5 px-4 text-center">Ritos Diários</th>
+                  <th className="py-3.5 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
+                {filteredRoles.map(role => {
+                  const rProfile = getDefaultRoleProfile(role);
+                  const isActive = role.id === (currentRole?.id);
+                  const rBlocks = allBlocks.filter(b => b.roleId === role.id);
+                  const rRituals = allRituals.filter(r => r.roleId === role.id);
 
-            return (
-              <div
-                key={role.id}
-                className={`bg-white dark:bg-[#111827] border rounded-xl p-5 text-xs flex flex-col justify-between shadow-xs transition-all hover:shadow-md ${
-                  isActive 
-                    ? 'border-atlas-500/80 dark:border-atlas-600 ring-1 ring-atlas-500/20' 
-                    : 'border-slate-200/90 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
-              >
-                <div className="space-y-3">
-                  {/* Top Bar: Code + Active Badge + Edit Action */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800">
-                        {role.code || 'CAD-01'}
-                      </span>
-                      {isActive && (
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/80 dark:border-emerald-800/80">
-                          Cadeira Ativa
+                  return (
+                    <tr 
+                      key={role.id}
+                      className={`hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors ${
+                        isActive ? 'bg-atlas-50/30 dark:bg-atlas-950/20' : ''
+                      }`}
+                    >
+                      {/* Cadeira & Código */}
+                      <td className="py-3.5 px-4 align-middle">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800 shrink-0">
+                            {role.code || 'CAD-01'}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              <span>{role.title}</span>
+                              {isActive && (
+                                <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                                  Ativa
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-slate-400 truncate max-w-xs">
+                              {rProfile.positionTitle || role.title}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Departamento */}
+                      <td className="py-3.5 px-4 align-middle text-slate-600 dark:text-slate-300 font-medium">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-700 dark:text-slate-300">
+                          {role.department}
                         </span>
-                      )}
-                    </div>
+                      </td>
 
-                    <button
-                      onClick={() => {
-                        setDetailRoleId(role.id);
-                        setChairSubTab('profile');
-                        onSelectRole(role.id);
-                      }}
-                      className="px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-                      title="Editar Cadeira"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Editar</span>
-                    </button>
-                  </div>
+                      {/* Missão */}
+                      <td className="py-3.5 px-4 align-middle text-slate-500 dark:text-slate-400 max-w-sm">
+                        <p className="line-clamp-2 leading-relaxed">
+                          {rProfile.mission || role.description}
+                        </p>
+                      </td>
 
-                  {/* Title & Department */}
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                      {role.title}
-                    </h3>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-medium block mt-0.5">
-                      {role.department}
-                    </span>
-                  </div>
+                      {/* Atividades (POPs) */}
+                      <td className="py-3.5 px-4 align-middle text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDetailRoleId(role.id);
+                            setChairSubTab('blocks');
+                            onSelectRole(role.id);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 font-medium text-[11px] cursor-pointer transition-colors"
+                          title="Gerenciar atividades e POPs desta cadeira"
+                        >
+                          <Clock className="w-3 h-3 text-blue-500" />
+                          <span>{rBlocks.length} POPs</span>
+                        </button>
+                      </td>
 
-                  {/* Badges of Activities & Rituals belonging to this chair */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDetailRoleId(role.id);
-                        setChairSubTab('blocks');
-                        onSelectRole(role.id);
-                      }}
-                      className="flex-1 py-1 px-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-[11px] text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 font-medium flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                      title="Ver e gerenciar atividades e horários desta cadeira"
-                    >
-                      <Clock className="w-3 h-3 text-blue-500" />
-                      <span>{rBlocks.length} Atividades (POPs)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDetailRoleId(role.id);
-                        setChairSubTab('rituals');
-                        onSelectRole(role.id);
-                      }}
-                      className="flex-1 py-1 px-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-[11px] text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-medium flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                      title="Ver e gerenciar ritos desta cadeira"
-                    >
-                      <Landmark className="w-3 h-3 text-amber-500" />
-                      <span>{rRituals.length} Ritos</span>
-                    </button>
-                  </div>
+                      {/* Ritos Diários */}
+                      <td className="py-3.5 px-4 align-middle text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDetailRoleId(role.id);
+                            setChairSubTab('rituals');
+                            onSelectRole(role.id);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 font-medium text-[11px] cursor-pointer transition-colors"
+                          title="Gerenciar ritos executivos desta cadeira"
+                        >
+                          <Landmark className="w-3 h-3 text-amber-500" />
+                          <span>{rRituals.length} Ritos</span>
+                        </button>
+                      </td>
 
-                  {/* Description / Mission */}
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                    {rProfile.mission || role.description}
-                  </p>
-                </div>
-
-                {/* Card Bottom Actions */}
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => {
-                      setDetailRoleId(role.id);
-                      setChairSubTab('profile');
-                      onSelectRole(role.id);
-                    }}
-                    className="flex-1 py-1.5 px-3 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer group"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Editar Cadeira</span>
-                    <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setDetailRoleId(role.id);
-                      setChairSubTab('blocks');
-                      onSelectRole(role.id);
-                    }}
-                    className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-                  >
-                    Rotinas & POPs
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                      {/* Ações */}
+                      <td className="py-3.5 px-4 align-middle text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => {
+                              setDetailRoleId(role.id);
+                              setChairSubTab('profile');
+                              onSelectRole(role.id);
+                            }}
+                            className="px-3 py-1.5 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                            title="Visualizar e editar perfil detalhado"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Perfil</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
