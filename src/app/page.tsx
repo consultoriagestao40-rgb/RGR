@@ -13,6 +13,7 @@ import { AdminTab } from '@/components/AdminTab';
 import { UsersManagementSection } from '@/components/UsersManagementSection';
 import { ActionsCentralTab } from '@/components/ActionsCentralTab';
 import { PerformanceRankingTab } from '@/components/PerformanceRankingTab';
+import { CommitteesBoardTab } from '@/components/CommitteesBoardTab';
 import { MeetingAiModal } from '@/components/MeetingAiModal';
 import { SopDrawer } from '@/components/SopDrawer';
 import { ObservationModal } from '@/components/ObservationModal';
@@ -55,7 +56,7 @@ export default function HomePage() {
   const [allBlocks, setAllBlocks] = useState<RoutineBlock[]>(INITIAL_BLOCKS);
   const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'admin' | 'users'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'committees' | 'admin' | 'users'>('timeline');
   const [roleProfileDetailId, setRoleProfileDetailId] = useState<string | null>(null);
 
   // Drawers and Modals
@@ -666,6 +667,16 @@ export default function HomePage() {
               currentRole={selectedRole}
               onOpenMinuteModal={() => setIsMinuteModalOpen(true)}
               onGoToActions={() => setActiveTab('actions')}
+            />
+          )}
+
+          {activeTab === 'committees' && (
+            <CommitteesBoardTab
+              roles={roles}
+              selectedDate={selectedDate}
+              users={users}
+              currentUser={currentUser}
+              onNavigateToMinutes={() => setActiveTab('minutes')}
             />
           )}
 

@@ -42,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'role-profile': return 'Perfil da Cadeira';
       case 'actions': return 'Central de Ações (5W2H)';
       case 'ranking': return 'Desempenho & Ranking por Cadeira';
+      case 'committees': return 'Conselho & Comitês Estratégicos';
       case 'minutes': return 'Livro Oficial de Atas';
       case 'admin': return 'Matriz de Governança';
       case 'users': return 'Gestão de Usuários';
