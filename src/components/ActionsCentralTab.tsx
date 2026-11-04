@@ -640,10 +640,10 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider">
-                  <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
                   <th className="py-3.5 px-4">O Quê (Diretriz / Tarefa 5W2H)</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Quem (Cadeira & Responsável)</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Quando (Prazo & SLA)</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
                   <th className="py-3.5 px-4">Acompanhamento & Follow-up</th>
                   <th className="py-3.5 px-4 text-right whitespace-nowrap">Ações</th>
                 </tr>
@@ -667,45 +667,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           action.status === 'completed' ? 'opacity-70 bg-slate-50/30 dark:bg-slate-900/10' : ''
                         }`}
                       >
-                        {/* 1. Interactive Status Pill */}
-                        <td className="py-4 px-4 align-top whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextStatus: ActionStatus = 
-                                action.status === 'pending' ? 'in_progress' :
-                                action.status === 'in_progress' ? 'completed' : 'pending';
-                              handleUpdateStatus(action.id, nextStatus);
-                            }}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                              action.status === 'completed'
-                                ? 'bg-emerald-600 text-white border-emerald-700'
-                                : action.status === 'in_progress'
-                                ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
-                            }`}
-                            title="Clique para alternar o status (A Fazer → Em Execução → Concluída)"
-                          >
-                            {action.status === 'completed' ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 shrink-0" />
-                                <span>Concluída</span>
-                              </>
-                            ) : action.status === 'in_progress' ? (
-                              <>
-                                <Clock className="w-3.5 h-3.5 shrink-0 text-blue-500" />
-                                <span>Em Execução</span>
-                              </>
-                            ) : (
-                              <>
-                                <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
-                                <span>A Fazer</span>
-                              </>
-                            )}
-                          </button>
-                        </td>
-
-                        {/* 2. O Quê (Title, Priority, Category & Origin Minute) */}
+                        {/* 1. O Quê (Title, Priority, Category & Origin Minute) */}
                         <td className="py-4 px-4 align-top min-w-[260px] max-w-md">
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -741,7 +703,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 3. Quem (Cadeira & Responsável - Sem quebra de linha no código!) */}
+                        {/* 2. Quem (Cadeira & Responsável - Sem quebra de linha no código!) */}
                         <td className="py-4 px-4 align-top whitespace-nowrap">
                           <div className="flex items-start gap-2.5">
                             <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border whitespace-nowrap shrink-0 ${getRoleBadgeStyle(action.roleCode)}`}>
@@ -758,7 +720,7 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 4. Quando (Prazo & SLA Status) */}
+                        {/* 3. Quando (Prazo & SLA Status) */}
                         <td className="py-4 px-4 align-top whitespace-nowrap">
                           <div className="space-y-1">
                             <div className="flex items-center gap-1.5">
@@ -792,6 +754,44 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                               </span>
                             )}
                           </div>
+                        </td>
+
+                        {/* 4. Interactive Status Pill */}
+                        <td className="py-4 px-4 align-top whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextStatus: ActionStatus = 
+                                action.status === 'pending' ? 'in_progress' :
+                                action.status === 'in_progress' ? 'completed' : 'pending';
+                              handleUpdateStatus(action.id, nextStatus);
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                              action.status === 'completed'
+                                ? 'bg-emerald-600 text-white border-emerald-700'
+                                : action.status === 'in_progress'
+                                ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                            }`}
+                            title="Clique para alternar o status (A Fazer → Em Execução → Concluída)"
+                          >
+                            {action.status === 'completed' ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 shrink-0" />
+                                <span>Concluída</span>
+                              </>
+                            ) : action.status === 'in_progress' ? (
+                              <>
+                                <Clock className="w-3.5 h-3.5 shrink-0 text-blue-500" />
+                                <span>Em Execução</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+                                <span>A Fazer</span>
+                              </>
+                            )}
+                          </button>
                         </td>
 
                         {/* 5. Acompanhamento & Follow-up */}
