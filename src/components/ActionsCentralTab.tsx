@@ -285,160 +285,165 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
     <div className="space-y-5 max-w-7xl mx-auto pb-10">
       
       {/* ========================================================================= */}
-      {/* 1. EXECUTIVE COMMAND HEADER & KPI STRIP                                   */}
+      {/* 1. EXECUTIVE COMMAND HEADER & METRICS                                     */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800/80 relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 w-64 h-64 bg-atlas-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-atlas-500/20 text-atlas-300 border border-atlas-500/30 whitespace-nowrap">
-                MATRIZ 5W2H • GOVERNANÇA EXECUTIVA
-              </span>
-              <span className="text-xs text-slate-400 font-mono">
-                • Taxa de Conclusão Global: <strong className="text-emerald-400">{stats.completionRate}%</strong>
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              Central Unificada de Ações & Follow-up (5W2H)
-            </h1>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Controle executivo de deliberações de atas, responsáveis por cadeira, prazos críticos e histórico auditável de acompanhamento.
-            </p>
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-atlas-50 dark:bg-atlas-950 text-atlas-700 dark:text-atlas-300 border border-atlas-200 dark:border-atlas-800">
+              GOVERNANÇA 5W2H
+            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+              Central Unificada de Ações, Deliberações & Prazos
+            </span>
           </div>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <span>Central Executiva de Ações & Planos</span>
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              {stats.total} cadastradas
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Acompanhe o que foi deliberado com a Diretoria, gerencie responsáveis, monitore prazos e registre o histórico contínuo de anotações.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {onOpenMeetingAiModal && (
-              <button
-                type="button"
-                onClick={onOpenMeetingAiModal}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-atlas-600 to-emerald-600 hover:from-atlas-500 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
-              >
-                <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                <span>Agente de Reunião com IA</span>
-              </button>
-            )}
-
+        <div className="flex items-center gap-2.5 self-start md:self-auto flex-wrap">
+          {onOpenMeetingAiModal && (
             <button
               type="button"
-              onClick={() => setIsCreateActionModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+              onClick={onOpenMeetingAiModal}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-atlas-600 to-emerald-600 hover:from-atlas-700 hover:to-emerald-700 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Nova Diretriz 5W2H</span>
+              <Sparkles className="w-4 h-4 text-white animate-pulse" />
+              <span>Agente de Reunião com IA</span>
             </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsCreateActionModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nova Ação</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Metric Cards Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        
+        {/* Total */}
+        <button
+          type="button"
+          onClick={() => { setSelectedStatusFilter('all'); setSelectedDateFilter('all'); }}
+          className={`text-left transition-all border rounded-xl p-3.5 shadow-xs cursor-pointer ${
+            selectedStatusFilter === 'all' && selectedDateFilter === 'all'
+              ? 'bg-slate-50 dark:bg-slate-800 border-slate-400 dark:border-slate-600 ring-1 ring-slate-400/40'
+              : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Total de Ações</span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-slate-900 dark:text-white">{stats.total}</span>
+            <span className="text-xs text-slate-400">100%</span>
           </div>
-        </div>
+        </button>
 
-        {/* KPI Cards Strip inside Banner */}
-        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-5 pt-5 border-t border-slate-800/90">
-          
-          <button
-            type="button"
-            onClick={() => { setSelectedStatusFilter('all'); setSelectedDateFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedStatusFilter === 'all' && selectedDateFilter === 'all'
-                ? 'bg-slate-800/90 border-slate-600 ring-1 ring-white/20'
-                : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Total 5W2H</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-white">{stats.total}</span>
-              <span className="text-[10px] text-slate-400 font-mono">100%</span>
-            </div>
-          </button>
+        {/* Em Atraso */}
+        <button 
+          type="button"
+          onClick={() => { setSelectedStatusFilter('overdue'); setSelectedDateFilter('all'); }}
+          className={`text-left cursor-pointer transition-all border rounded-xl p-3.5 shadow-xs ${
+            selectedStatusFilter === 'overdue'
+              ? 'bg-rose-100/80 dark:bg-rose-950/60 border-rose-400 dark:border-rose-600 ring-1 ring-rose-400/40'
+              : stats.overdue > 0 
+              ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 hover:border-rose-300' 
+              : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b]'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider block flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> Em Atraso
+          </span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-rose-600 dark:text-rose-400">{stats.overdue}</span>
+            <span className="text-[10px] font-medium text-rose-500">Crítico</span>
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => { setSelectedStatusFilter('overdue'); setSelectedDateFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedStatusFilter === 'overdue'
-                ? 'bg-rose-950/80 border-rose-500 ring-1 ring-rose-400/40'
-                : stats.overdue > 0
-                ? 'bg-rose-950/40 border-rose-800/70 hover:bg-rose-950/60'
-                : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-rose-400 flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" /> Em Atraso
-            </span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-rose-400">{stats.overdue}</span>
-              <span className="text-[10px] font-semibold text-rose-300 bg-rose-500/20 px-1.5 py-0.2 rounded">Crítico</span>
-            </div>
-          </button>
+        {/* Vencendo Hoje */}
+        <button 
+          type="button"
+          onClick={() => { setSelectedDateFilter('today'); setSelectedStatusFilter('all'); }}
+          className={`text-left cursor-pointer transition-all border rounded-xl p-3.5 shadow-xs ${
+            selectedDateFilter === 'today'
+              ? 'bg-amber-100/80 dark:bg-amber-950/60 border-amber-400 dark:border-amber-600 ring-1 ring-amber-400/40'
+              : stats.dueToday > 0 
+              ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 hover:border-amber-300' 
+              : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b]'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider block flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Vence Hoje
+          </span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400">{stats.dueToday}</span>
+            <span className="text-[10px] font-medium text-amber-500">Atenção</span>
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => { setSelectedDateFilter('today'); setSelectedStatusFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedDateFilter === 'today'
-                ? 'bg-amber-950/80 border-amber-500 ring-1 ring-amber-400/40'
-                : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" /> Vence Hoje
-            </span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-amber-400">{stats.dueToday}</span>
-              <span className="text-[10px] text-amber-300/80">SLA Dia</span>
-            </div>
-          </button>
+        {/* Em Andamento */}
+        <button 
+          type="button"
+          onClick={() => { setSelectedStatusFilter('in_progress'); setSelectedDateFilter('all'); }}
+          className={`text-left cursor-pointer transition-all border rounded-xl p-3.5 shadow-xs ${
+            selectedStatusFilter === 'in_progress'
+              ? 'bg-blue-100/80 dark:bg-blue-950/60 border-blue-400 dark:border-blue-600 ring-1 ring-blue-400/40'
+              : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b] hover:border-blue-300'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Em Andamento</span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-blue-600 dark:text-blue-400">{stats.inProgress}</span>
+            <span className="text-xs text-slate-400">Ativas</span>
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => { setSelectedStatusFilter('in_progress'); setSelectedDateFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedStatusFilter === 'in_progress'
-                ? 'bg-blue-950/80 border-blue-500 ring-1 ring-blue-400/40'
-                : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 block">Em Execução</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-blue-400">{stats.inProgress}</span>
-              <span className="text-[10px] text-slate-400">Ativas</span>
-            </div>
-          </button>
+        {/* Pendentes */}
+        <button 
+          type="button"
+          onClick={() => { setSelectedStatusFilter('pending'); setSelectedDateFilter('all'); }}
+          className={`text-left cursor-pointer transition-all border rounded-xl p-3.5 shadow-xs ${
+            selectedStatusFilter === 'pending'
+              ? 'bg-slate-100 dark:bg-slate-800 border-slate-400 dark:border-slate-600 ring-1 ring-slate-400/40'
+              : 'bg-white dark:bg-[#111827] border-slate-200/90 dark:border-[#1e293b] hover:border-slate-300'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">A Fazer</span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-slate-700 dark:text-slate-200">{stats.pending}</span>
+            <span className="text-xs text-slate-400">Fila</span>
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => { setSelectedStatusFilter('pending'); setSelectedDateFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedStatusFilter === 'pending'
-                ? 'bg-slate-800 border-slate-500 ring-1 ring-white/20'
-                : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-300 block">A Fazer</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-slate-200">{stats.pending}</span>
-              <span className="text-[10px] text-slate-400">Na Fila</span>
-            </div>
-          </button>
+        {/* Concluídas */}
+        <button 
+          type="button"
+          onClick={() => { setSelectedStatusFilter('completed'); setSelectedDateFilter('all'); }}
+          className={`text-left cursor-pointer transition-all border rounded-xl p-3.5 shadow-xs ${
+            selectedStatusFilter === 'completed'
+              ? 'bg-emerald-100/80 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-600 ring-1 ring-emerald-400/40'
+              : 'bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-300'
+          }`}
+        >
+          <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Concluídas</span>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{stats.completed}</span>
+            <span className="text-[10px] font-bold text-emerald-600">{stats.completionRate}%</span>
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => { setSelectedStatusFilter('completed'); setSelectedDateFilter('all'); }}
-            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-              selectedStatusFilter === 'completed'
-                ? 'bg-emerald-950/80 border-emerald-500 ring-1 ring-emerald-400/40'
-                : 'bg-emerald-950/30 border-emerald-800/50 hover:bg-emerald-950/50'
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> Concluídas
-            </span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-bold font-mono text-emerald-400">{stats.completed}</span>
-              <span className="text-[10px] font-bold text-emerald-300">{stats.completionRate}%</span>
-            </div>
-          </button>
-
-        </div>
       </div>
 
       {/* ========================================================================= */}
