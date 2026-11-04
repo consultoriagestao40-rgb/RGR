@@ -233,6 +233,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 truncate">
               {currentRole?.department}
             </p>
+
+            {!isOperator && (
+              <div className="grid grid-cols-2 gap-1.5 mt-2.5 pt-2.5 border-t border-slate-200/70 dark:border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSelectAdminSection) onSelectAdminSection('blocks');
+                    onSelectTab('admin');
+                  }}
+                  className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 border transition-colors cursor-pointer whitespace-nowrap ${
+                    activeTab === 'admin'
+                      ? 'bg-atlas-600 text-white border-atlas-700 shadow-2xs'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-atlas-400 dark:hover:border-atlas-600'
+                  }`}
+                  title="Adicionar ou editar Atividades (POPs) desta cadeira"
+                >
+                  <Sliders className="w-3 h-3 text-atlas-500 shrink-0" />
+                  <span>+ Atividades</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSelectAdminSection) onSelectAdminSection('rituals');
+                    onSelectTab('admin');
+                  }}
+                  className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 border transition-colors cursor-pointer whitespace-nowrap ${
+                    activeTab === 'admin'
+                      ? 'bg-atlas-600 text-white border-atlas-700 shadow-2xs'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-atlas-400 dark:hover:border-atlas-600'
+                  }`}
+                  title="Adicionar ou editar Ritos & Pautas desta cadeira"
+                >
+                  <Plus className="w-3 h-3 text-emerald-500 shrink-0" />
+                  <span>+ Ritos</span>
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <div className="relative group w-full flex justify-center">
@@ -264,7 +301,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <div className={`flex-1 overflow-y-auto sidebar-scroll ${isSidebarHovered ? 'sidebar-hovered' : ''} ${isCollapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-4 space-y-5'}`}>
+      <div className={`flex-1 overflow-y-auto sidebar-scroll ${isSidebarHovered ? 'sidebar-hovered' : ''} ${isCollapsed ? 'px-2 py-2.5 space-y-3' : 'px-3 py-3 space-y-3.5'}`}>
         
         {/* Group 1: Rotina & Ritos */}
         <div>
@@ -474,13 +511,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               
-              {/* Cadeiras */}
+              {/* Atividades, Ritos & Cadeiras */}
               <button
                 onClick={() => {
-                  if (onSelectAdminSection) onSelectAdminSection('roles');
+                  if (onSelectAdminSection) onSelectAdminSection('blocks');
                   onSelectTab('admin');
                 }}
-                title={isCollapsed ? `Cadeiras & Governança (${roles.length})` : undefined}
+                title={isCollapsed ? `Atividades, Ritos & Cadeiras (${roles.length})` : undefined}
                 className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors cursor-pointer ${
                   activeTab === 'admin'
                     ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white font-medium shadow-xs'
@@ -488,14 +525,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Briefcase className={`w-4 h-4 shrink-0 ${activeTab === 'admin' ? 'text-white' : 'text-slate-400'}`} />
-                  {!isCollapsed && <span>Cadeiras & Governança</span>}
+                  <Sliders className={`w-4 h-4 shrink-0 ${activeTab === 'admin' ? 'text-white' : 'text-atlas-500'}`} />
+                  {!isCollapsed && <span>Atividades, Ritos & Cadeiras</span>}
                 </div>
                 {!isCollapsed && (
                   <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-md ${
-                    activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-atlas-50 dark:bg-atlas-950 text-atlas-600 dark:text-atlas-400 font-bold'
                   }`}>
-                    {roles.length}
+                    Editar
                   </span>
                 )}
               </button>

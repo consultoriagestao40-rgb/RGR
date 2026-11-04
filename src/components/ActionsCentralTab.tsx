@@ -744,10 +744,10 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
                             </span>
                             <div className="min-w-0">
                               <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                                {(action.assigneeName || action.roleTitle).split('(')[0].trim()}
+                                {(action.assigneeName || action.roleTitle || 'Responsável').split('(')[0].trim()}
                               </span>
                               <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                                {action.roleTitle}
+                                {action.roleTitle || 'Governança'}
                               </span>
                             </div>
                           </div>
