@@ -22,7 +22,13 @@ import {
   Filter,
   Landmark,
   FileCode,
-  X
+  X,
+  Send,
+  ArrowRight,
+  Clock,
+  RotateCcw,
+  Sparkles,
+  Check
 } from 'lucide-react';
 import { CorporatePolicy, OperationalRole, SystemUser } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
@@ -47,9 +53,14 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
   // Modal Leitura da Política
   const [viewingPolicy, setViewingPolicy] = useState<CorporatePolicy | null>(null);
 
-  // Modal Criar / Editar Política
+  // Modal Criar / Editar Proposta
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<CorporatePolicy | null>(null);
+
+  // Modal de Homologação em Sessão
+  const [approvingPolicy, setApprovingPolicy] = useState<CorporatePolicy | null>(null);
+  const [approvalMinuteCode, setApprovalMinuteCode] = useState('');
+  const [approvalNotes, setApprovalNotes] = useState('');
 
   // Form States
   const [formData, setFormData] = useState({
@@ -59,9 +70,13 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
     description: '',
     contentMarkdown: '',
     version: 'v1.0',
-    status: 'active' as CorporatePolicy['status'],
+    status: 'draft' as CorporatePolicy['status'],
+    targetApproverBody: 'CONS-ADM',
+    authorName: '',
+    authorRoleTitle: '',
+    submittedAt: '',
     homologatedBy: 'Conselho de Administração (CONS-ADM)',
-    approvedAt: new Date().toISOString().slice(0, 10),
+    approvedAt: '',
     minuteSessionCode: '',
     nextReviewDate: '',
     imageUrl: '',
@@ -90,7 +105,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
     fetchPolicies();
   }, []);
 
-  // Abre Modal de Criação
+  // Abre Modal de Criação (Proposta de Minuta)
   const handleOpenCreateModal = () => {
     setEditingPolicy(null);
     setFormData({
@@ -100,9 +115,13 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       description: '',
       contentMarkdown: `### 1. Objetivo & Diretrizes\nDescreva detalhadamente o objetivo desta política corporativa...\n\n---\n\n### 2. Regras e Procedimentos\n1. Regra 1\n2. Regra 2\n\n---\n\n### 3. Vedações e Sanções\n- Critérios de compliance...`,
       version: 'v1.0',
-      status: 'active',
+      status: 'draft',
+      targetApproverBody: 'CONS-ADM',
+      authorName: currentUser?.name || 'Diretoria Executiva',
+      authorRoleTitle: currentRole?.title || 'Conselheiro',
+      submittedAt: '',
       homologatedBy: 'Conselho de Administração (CONS-ADM)',
-      approvedAt: new Date().toISOString().slice(0, 10),
+      approvedAt: '',
       minuteSessionCode: '',
       nextReviewDate: '',
       imageUrl: '',
@@ -123,8 +142,12 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       contentMarkdown: policy.contentMarkdown,
       version: policy.version,
       status: policy.status,
-      homologatedBy: policy.homologatedBy,
-      approvedAt: policy.approvedAt,
+      targetApproverBody: policy.targetApproverBody || 'CONS-ADM',
+      authorName: policy.authorName || '',
+      authorRoleTitle: policy.authorRoleTitle || '',
+      submittedAt: policy.submittedAt || '',
+      homologatedBy: policy.homologatedBy || 'Conselho de Administração',
+      approvedAt: policy.approvedAt || '',
       minuteSessionCode: policy.minuteSessionCode || '',
       nextReviewDate: policy.nextReviewDate || '',
       imageUrl: '',
@@ -176,9 +199,99 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
     }
   };
 
+  // WORKFLOW 1: Enviar Minuta para Pauta do Colegiado
+  const handleSubmitToCommittee = async (policy: CorporatePolicy) => {
+    const targetBodyName = policy.targetApproverBody === 'COM-FIN'
+      ? 'Comitê de Resultados & Finanças (COM-FIN)'
+      : policy.targetApproverBody === 'COM-CLI'
+      ? 'Comitê de Gestão de Clientes & Qualidade (COM-CLI)'
+      : 'Conselho de Administração (CONS-ADM)';
+
+    if (!confirm(`Deseja protocolar e submeter a proposta "${policy.code} - ${policy.title}" para a ordem do dia do colegiado [${targetBodyName}]?`)) return;
+
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'in_review',
+          submittedAt: new Date().toISOString().slice(0, 10),
+          homologatedBy: targetBodyName
+        })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+      }
+    } catch (err) {
+      console.error('Erro ao submeter política:', err);
+    }
+  };
+
+  // WORKFLOW 2: Homologar / Aprovar Política em Sessão com Ata
+  const handleOpenApproveModal = (policy: CorporatePolicy) => {
+    setApprovingPolicy(policy);
+    setApprovalMinuteCode(policy.minuteSessionCode || 'SES-01/2026');
+    setApprovalNotes('Deliberação homologada por unanimidade em Sessão Oficial do Colegiado.');
+  };
+
+  const handleConfirmApproval = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!approvingPolicy) return;
+
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const nextReview = new Date();
+      nextReview.setFullYear(nextReview.getFullYear() + 1);
+
+      const res = await fetch(`/api/policies/${approvingPolicy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'active',
+          approvedAt: today,
+          minuteSessionCode: approvalMinuteCode.trim().toUpperCase() || 'SES-01/2026',
+          approvalNotes: approvalNotes.trim(),
+          nextReviewDate: nextReview.toISOString().slice(0, 10)
+        })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+        setApprovingPolicy(null);
+      }
+    } catch (err) {
+      console.error('Erro ao aprovar política:', err);
+    }
+  };
+
+  // WORKFLOW 3: Revogar Política Vigente
+  const handleRevokePolicy = async (policy: CorporatePolicy) => {
+    if (!confirm(`Deseja revogar a vigência da política "${policy.code}"? Ela deixará de ter eficácia corporativa imediata.`)) return;
+
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'revoked'
+        })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+      }
+    } catch (err) {
+      console.error('Erro ao revogar política:', err);
+    }
+  };
+
   // Excluir Política
   const handleDeletePolicy = async (id: string, title: string) => {
-    if (!confirm(`Tem certeza que deseja excluir a política "${title}"?`)) return;
+    if (!confirm(`Tem certeza que deseja excluir permanentemente o registro da política "${title}"?`)) return;
     try {
       const res = await fetch(`/api/policies/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -215,7 +328,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.homologatedBy.toLowerCase().includes(searchTerm.toLowerCase());
+        (p.homologatedBy && p.homologatedBy.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || p.status === selectedStatus;
@@ -223,6 +336,14 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [policies, searchTerm, selectedCategory, selectedStatus]);
+
+  // Contadores para Métricas do Workflow
+  const stats = useMemo(() => {
+    const active = policies.filter(p => p.status === 'active').length;
+    const inReview = policies.filter(p => p.status === 'in_review').length;
+    const draft = policies.filter(p => p.status === 'draft').length;
+    return { active, inReview, draft, total: policies.length };
+  }, [policies]);
 
   // Formatação de Categoria
   const formatCategory = (cat: CorporatePolicy['category']) => {
@@ -238,31 +359,68 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       
-      {/* Top Header Banner */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-              Atlas Governance Framework • Normas & Compliance
-            </span>
+      {/* Top Header Banner com Régua de Workflow */}
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                Atlas Governance Framework • Ciclo de Aprovação e Publicação
+              </span>
+            </div>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <span>Políticas & Diretrizes Corporativas</span>
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Elabore minutas, submeta para a ordem do dia dos comitês, homolgue via ata oficial e publique normas vigentes.
+            </p>
           </div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>Políticas & Diretrizes Corporativas</span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Normas homologadas pelo Conselho de Administração e Comitês para regência institucional da RGR.
-          </p>
+
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="px-3.5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start md:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Elaborar Nova Minuta</span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Cadastrar Nova Política</span>
-        </button>
+        {/* Régua Visual do Workflow de Governança */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200/70 dark:border-slate-800 text-xs">
+            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-[10px]">1</span>
+            <div>
+              <span className="font-semibold block text-slate-800 dark:text-slate-200">1. Elaboração</span>
+              <span className="text-[10px] text-slate-400">Minuta Técnica ({stats.draft})</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-2 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs">
+            <span className="w-5 h-5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 flex items-center justify-center font-bold text-[10px]">2</span>
+            <div>
+              <span className="font-semibold block text-amber-900 dark:text-amber-200">2. Em Pauta</span>
+              <span className="text-[10px] text-amber-700/80 dark:text-amber-400">Comitê / Conselho ({stats.inReview})</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-2 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 text-xs">
+            <span className="w-5 h-5 rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-[10px]">3</span>
+            <div>
+              <span className="font-semibold block text-emerald-900 dark:text-emerald-200">3. Homologada</span>
+              <span className="text-[10px] text-emerald-700/80 dark:text-emerald-400">Ata Lavrada em Sessão</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-2 rounded-lg bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-xs">
+            <span className="w-5 h-5 rounded-full bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 flex items-center justify-center font-bold text-[10px]">4</span>
+            <div>
+              <span className="font-semibold block text-blue-900 dark:text-blue-200">4. Publicada</span>
+              <span className="text-[10px] text-blue-700/80 dark:text-blue-400">Vigente na RGR ({stats.active})</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filtros e Busca */}
@@ -297,14 +455,15 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
             className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-lg px-2.5 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none shadow-2xs"
           >
             <option value="all">Todos os Status</option>
-            <option value="active">Vigente</option>
-            <option value="in_review">Em Revisão</option>
+            <option value="active">Publicada & Vigente</option>
+            <option value="in_review">Em Pauta / Revisão</option>
+            <option value="draft">Em Elaboração (Minuta)</option>
             <option value="revoked">Revogada</option>
           </select>
         </div>
       </div>
 
-      {/* Tabela Padronizada Atlas de Políticas Corporativas (Zero Cards) */}
+      {/* Tabela Padronizada Atlas de Políticas Corporativas */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -312,10 +471,10 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
               <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-4">Código & Política</th>
                 <th className="py-3 px-4">Categoria</th>
-                <th className="py-3 px-4">Órgão Deliberador</th>
-                <th className="py-3 px-4 text-center">Vigência & Versão</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Ações</th>
+                <th className="py-3 px-4">Instância Deliberadora</th>
+                <th className="py-3 px-4 text-center">Status no Workflow</th>
+                <th className="py-3 px-4 text-center">Vigência & Ata</th>
+                <th className="py-3 px-4 text-right">Ações & Workflow</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
@@ -350,6 +509,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 max-w-md">
                               {pol.description}
                             </p>
+                            {pol.authorName && (
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                                Proposta por: {pol.authorName} ({pol.authorRoleTitle || 'Mesa'})
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -361,41 +525,43 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                         </span>
                       </td>
 
-                      {/* Órgão Deliberador & Ata */}
+                      {/* Órgão Deliberador Alvo */}
                       <td className="py-3.5 px-4 align-middle">
                         <div className="text-slate-800 dark:text-slate-200 font-medium">
-                          {pol.homologatedBy}
+                          {pol.homologatedBy || (
+                            pol.targetApproverBody === 'COM-FIN'
+                              ? 'Comitê de Resultados & Finanças'
+                              : pol.targetApproverBody === 'COM-CLI'
+                              ? 'Comitê de Gestão de Clientes'
+                              : 'Conselho de Administração'
+                          )}
                         </div>
-                        {pol.minuteSessionCode && (
-                          <div className="text-[10px] font-mono text-slate-400 flex items-center gap-1 mt-0.5">
-                            <FileCheck2 className="w-3 h-3 text-emerald-500" />
-                            <span>Ata: {pol.minuteSessionCode}</span>
+                        {pol.submittedAt && pol.status === 'in_review' && (
+                          <div className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3" />
+                            <span>Pautada em: {pol.submittedAt}</span>
                           </div>
                         )}
                       </td>
 
-                      {/* Vigência & Versão */}
+                      {/* Status no Workflow */}
                       <td className="py-3.5 px-4 align-middle text-center">
-                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                          {pol.version}
-                        </span>
-                        <div className="text-[10px] text-slate-400 mt-1">
-                          Aprovada: {pol.approvedAt}
-                        </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4 align-middle text-center">
-                        {pol.status === 'active' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 inline-flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Vigente
+                        {pol.status === 'draft' && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1">
+                            <Pencil className="w-2.5 h-2.5" />
+                            1. Minuta (Elaboração)
                           </span>
                         )}
                         {pol.status === 'in_review' && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/80 inline-flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            Em Revisão
+                            <Clock className="w-3 h-3" />
+                            2. Em Pauta (Colegiado)
+                          </span>
+                        )}
+                        {pol.status === 'active' && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            3. Publicada & Vigente
                           </span>
                         )}
                         {pol.status === 'revoked' && (
@@ -405,9 +571,53 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                         )}
                       </td>
 
-                      {/* Ações */}
+                      {/* Vigência & Ata */}
+                      <td className="py-3.5 px-4 align-middle text-center">
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {pol.version}
+                        </span>
+                        {pol.minuteSessionCode ? (
+                          <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 mt-1">
+                            <FileCheck2 className="w-3 h-3" />
+                            <span>{pol.minuteSessionCode}</span>
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-slate-400 mt-1">
+                            Pendente de Ata
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Ações & Transições de Workflow */}
                       <td className="py-3.5 px-4 align-middle text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          
+                          {/* BOTÃO DO WORKFLOW: ENVIAR PARA PAUTA */}
+                          {pol.status === 'draft' && (
+                            <button
+                              type="button"
+                              onClick={() => handleSubmitToCommittee(pol)}
+                              className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              title="Submeter proposta à pauta do colegiado deliberador"
+                            >
+                              <Send className="w-3 h-3 text-amber-600" />
+                              <span>Enviar p/ Pauta</span>
+                            </button>
+                          )}
+
+                          {/* BOTÃO DO WORKFLOW: HOMOLOGAR & APROVAR EM SESSÃO */}
+                          {pol.status === 'in_review' && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenApproveModal(pol)}
+                              className="px-2.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              title="Homologar aprovação via ata de sessão oficial"
+                            >
+                              <FileCheck2 className="w-3 h-3" />
+                              <span>Aprovar em Sessão</span>
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => setViewingPolicy(pol)}
@@ -415,26 +625,38 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             title="Ler norma completa"
                           >
                             <Eye className="w-3 h-3 text-slate-400" />
-                            <span>Ler Norma</span>
+                            <span>Ler</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleOpenEditModal(pol)}
                             className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                            title="Editar política"
+                            title="Editar minuta"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePolicy(pol.id, pol.title)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                            title="Excluir política"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {pol.status === 'active' ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRevokePolicy(pol)}
+                              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Revogar vigência da política"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePolicy(pol.id, pol.title)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Excluir minuta"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
                         </div>
                       </td>
                     </tr>
@@ -459,7 +681,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                     {viewingPolicy.code} • {viewingPolicy.version}
                   </span>
                   <span className="text-xs text-slate-400">
-                    Homologado por: {viewingPolicy.homologatedBy}
+                    Homologado por: {viewingPolicy.homologatedBy || 'Mesa Diretora'}
                   </span>
                 </div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -478,21 +700,26 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
             {/* Modal Content Scrollable */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 dark:text-slate-200">
               
-              {/* Box de Resumo da Norma */}
+              {/* Box de Resumo da Norma & Governança */}
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5">
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                  Síntese Executiva:
+                  Síntese Executiva & Trâmite de Governança:
                 </span>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                   {viewingPolicy.description}
                 </p>
                 <div className="flex flex-wrap gap-4 pt-1 text-[11px] text-slate-500">
-                  <span>Data de Aprovação: <strong>{viewingPolicy.approvedAt}</strong></span>
+                  {viewingPolicy.approvedAt && (
+                    <span>Data de Aprovação: <strong>{viewingPolicy.approvedAt}</strong></span>
+                  )}
                   {viewingPolicy.minuteSessionCode && (
                     <span>Ata da Sessão: <strong>{viewingPolicy.minuteSessionCode}</strong></span>
                   )}
                   {viewingPolicy.nextReviewDate && (
                     <span>Próxima Revisão: <strong>{viewingPolicy.nextReviewDate}</strong></span>
+                  )}
+                  {viewingPolicy.authorName && (
+                    <span>Proponente: <strong>{viewingPolicy.authorName}</strong></span>
                   )}
                 </div>
               </div>
@@ -544,7 +771,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         </div>
       )}
 
-      {/* Modal: Cadastro & Edição de Política */}
+      {/* Modal: Cadastro & Edição de Proposta / Minuta */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl">
@@ -553,7 +780,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  {editingPolicy ? 'Editar Política Corporativa' : 'Cadastrar Nova Política Corporativa'}
+                  {editingPolicy ? 'Editar Minuta de Política' : 'Elaborar Minuta de Política Corporativa'}
                 </h3>
               </div>
               <button
@@ -593,7 +820,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Versão</label>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Versão Proposta</label>
                   <input
                     type="text"
                     value={formData.version}
@@ -619,48 +846,26 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Órgão Deliberador</label>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Colegiado Competente para Aprovar</label>
+                  <select
+                    value={formData.targetApproverBody}
+                    onChange={(e) => setFormData({ ...formData, targetApproverBody: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-medium"
+                  >
+                    <option value="CONS-ADM">Conselho de Administração (CONS-ADM)</option>
+                    <option value="COM-FIN">Comitê de Resultados & Finanças (COM-FIN)</option>
+                    <option value="COM-CLI">Comitê de Gestão de Clientes & Qualidade (COM-CLI)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Proponente / Relator</label>
                   <input
                     type="text"
-                    value={formData.homologatedBy}
-                    onChange={(e) => setFormData({ ...formData, homologatedBy: e.target.value })}
-                    placeholder="Ex: Conselho de Administração (CONS-ADM)"
+                    value={formData.authorName}
+                    onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
+                    placeholder="Nome do diretor proponente..."
                     className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
                   />
-                </div>
-                <div>
-                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Ata Vinculada (Código)</label>
-                  <input
-                    type="text"
-                    value={formData.minuteSessionCode}
-                    onChange={(e) => setFormData({ ...formData, minuteSessionCode: e.target.value.toUpperCase() })}
-                    placeholder="Ex: SES-01/2026"
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Data de Aprovação</label>
-                  <input
-                    type="date"
-                    value={formData.approvedAt}
-                    onChange={(e) => setFormData({ ...formData, approvedAt: e.target.value })}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-semibold"
-                  >
-                    <option value="active">Vigente</option>
-                    <option value="in_review">Em Revisão</option>
-                    <option value="revoked">Revogada</option>
-                  </select>
                 </div>
               </div>
 
@@ -747,12 +952,90 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                   type="submit"
                   className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-lg font-semibold cursor-pointer shadow-xs"
                 >
-                  Salvar Política
+                  Salvar Minuta
                 </button>
               </div>
 
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Homologação em Sessão (Aprovação Formal com Ata) */}
+      {approvingPolicy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <FileCheck2 className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Homologar & Publicar Política em Sessão
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setApprovingPolicy(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmApproval} className="space-y-4 text-xs">
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200">
+                <span className="font-bold block text-sm">
+                  {approvingPolicy.code}: {approvingPolicy.title}
+                </span>
+                <span className="text-[11px] text-emerald-700 dark:text-emerald-300 block mt-0.5">
+                  Ao homologar, esta política torna-se <strong>oficialmente publicada e vigente</strong> em toda a RGR Facilities.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                  Código da Ata Homologada
+                </label>
+                <input
+                  type="text"
+                  value={approvalMinuteCode}
+                  onChange={(e) => setApprovalMinuteCode(e.target.value.toUpperCase())}
+                  required
+                  placeholder="Ex: SES-01/2026"
+                  className="w-full px-2.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                  Parecer da Mesa Deliberadora
+                </label>
+                <textarea
+                  rows={3}
+                  value={approvalNotes}
+                  onChange={(e) => setApprovalNotes(e.target.value)}
+                  placeholder="Registre o parecer ou condições da homologação..."
+                  className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setApprovingPolicy(null)}
+                  className="px-3.5 py-1.5 text-slate-500 hover:text-slate-700 font-semibold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Homologar & Publicar Norma</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

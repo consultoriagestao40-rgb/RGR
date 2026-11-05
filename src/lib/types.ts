@@ -85,11 +85,21 @@ export interface CorporatePolicy {
   description: string;
   contentMarkdown: string;
   version: string; // Ex: v1.0
-  status: 'active' | 'in_review' | 'revoked';
-  homologatedBy: string; // Ex: CONS-ADM (Conselho de Administração)
-  approvedAt: string; // YYYY-MM-DD
-  minuteSessionCode?: string; // Ex: SES-01/2026
+  status: 'draft' | 'in_review' | 'approved' | 'active' | 'revoked';
+  
+  // Governança & Workflow de Homologação
+  targetApproverBody: string; // Ex: 'CONS-ADM' ou 'COM-FIN'
+  authorName?: string; // Quem redigiu a proposta
+  authorRoleTitle?: string;
+  submittedAt?: string; // Data em que foi enviada para pauta
+  
+  // Deliberação & Homologação
+  homologatedBy?: string; // Ex: Conselho de Administração (CONS-ADM)
+  approvedAt?: string; // YYYY-MM-DD
+  minuteSessionCode?: string; // Ex: SES-01/2026 (Ata que homologou)
+  approvalNotes?: string; // Parecer do relator / mesa
   nextReviewDate?: string; // YYYY-MM-DD
+  
   attachments?: { id: string; name: string; url: string; type?: string }[];
   images?: { id: string; url: string; caption?: string }[];
   createdAt?: string;

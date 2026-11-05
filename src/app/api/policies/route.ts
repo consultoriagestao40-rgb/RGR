@@ -27,10 +27,15 @@ export async function POST(req: Request) {
       description: body.description || '',
       contentMarkdown: body.contentMarkdown || '',
       version: body.version || 'v1.0',
-      status: body.status || 'active',
+      status: body.status || 'draft',
+      targetApproverBody: body.targetApproverBody || 'CONS-ADM',
+      authorName: body.authorName || 'Proponente da Diretoria',
+      authorRoleTitle: body.authorRoleTitle || 'Membro do Colegiado',
+      submittedAt: body.submittedAt || undefined,
       homologatedBy: body.homologatedBy || 'Conselho de Administração',
-      approvedAt: body.approvedAt || new Date().toISOString().slice(0, 10),
+      approvedAt: body.approvedAt || undefined,
       minuteSessionCode: body.minuteSessionCode || '',
+      approvalNotes: body.approvalNotes || '',
       nextReviewDate: body.nextReviewDate || '',
       images: body.images || []
     });
