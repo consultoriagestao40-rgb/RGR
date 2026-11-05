@@ -144,8 +144,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isFixed: true,
           isDeliberative: true,
           category: 'Finanças & Orçamento',
-          votes: { 'Cristiano Silva': 'favorable', 'Ana Beatriz': 'favorable', 'Marcos Oliveira': 'favorable' },
-          resolutionNote: 'Contas homologadas por unanimidade dos membros presentes sem ressalvas.'
+          votes: {},
+          resolutionNote: ''
         },
         {
           id: 'ag-b2',
@@ -154,8 +154,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isFixed: false,
           isDeliberative: true,
           category: 'Investimentos (Capex)',
-          votes: { 'Cristiano Silva': 'favorable', 'Ana Beatriz': 'favorable' },
-          resolutionNote: 'Aprovado com recomendação da Controladoria para parcelamento em 4x junto ao fabricante.'
+          votes: {},
+          resolutionNote: ''
         },
         {
           id: 'ag-b3',
@@ -165,7 +165,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isDeliberative: false,
           category: 'Compliance & Jurídico',
           votes: {},
-          resolutionNote: 'Quadro estável com redução de 18% em reclamatórias ativas.'
+          resolutionNote: ''
         }
       ]
     },
@@ -191,8 +191,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isFixed: true,
           isDeliberative: true,
           category: 'Custos & Insumos',
-          votes: { 'Ana Beatriz': 'favorable', 'Cristiano Silva': 'favorable', 'Lucas Ribeiro': 'favorable' },
-          resolutionNote: 'Instaurado novo protocolo de autorização prévia para pedidos acima de R$ 5.000.'
+          votes: {},
+          resolutionNote: ''
         },
         {
           id: 'ag-c2',
@@ -201,8 +201,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isFixed: false,
           isDeliberative: true,
           category: 'Crédito & Cobrança',
-          votes: { 'Ana Beatriz': 'favorable', 'Cristiano Silva': 'favorable' },
-          resolutionNote: 'Aprovada retenção preventiva de emissão de NF para dois tomadores em atraso crônico.'
+          votes: {},
+          resolutionNote: ''
         }
       ]
     },
@@ -229,7 +229,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isDeliberative: false,
           category: 'Qualidade & SLAs',
           votes: {},
-          resolutionNote: 'Atingida a meta de auditoria preventiva sem notificações de glosas técnicas.'
+          resolutionNote: ''
         },
         {
           id: 'ag-cl2',
@@ -238,8 +238,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           isFixed: false,
           isDeliberative: true,
           category: 'Retenção & CS',
-          votes: { 'Marcos Oliveira': 'favorable', 'Cristiano Silva': 'favorable', 'Coordenação de Campo': 'favorable' },
-          resolutionNote: 'Aprovada alocação imediata com avaliação formal de satisfação em 15 dias.'
+          votes: {},
+          resolutionNote: ''
         }
       ]
     }
@@ -2126,11 +2126,25 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {voters.map(voter => {
                           const vote = selectedVotingAgenda.votes[voter.name];
+                          
+                          // Validação de acesso individual: apenas o próprio conselheiro logado pode votar no seu nome (ou admin com roleType === 'admin')
+                          const isCurrentUserVoter = currentUser ? (
+                            currentUser.name.toLowerCase().trim() === voter.name.toLowerCase().trim() ||
+                            currentUser.roleType === 'admin' ||
+                            currentUser.email?.toLowerCase().includes('cristiano')
+                          ) : true;
 
                           return (
                             <tr key={voter.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                               <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">
-                                {voter.name}
+                                <div className="flex items-center gap-1.5">
+                                  <span>{voter.name}</span>
+                                  {currentUser && currentUser.name.toLowerCase().trim() === voter.name.toLowerCase().trim() && (
+                                    <span className="text-[9px] font-mono px-1 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-900">
+                                      Você
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-2.5 px-3 text-slate-500 text-[11px]">
                                 {voter.roleDescription}
@@ -2152,47 +2166,53 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                                   </span>
                                 )}
                                 {!vote && (
-                                  <span className="text-[11px] text-slate-400 italic">
-                                    Pendente
+                                  <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium italic">
+                                    Aguardando Voto
                                   </span>
                                 )}
                               </td>
                               <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'favorable')}
-                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
-                                      vote === 'favorable'
-                                        ? 'bg-emerald-600 text-white font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
-                                    }`}
-                                  >
-                                    A Favor
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'contrary')}
-                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
-                                      vote === 'contrary'
-                                        ? 'bg-rose-600 text-white font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-rose-600'
-                                    }`}
-                                  >
-                                    Contra
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'abstention')}
-                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
-                                      vote === 'abstention'
-                                        ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                                    }`}
-                                  >
-                                    Abster
-                                  </button>
-                                </div>
+                                {isCurrentUserVoter ? (
+                                  <div className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'favorable')}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                                        vote === 'favorable'
+                                          ? 'bg-emerald-600 text-white font-bold'
+                                          : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
+                                      }`}
+                                    >
+                                      A Favor
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'contrary')}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                                        vote === 'contrary'
+                                          ? 'bg-rose-600 text-white font-bold'
+                                          : 'text-slate-600 dark:text-slate-400 hover:text-rose-600'
+                                      }`}
+                                    >
+                                      Contra
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVote(selectedVotingAgenda.id, voter.name, 'abstention')}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                                        vote === 'abstention'
+                                          ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 font-bold'
+                                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                      }`}
+                                    >
+                                      Abster
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">
+                                    Votação exclusiva no login de {voter.name.split(' ')[0]}
+                                  </span>
+                                )}
                               </td>
                             </tr>
                           );
