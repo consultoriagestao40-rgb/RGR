@@ -44,6 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'ranking': return 'Desempenho & Ranking por Cadeira';
       case 'committees': return 'Conselho & Comitês Estratégicos';
       case 'minutes': return 'Livro Oficial de Atas';
+      case 'policies': return 'Políticas Corporativas';
       case 'admin': return 'Matriz de Governança';
       case 'users': return 'Gestão de Usuários';
       default: return 'Visão Executiva';

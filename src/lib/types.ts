@@ -54,6 +54,46 @@ export interface RoutineBlock {
   homologatedBy?: string; // Ex: Diretoria de Operações
   createdAt?: string;
   role?: OperationalRole;
+  
+  // Multimídia & Vídeo Treinamento
+  videoUrl?: string; // Link YouTube, Loom, Drive ou gravação de tela
+  videoTitle?: string;
+  images?: { id: string; url: string; caption?: string }[];
+
+  // Treinamento & Reciclagem Falconi
+  trainingRecords?: PopTrainingRecord[];
+  recyclingPeriodDays?: number; // Ex: 180 (6 meses) ou 365 (1 ano)
+}
+
+export interface PopTrainingRecord {
+  id: string;
+  userId?: string;
+  userName: string;
+  userRoleTitle?: string;
+  completedAt: string; // ISO date
+  validUntil: string; // ISO date
+  type: 'initial' | 'recycling';
+  status: 'valid' | 'expired';
+  notes?: string;
+}
+
+export interface CorporatePolicy {
+  id: string;
+  code: string; // Ex: POL-FIN-001
+  title: string;
+  category: 'finance' | 'operations' | 'governance' | 'hr_people' | 'commercial';
+  description: string;
+  contentMarkdown: string;
+  version: string; // Ex: v1.0
+  status: 'active' | 'in_review' | 'revoked';
+  homologatedBy: string; // Ex: CONS-ADM (Conselho de Administração)
+  approvedAt: string; // YYYY-MM-DD
+  minuteSessionCode?: string; // Ex: SES-01/2026
+  nextReviewDate?: string; // YYYY-MM-DD
+  attachments?: { id: string; name: string; url: string; type?: string }[];
+  images?: { id: string; url: string; caption?: string }[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type VoteChoice = 'favorable' | 'contrary' | 'abstention';

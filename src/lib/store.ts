@@ -10,9 +10,11 @@ import {
   GovernanceMinute,
   SystemUser,
   GovernanceAction,
-  ActionNote
+  ActionNote,
+  CorporatePolicy
 } from './types';
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_MINUTES, INITIAL_USERS, INITIAL_ACTIONS } from './seed-data';
+import { INITIAL_POLICIES } from './policies-seed';
 import { prisma } from './prisma';
 
 interface AppStore {
@@ -31,6 +33,7 @@ interface AppStore {
   minutes: GovernanceMinute[];
   users: SystemUser[];
   actions: GovernanceAction[];
+  policies: CorporatePolicy[];
 }
 
 // No ambiente serverless da Vercel, o diretório raiz é somente leitura (read-only)
@@ -49,7 +52,8 @@ function getInitialStore(): AppStore {
     dispatchNotes: {},
     minutes: INITIAL_MINUTES,
     users: INITIAL_USERS,
-    actions: INITIAL_ACTIONS
+    actions: INITIAL_ACTIONS,
+    policies: INITIAL_POLICIES
   };
 }
 
@@ -73,6 +77,9 @@ function readStore(): AppStore {
     }
     if (!parsed.actions || !Array.isArray(parsed.actions) || parsed.actions.length === 0) {
       parsed.actions = INITIAL_ACTIONS;
+    }
+    if (!parsed.policies || !Array.isArray(parsed.policies) || parsed.policies.length === 0) {
+      parsed.policies = INITIAL_POLICIES;
     }
     if (parsed.rituals && Array.isArray(parsed.rituals)) {
       for (const initRit of INITIAL_RITUALS) {
@@ -107,7 +114,62 @@ function writeStore(store: AppStore): void {
 const isDbConfigured = Boolean(process.env.DATABASE_URL);
 
 // =========================================================================
-// 1. ROLES (CADEIRAS OPERACIONAIS)
+// 8. POLÍTICAS CORPORATIVAS & COMPLIANCE
+// =========================================================================
+
+export async function getAllPolicies(): Promise<CorporatePolicy[]> {
+  const store = readStore();
+  return store.policies || INITIAL_POLICIES;
+}
+
+export async function getPolicyById(id: string): Promise<CorporatePolicy | null> {
+  const store = readStore();
+  return (store.policies || []).find(p => p.id === id) || null;
+}
+
+export async function createPolicy(data: Omit<CorporatePolicy, 'id' | 'createdAt' | 'updatedAt'>): Promise<CorporatePolicy> {
+  const store = readStore();
+  if (!store.policies) store.policies = [...INITIAL_POLICIES];
+
+  const newPolicy: CorporatePolicy = {
+    id: `pol-${Date.now()}`,
+    ...data,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  store.policies.push(newPolicy);
+  writeStore(store);
+  return newPolicy;
+}
+
+export async function updatePolicy(id: string, data: Partial<CorporatePolicy>): Promise<CorporatePolicy | null> {
+  const store = readStore();
+  if (!store.policies) store.policies = [...INITIAL_POLICIES];
+
+  const index = store.policies.findIndex(p => p.id === id);
+  if (index === -1) return null;
+
+  store.policies[index] = {
+    ...store.policies[index],
+    ...data,
+    updatedAt: new Date().toISOString()
+  };
+
+  writeStore(store);
+  return store.policies[index];
+}
+
+export async function deletePolicy(id: string): Promise<boolean> {
+  const store = readStore();
+  if (!store.policies) return false;
+
+  const initialLen = store.policies.length;
+  store.policies = store.policies.filter(p => p.id !== id);
+  writeStore(store);
+  return store.policies.length < initialLen;
+}
+
 // =========================================================================
 
 export async function getRoles(): Promise<OperationalRole[]> {
@@ -454,7 +516,15 @@ export async function updateRoutineBlock(id: string, data: Partial<RoutineBlock>
   const store = readStore();
   const index = store.blocks.findIndex(b => b.id === id);
   if (index === -1) return null;
-  store.blocks[index] = { ...store.blocks[index], ...data };
+  store.blocks[index] = { 
+    ...store.blocks[index], 
+    ...data,
+    trainingRecords: data.trainingRecords !== undefined ? data.trainingRecords : store.blocks[index].trainingRecords,
+    videoUrl: data.videoUrl !== undefined ? data.videoUrl : store.blocks[index].videoUrl,
+    videoTitle: data.videoTitle !== undefined ? data.videoTitle : store.blocks[index].videoTitle,
+    images: data.images !== undefined ? data.images : store.blocks[index].images,
+    recyclingPeriodDays: data.recyclingPeriodDays !== undefined ? data.recyclingPeriodDays : store.blocks[index].recyclingPeriodDays
+  };
   writeStore(store);
   return store.blocks[index];
 }

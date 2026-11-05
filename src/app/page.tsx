@@ -14,6 +14,7 @@ import { UsersManagementSection } from '@/components/UsersManagementSection';
 import { ActionsCentralTab } from '@/components/ActionsCentralTab';
 import { PerformanceRankingTab } from '@/components/PerformanceRankingTab';
 import { CommitteesBoardTab } from '@/components/CommitteesBoardTab';
+import { CorporatePoliciesTab } from '@/components/CorporatePoliciesTab';
 import { MeetingAiModal } from '@/components/MeetingAiModal';
 import { SopDrawer } from '@/components/SopDrawer';
 import { ObservationModal } from '@/components/ObservationModal';
@@ -56,7 +57,7 @@ export default function HomePage() {
   const [allBlocks, setAllBlocks] = useState<RoutineBlock[]>(INITIAL_BLOCKS);
   const [allRituals, setAllRituals] = useState<DailyRitual[]>(INITIAL_RITUALS);
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'committees' | 'admin' | 'users'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'committees' | 'policies' | 'admin' | 'users'>('timeline');
   const [roleProfileDetailId, setRoleProfileDetailId] = useState<string | null>(null);
 
   // Drawers and Modals
@@ -637,6 +638,10 @@ export default function HomePage() {
             <PlaybookTab
               role={selectedRole}
               blocks={blocks}
+              currentUser={currentUser}
+              onRefreshBlocks={() => {
+                loadRoleData(selectedRoleId, selectedDate);
+              }}
             />
           )}
 
@@ -677,6 +682,14 @@ export default function HomePage() {
               users={users}
               currentUser={currentUser}
               onNavigateToMinutes={() => setActiveTab('minutes')}
+            />
+          )}
+
+          {activeTab === 'policies' && (
+            <CorporatePoliciesTab
+              currentUser={currentUser}
+              currentRole={selectedRole}
+              roles={roles}
             />
           )}
 
