@@ -35,6 +35,7 @@ import {
   isBlockScheduledForDate,
   formatBlockFrequency 
 } from '@/lib/frequency';
+import { getRoleCalendarDossier } from '@/lib/role-calendars';
 
 interface TimelineTabProps {
   role: OperationalRole | null;
@@ -332,96 +333,70 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
         </div>
       )}
 
-      {/* Dossier Executivo de Calendário & Prazos Críticos */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
-        <div 
-          onClick={() => setShowCalendarDossier(!showCalendarDossier)}
-          className="p-3.5 sm:p-4 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/70 transition-colors"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-atlas-50 dark:bg-atlas-950/60 text-atlas-600 dark:text-atlas-400 border border-atlas-200 dark:border-atlas-800 flex items-center justify-center shrink-0">
-              <CalendarCheck2 className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Calendário Operacional de Fechamentos & Obrigações Mensais</span>
-                <span className="text-[10px] font-normal normal-case px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Governança
+      {/* Dossier Executivo de Calendário & Prazos Críticos Específico da Cadeira */}
+      {(() => {
+        const roleDossier = getRoleCalendarDossier(role);
+        return (
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
+            <div 
+              onClick={() => setShowCalendarDossier(!showCalendarDossier)}
+              className="p-3.5 sm:p-4 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/70 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-atlas-50 dark:bg-atlas-950/60 text-atlas-600 dark:text-atlas-400 border border-atlas-200 dark:border-atlas-800 flex items-center justify-center shrink-0">
+                  <CalendarCheck2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>{roleDossier.headerTitle}</span>
+                    <span className="text-[10px] font-mono normal-case px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                      {role?.code || 'Cadeira'}
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {roleDossier.subtitle}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <span className="text-[11px] font-medium hidden sm:inline">
+                  {showCalendarDossier ? 'Ocultar Prazos' : 'Ver Prazos Oficiais'}
                 </span>
-              </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Prazos oficiais de ponto, folha, benefícios (VT/VA), encargos (dia 20), rescisões e apuração de resultados (DRE).
-              </p>
+                {showCalendarDossier ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
             </div>
+
+            {showCalendarDossier && (
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white dark:bg-[#111827]">
+                {roleDossier.milestones.map((m, idx) => {
+                  const colorMap: { [key: string]: { text: string; bg: string; dot: string } } = {
+                    emerald: { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500', dot: 'bg-emerald-500' },
+                    amber: { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500', dot: 'bg-amber-500' },
+                    blue: { text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500', dot: 'bg-blue-500' },
+                    purple: { text: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500', dot: 'bg-purple-500' }
+                  };
+                  const colors = colorMap[m.badgeColor] || colorMap.blue;
+
+                  return (
+                    <div key={idx} className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+                      <div className={`flex items-center gap-1.5 ${colors.text} font-bold text-xs uppercase tracking-wider mb-1`}>
+                        <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                        {m.periodLabel}
+                      </div>
+                      <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                        {m.title}
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                        {m.description}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2 text-slate-400">
-            <span className="text-[11px] font-medium hidden sm:inline">
-              {showCalendarDossier ? 'Ocultar Prazos' : 'Ver Prazos Oficiais'}
-            </span>
-            {showCalendarDossier ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
-        </div>
-
-        {showCalendarDossier && (
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white dark:bg-[#111827]">
-            {/* 5º Dia Útil */}
-            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                5º Dia Útil do Mês
-              </div>
-              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                Salários & Vale-Alimentação (VA)
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
-                Pagamento líquido de salários e liberação simultânea dos créditos de alimentação/refeição (VA/VR).
-              </p>
-            </div>
-
-            {/* Dia 20 */}
-            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                Todo Dia 20
-              </div>
-              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                Encargos Sociais & Tributos
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
-                Liquidação de FGTS Digital, DCTFWeb (INSS) e tributos retidos no borderô da tarde das 14:30.
-              </p>
-            </div>
-
-            {/* Dia 25 e Dias 26 a 30 */}
-            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                Dias 25 a 30
-              </div>
-              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                Ponto (Dia 25) & Folha (Pós-25)
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
-                Fechamento oficial de ponto no dia 25 (período 26 a 25) e cálculo analítico da folha entre os dias 26 e 30.
-              </p>
-            </div>
-
-            {/* Fim do Mês & DRE */}
-            <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase tracking-wider mb-1">
-                <span className="w-2 h-2 rounded-full bg-purple-500" />
-                Fim do Mês / DRE Fechado
-              </div>
-              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                Compra VT & Apuração de DRE
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
-                Recarga de VT no último dia útil e apuração do DRE por contrato/empresa após pagar todas as contas do mês.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* View Mode Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-3 shadow-xs">
