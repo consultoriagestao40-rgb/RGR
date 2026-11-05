@@ -867,31 +867,15 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </p>
                       </td>
 
-                      {/* Frequência com badge claro e botão de edição discreto */}
+                      {/* Frequência (Informativa, sem botão duplicado) */}
                       <td className="py-3.5 px-4 align-middle text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingCommittee(com);
-                            setEditComName(com.name);
-                            setEditComCode(com.code);
-                            setEditComDesc(com.description);
-                            setEditComPresident(com.presidentName);
-                            setEditComRole(com.presidentRole);
-                            setEditComCadence(com.cadence);
-                            setEditComMeetingDay(com.meetingDay || '');
-                            setEditComMeetingTime(com.meetingTime || '');
-                          }}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-medium whitespace-nowrap cursor-pointer transition-colors shadow-2xs"
-                          title="Clique para configurar dia, horário e periodicidade das sessões"
-                        >
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium whitespace-nowrap">
                           <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                           <span>{com.cadence.split('(')[0].trim()}</span>
-                          <span className="text-[9px] text-slate-400 font-mono">✎</span>
-                        </button>
+                        </span>
                       </td>
 
-                      {/* Ações: Configurar / Editar + Integrantes + Acessar Sessões */}
+                      {/* Ações: Configurar / Editar (Engrenagem Única) + Integrantes + Acessar Sessões */}
                       <td className="py-3.5 px-4 align-middle text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
@@ -908,7 +892,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               setEditComMeetingTime(com.meetingTime || '');
                             }}
                             className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700 shrink-0"
-                            title="Editar comitê (Renomear, dia, hora ou encerrar)"
+                            title="Configurar Colegiado (Renomear, Frequência, Dia, Hora ou Encerrar)"
                           >
                             <Settings className="w-3.5 h-3.5" />
                           </button>
