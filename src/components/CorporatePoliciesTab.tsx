@@ -507,15 +507,15 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       {/* Tabela Padronizada Atlas de Políticas Corporativas */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed min-w-[900px]">
             <thead>
               <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-4">Código & Política</th>
-                <th className="py-3 px-4">Categoria</th>
-                <th className="py-3 px-4">Instância Deliberadora</th>
-                <th className="py-3 px-4 text-center">Status no Workflow</th>
-                <th className="py-3 px-4 text-center">Vigência & Ata</th>
-                <th className="py-3 px-4 text-right">Ações & Workflow</th>
+                <th className="py-3 px-4 w-[36%]">Código & Política</th>
+                <th className="py-3 px-4 w-[16%]">Categoria</th>
+                <th className="py-3 px-4 w-[18%]">Instância Deliberadora</th>
+                <th className="py-3 px-4 w-[14%] text-center">Status</th>
+                <th className="py-3 px-4 w-[10%] text-center">Vigência</th>
+                <th className="py-3 px-4 w-[16%] text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
@@ -539,19 +539,20 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                           <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 mt-0.5">
                             {pol.code}
                           </span>
-                          <div>
+                          <div className="min-w-0 pr-2">
                             <button
                               type="button"
                               onClick={() => setViewingPolicy(pol)}
-                              className="text-slate-900 dark:text-white font-semibold hover:text-blue-600 dark:hover:text-blue-400 text-left transition-colors cursor-pointer"
+                              className="text-slate-900 dark:text-white font-semibold hover:text-blue-600 dark:hover:text-blue-400 text-left transition-colors cursor-pointer truncate block w-full"
+                              title={pol.title}
                             >
                               {pol.title}
                             </button>
-                            <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 max-w-md">
+                            <p className="text-[11px] text-slate-400 truncate mt-0.5">
                               {pol.description}
                             </p>
                             {pol.authorName && (
-                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                              <span className="text-[10px] text-slate-400 truncate block mt-0.5">
                                 Proposta por: {pol.authorName} ({pol.authorRoleTitle || 'Mesa'})
                               </span>
                             )}
@@ -561,14 +562,14 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
 
                       {/* Categoria */}
                       <td className="py-3.5 px-4 align-middle">
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0 inline-block ${catStyle.badge}`}>
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0 inline-block whitespace-nowrap ${catStyle.badge}`}>
                           {catStyle.label}
                         </span>
                       </td>
 
                       {/* Órgão Deliberador Alvo */}
                       <td className="py-3.5 px-4 align-middle">
-                        <div className="text-slate-800 dark:text-slate-200 font-medium">
+                        <div className="text-slate-800 dark:text-slate-200 font-medium truncate" title={pol.homologatedBy}>
                           {pol.homologatedBy || (
                             pol.targetApproverBody === 'COM-FIN'
                               ? 'Comitê de Resultados & Finanças'
@@ -578,31 +579,31 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                           )}
                         </div>
                         {pol.submittedAt && pol.status === 'in_review' && (
-                          <div className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                          <div className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5 whitespace-nowrap">
                             <Clock className="w-3 h-3" />
-                            <span>Pautada em: {pol.submittedAt}</span>
+                            <span>Pautada: {pol.submittedAt}</span>
                           </div>
                         )}
                       </td>
 
                       {/* Status no Workflow */}
-                      <td className="py-3.5 px-4 align-middle text-center">
+                      <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
                         {pol.status === 'draft' && (
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1">
                             <Pencil className="w-2.5 h-2.5" />
-                            1. Minuta (Elaboração)
+                            Minuta
                           </span>
                         )}
                         {pol.status === 'in_review' && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/80 inline-flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            2. Em Pauta (Colegiado)
+                            Em Pauta
                           </span>
                         )}
                         {pol.status === 'active' && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 inline-flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" />
-                            3. Publicada & Vigente
+                            Vigente
                           </span>
                         )}
                         {pol.status === 'revoked' && (
@@ -613,24 +614,20 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                       </td>
 
                       {/* Vigência & Ata */}
-                      <td className="py-3.5 px-4 align-middle text-center">
+                      <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
                         <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                           {pol.version}
                         </span>
-                        {pol.minuteSessionCode ? (
+                        {pol.minuteSessionCode && (
                           <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 mt-1">
                             <FileCheck2 className="w-3 h-3" />
                             <span>{pol.minuteSessionCode}</span>
-                          </div>
-                        ) : (
-                          <div className="text-[10px] text-slate-400 mt-1">
-                            Pendente de Ata
                           </div>
                         )}
                       </td>
 
                       {/* Ações & Transições de Workflow */}
-                      <td className="py-3.5 px-4 align-middle text-right">
+                      <td className="py-3.5 px-4 align-middle text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1.5">
                           
                           {/* BOTÃO DO WORKFLOW: ENVIAR PARA PAUTA */}
@@ -638,11 +635,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <button
                               type="button"
                               onClick={() => handleSubmitToCommittee(pol)}
-                              className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
                               title="Submeter proposta à pauta do colegiado deliberador"
                             >
                               <Send className="w-3 h-3 text-amber-600" />
-                              <span>Enviar p/ Pauta</span>
+                              <span>Pautar</span>
                             </button>
                           )}
 
@@ -651,18 +648,18 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <button
                               type="button"
                               onClick={() => handleOpenApproveModal(pol)}
-                              className="px-2.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              className="px-2.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
                               title="Homologar aprovação via ata de sessão oficial"
                             >
                               <FileCheck2 className="w-3 h-3" />
-                              <span>Aprovar em Sessão</span>
+                              <span>Aprovar</span>
                             </button>
                           )}
 
                           <button
                             type="button"
                             onClick={() => setViewingPolicy(pol)}
-                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
                             title="Ler norma completa"
                           >
                             <Eye className="w-3 h-3 text-slate-400" />
@@ -672,7 +669,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenEditModal(pol)}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
                             title="Editar minuta"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -682,7 +679,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <button
                               type="button"
                               onClick={() => handleRevokePolicy(pol)}
-                              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
                               title="Revogar vigência da política"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
@@ -691,7 +688,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <button
                               type="button"
                               onClick={() => handleDeletePolicy(pol.id, pol.title)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
                               title="Excluir minuta"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
