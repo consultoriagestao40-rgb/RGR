@@ -8,22 +8,26 @@ import {
   ChevronUp, 
   Copy, 
   Check, 
-  Printer,
-  Video,
-  Play,
-  Image as ImageIcon,
-  GraduationCap,
-  Calendar,
-  UserCheck,
-  RotateCcw,
-  Sparkles,
-  ExternalLink,
+  Printer, 
+  Video, 
+  Play, 
+  Image as ImageIcon, 
+  GraduationCap, 
+  Calendar, 
+  UserCheck, 
+  RotateCcw, 
+  Sparkles, 
+  ExternalLink, 
   Plus,
   Pencil,
   Trash2,
   X,
   Upload,
-  BookOpen
+  BookOpen,
+  Eye,
+  FileCheck2,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, PopTrainingRecord, SystemUser } from '@/lib/types';
 import { formatBlockFrequency } from '@/lib/frequency';
@@ -50,6 +54,9 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
   const [trainingOperatorName, setTrainingOperatorName] = useState('');
   const [isSubmittingTraining, setIsSubmittingTraining] = useState<string | null>(null);
   const [trainingSuccessId, setTrainingSuccessId] = useState<string | null>(null);
+
+  // Modal de Leitura / Visualização do POP
+  const [viewingPop, setViewingPop] = useState<RoutineBlock | null>(null);
 
   // Modal para anexar mídia/vídeo ao POP
   const [editingMediaBlock, setEditingMediaBlock] = useState<RoutineBlock | null>(null);
@@ -382,299 +389,358 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
         <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-2.5" />
       </div>
 
-      {/* POPs Accordion List */}
-      <div className="space-y-3">
-        {filteredBlocks.map((block, index) => {
-          const isExpanded = !!expandedBlockIds[block.id];
-          const hasVideo = !!block.videoUrl;
-          const hasImages = block.images && block.images.length > 0;
-          const latestTraining = block.trainingRecords && block.trainingRecords.length > 0
-            ? block.trainingRecords[block.trainingRecords.length - 1]
-            : null;
+      {/* Tabela Padronizada de Procedimentos Operacionais Padrão (POPs) */}
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse table-fixed min-w-[960px]">
+            <thead>
+              <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="py-3 px-4 w-[34%]">Código & POP</th>
+                <th className="py-3 px-4 w-[14%]">Horário & Frequência</th>
+                <th className="py-3 px-4 w-[16%]">Capacitação Falconi</th>
+                <th className="py-3 px-4 w-[16%]">Entregável Obrigatório</th>
+                <th className="py-3 px-4 w-[8%] text-center">Versão</th>
+                <th className="py-3 px-4 w-[12%] text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+              {filteredBlocks.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                    Nenhum procedimento operacional encontrado para esta cadeira.
+                  </td>
+                </tr>
+              ) : (
+                filteredBlocks.map((block, index) => {
+                  const isExpanded = !!expandedBlockIds[block.id];
+                  const hasVideo = !!block.videoUrl;
+                  const hasImages = block.images && block.images.length > 0;
+                  const latestTraining = block.trainingRecords && block.trainingRecords.length > 0
+                    ? block.trainingRecords[block.trainingRecords.length - 1]
+                    : null;
+                  const isTrainingValid = latestTraining && new Date(latestTraining.validUntil) > new Date();
+                  const freq = formatBlockFrequency(block);
 
-          const isTrainingValid = latestTraining && new Date(latestTraining.validUntil) > new Date();
+                  return (
+                    <React.Fragment key={block.id}>
+                      <tr 
+                        className={`hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors cursor-pointer ${
+                          isExpanded ? 'bg-slate-50/40 dark:bg-slate-800/20' : ''
+                        }`}
+                        onClick={() => toggleExpand(block.id)}
+                      >
+                        {/* 1. Código & POP */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="flex items-start gap-2.5">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 mt-0.5">
+                              {block.code || `POP-${index + 1}`}
+                            </span>
+                            <div className="min-w-0 pr-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setViewingPop(block);
+                                }}
+                                className="text-slate-900 dark:text-white font-semibold hover:text-blue-600 dark:hover:text-blue-400 text-left transition-colors cursor-pointer truncate block w-full"
+                                title={block.title}
+                              >
+                                {block.title}
+                              </button>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {hasVideo && (
+                                  <span className="text-[10px] text-red-600 dark:text-red-400 font-medium inline-flex items-center gap-1 shrink-0">
+                                    <Play className="w-2.5 h-2.5 fill-current" />
+                                    Vídeo-Aula
+                                  </span>
+                                )}
+                                {hasImages && (
+                                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium inline-flex items-center gap-1 shrink-0">
+                                    <ImageIcon className="w-2.5 h-2.5" />
+                                    {block.images?.length} print(s)
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-slate-400 truncate">
+                                  Homologado por: {block.homologatedBy || 'Diretoria Executiva'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
-          return (
-            <div 
-              key={block.id}
-              className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden transition-colors shadow-xs"
-            >
-              {/* Header */}
-              <div 
-                onClick={() => toggleExpand(block.id)}
-                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md">
-                    {block.code || `POP-${index + 1}`}
-                  </span>
-                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                    {block.timeWindow}
-                  </span>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${formatBlockFrequency(block).badgeColor}`}>
-                    {formatBlockFrequency(block).label}
-                  </span>
-                  
-                  {/* Badge de Vídeo se houver */}
-                  {hasVideo && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 inline-flex items-center gap-1">
-                      <Play className="w-2.5 h-2.5 fill-current" />
-                      Vídeo-Aula
-                    </span>
-                  )}
+                        {/* 2. Horário & Frequência */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="font-mono text-xs text-slate-800 dark:text-slate-200 font-medium">
+                            {block.timeWindow}
+                          </div>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0 inline-block mt-1 ${freq.badgeColor}`}>
+                            {freq.label}
+                          </span>
+                        </td>
 
-                  {/* Badge de Treinamento Falconi */}
-                  {isTrainingValid ? (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                      <UserCheck className="w-2.5 h-2.5" />
-                      Treinado: {latestTraining.userName}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 inline-flex items-center gap-1">
-                      <GraduationCap className="w-2.5 h-2.5" />
-                      Treinamento Pendente
-                    </span>
-                  )}
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {block.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Entregável:</span> {block.deliverable}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                    {block.version || 'v1.0'}
-                  </span>
-
-                  {/* Botão de Edição Completa do POP */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEditPopModal(block);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                    title="Editar Procedimento (Passos, Fotos, Vídeo e Textos)"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Botão para Anexar Vídeo / Imagem */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenMediaModal(block);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                    title="Anexar Vídeo do YouTube ou Imagens ao POP"
-                  >
-                    <Video className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copySopText(block);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                    title="Copiar texto oficial"
-                  >
-                    {copiedId === block.id ? (
-                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-
-                  {/* Excluir POP */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePop(block);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                    title="Excluir POP"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <div className="p-1 text-slate-400">
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </div>
-                </div>
-              </div>
-
-              {/* Body */}
-              {isExpanded && (
-                <div className="px-5 pb-5 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#0c121e] space-y-4">
-                  
-                  {/* Metadata Header Box */}
-                  <div className="p-3 rounded-lg bg-white dark:bg-[#101726] border border-slate-200/80 dark:border-[#1c273b] text-xs flex flex-wrap items-center justify-between gap-3 text-slate-600 dark:text-slate-300 shadow-xs">
-                    <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Homologação:</span>
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{block.homologatedBy || 'Diretoria Executiva'}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Frequência:</span>
-                      <span className="capitalize font-medium text-slate-800 dark:text-slate-200">{block.frequency === 'daily' ? 'Diária' : block.frequency}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Critério de Aceite:</span>
-                      <span className="text-emerald-700 dark:text-emerald-300 font-medium">{block.deliverable}</span>
-                    </div>
-                  </div>
-
-                  {/* 1. SEÇÃO DE VÍDEO EMBED (YOUTUBE / LOOM) */}
-                  {block.videoUrl && (
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2.5 shadow-2xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                          <Play className="w-4 h-4 text-red-500 fill-red-500" />
-                          <span>Vídeo-Treinamento Prático: {block.videoTitle || 'Demonstração em Vídeo'}</span>
-                        </div>
-                        <a
-                          href={block.videoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                        >
-                          <span>Abrir no YouTube</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-
-                      <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-black">
-                        <iframe
-                          src={getEmbedYoutubeUrl(block.videoUrl) || ''}
-                          title={block.videoTitle || block.title}
-                          className="absolute inset-0 w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 2. SEÇÃO DE IMAGENS & PRINTS OPERACIONAIS */}
-                  {block.images && block.images.length > 0 && (
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 shadow-2xs">
-                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
-                        <span>Telas, Prints & Evidências de Referência</span>
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {block.images.map(img => (
-                          <div key={img.id} className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900">
-                            <img src={img.url} alt={img.caption || 'Print do POP'} className="w-full h-40 object-cover hover:scale-105 transition-transform" />
-                            {img.caption && (
-                              <p className="p-2 text-[10px] text-slate-500 dark:text-slate-400 text-center border-t border-slate-200 dark:border-slate-800">
-                                {img.caption}
+                        {/* 3. Capacitação Falconi */}
+                        <td className="py-3.5 px-4 align-middle">
+                          {isTrainingValid ? (
+                            <div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 inline-flex items-center gap-1">
+                                <UserCheck className="w-2.5 h-2.5" />
+                                Treinado
+                              </span>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5" title={latestTraining.userName}>
+                                {latestTraining.userName}
                               </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/80 inline-flex items-center gap-1">
+                                <GraduationCap className="w-2.5 h-2.5" />
+                                Pendente
+                              </span>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                Reciclagem: {block.recyclingPeriodDays || 180}d
+                              </p>
+                            </div>
+                          )}
+                        </td>
 
-                  {/* 3. TEXTO NORMATIVO DO POP (HTML / MARKDOWN FORMATADO) */}
-                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-2xs">
-                    <div className="sop-content prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                      {block.sopMarkdown.includes('<') ? (
-                        <div dangerouslySetInnerHTML={{ __html: block.sopMarkdown }} />
-                      ) : (
-                        <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 4. BLOCO FALCONI: CAPACITAÇÃO & RECICLAGEM FORMAL */}
-                  <div className="bg-white dark:bg-[#101726] border border-slate-200/90 dark:border-[#1c273b] rounded-xl p-4 shadow-xs space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
-                      <div className="flex items-center gap-2">
-                        <GraduationCap className="w-4 h-4 text-amber-500" />
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                          Registro de Capacitação & Reciclagem (Método Falconi)
-                        </h4>
-                      </div>
-                      <span className="text-[10px] text-slate-400">
-                        Ciclo de Reciclagem: a cada {block.recyclingPeriodDays || 180} dias
-                      </span>
-                    </div>
-
-                    {/* Status Atual do Treinamento */}
-                    {latestTraining ? (
-                      <div className="p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Colaborador Capacitado: {latestTraining.userName}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                            Treinamento realizado em: <strong>{new Date(latestTraining.completedAt).toLocaleDateString('pt-BR')}</strong> • 
-                            Válido até: <strong>{new Date(latestTraining.validUntil).toLocaleDateString('pt-BR')}</strong>
+                        {/* 4. Entregável (Aceite Binário) */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <p className="text-xs text-slate-700 dark:text-slate-300 font-medium line-clamp-2" title={block.deliverable}>
+                            {block.deliverable}
                           </p>
-                        </div>
+                        </td>
 
-                        <button
-                          type="button"
-                          onClick={() => handleConfirmTraining(block)}
-                          disabled={isSubmittingTraining === block.id}
-                          className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-[11px] font-semibold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-2xs self-start sm:self-auto shrink-0"
-                        >
-                          <RotateCcw className="w-3 h-3 text-amber-600" />
-                          <span>Fazer Reciclagem Agora</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 text-xs space-y-2">
-                        <p className="text-amber-800 dark:text-amber-300">
-                          ⚠️ <strong>Treinamento Formal Não Registrado:</strong> Para conformidade de auditoria Falconi, o responsável pela execução deste POP deve declarar sua capacitação.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                          <input
-                            type="text"
-                            placeholder="Nome completo do assistente / operador..."
-                            value={trainingOperatorName}
-                            onChange={(e) => setTrainingOperatorName(e.target.value)}
-                            className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleConfirmTraining(block)}
-                            disabled={isSubmittingTraining === block.id}
-                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 shrink-0"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Confirmar Treinamento Concluído</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                        {/* 5. Versão */}
+                        <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            {block.version || 'v1.0'}
+                          </span>
+                        </td>
 
-                    {trainingSuccessId === block.id && (
-                      <div className="p-2.5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-xs font-medium animate-in fade-in flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-600" />
-                        <span>Capacitação Falconi registrada e homologada com sucesso! Válida por 180 dias.</span>
-                      </div>
-                    )}
+                        {/* 6. Ações */}
+                        <td className="py-3.5 px-4 align-middle text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => setViewingPop(block)}
+                              className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
+                              title="Ler POP detalhado"
+                            >
+                              <Eye className="w-3 h-3 text-slate-400" />
+                              <span>Ler</span>
+                            </button>
 
-                  </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditPopModal(block)}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                              title="Editar POP"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
 
-                </div>
+                            <button
+                              type="button"
+                              onClick={() => copySopText(block)}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                              title="Copiar texto oficial"
+                            >
+                              {copiedId === block.id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePop(block)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
+                              title="Excluir POP"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(block.id)}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+                              title={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+                            >
+                              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Linha Expansível com Conteúdo Detalhado, Vídeo, Fotos e Falconi */}
+                      {isExpanded && (
+                        <tr className="bg-slate-50/80 dark:bg-[#0c121e]">
+                          <td colSpan={6} className="p-5 border-b border-slate-200/80 dark:border-slate-800 space-y-4">
+                            
+                            {/* Metadata Header Box */}
+                            <div className="p-3 rounded-lg bg-white dark:bg-[#101726] border border-slate-200/80 dark:border-[#1c273b] text-xs flex flex-wrap items-center justify-between gap-3 text-slate-600 dark:text-slate-300 shadow-xs">
+                              <div>
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Homologação:</span>
+                                <span className="font-medium text-slate-800 dark:text-slate-200">{block.homologatedBy || 'Diretoria Executiva'}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Frequência:</span>
+                                <span className="capitalize font-medium text-slate-800 dark:text-slate-200">{block.frequency === 'daily' ? 'Diária' : block.frequency}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Critério de Aceite:</span>
+                                <span className="text-emerald-700 dark:text-emerald-300 font-medium">{block.deliverable}</span>
+                              </div>
+                            </div>
+
+                            {/* 1. SEÇÃO DE VÍDEO EMBED (YOUTUBE / LOOM) */}
+                            {block.videoUrl && (
+                              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2.5 shadow-2xs">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                                    <Play className="w-4 h-4 text-red-500 fill-red-500" />
+                                    <span>Vídeo-Treinamento Prático: {block.videoTitle || 'Demonstração em Vídeo'}</span>
+                                  </div>
+                                  <a
+                                    href={block.videoUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                  >
+                                    <span>Abrir no YouTube</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                </div>
+
+                                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-black">
+                                  <iframe
+                                    src={getEmbedYoutubeUrl(block.videoUrl) || ''}
+                                    title={block.videoTitle || block.title}
+                                    className="absolute inset-0 w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 2. SEÇÃO DE IMAGENS & PRINTS OPERACIONAIS */}
+                            {block.images && block.images.length > 0 && (
+                              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 shadow-2xs">
+                                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                  <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
+                                  <span>Telas, Prints & Evidências de Referência</span>
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {block.images.map(img => (
+                                    <div key={img.id} className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900">
+                                      <img src={img.url} alt={img.caption || 'Print do POP'} className="w-full h-40 object-cover hover:scale-105 transition-transform" />
+                                      {img.caption && (
+                                        <p className="p-2 text-[10px] text-slate-500 dark:text-slate-400 text-center border-t border-slate-200 dark:border-slate-800">
+                                          {img.caption}
+                                        </p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 3. TEXTO NORMATIVO DO POP (HTML / MARKDOWN FORMATADO) */}
+                            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-2xs">
+                              <div className="sop-content prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                                {block.sopMarkdown.includes('<') ? (
+                                  <div dangerouslySetInnerHTML={{ __html: block.sopMarkdown }} />
+                                ) : (
+                                  <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 4. BLOCO FALCONI: CAPACITAÇÃO & RECICLAGEM FORMAL */}
+                            <div className="bg-white dark:bg-[#101726] border border-slate-200/90 dark:border-[#1c273b] rounded-xl p-4 shadow-xs space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
+                                <div className="flex items-center gap-2">
+                                  <GraduationCap className="w-4 h-4 text-amber-500" />
+                                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                    Registro de Capacitação & Reciclagem (Método Falconi)
+                                  </h4>
+                                </div>
+                                <span className="text-[10px] text-slate-400">
+                                  Ciclo de Reciclagem: a cada {block.recyclingPeriodDays || 180} dias
+                                </span>
+                              </div>
+
+                              {/* Status Atual do Treinamento */}
+                              {latestTraining ? (
+                                <div className="p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="space-y-0.5">
+                                    <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Colaborador Capacitado: {latestTraining.userName}</span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                      Treinamento realizado em: <strong>{new Date(latestTraining.completedAt).toLocaleDateString('pt-BR')}</strong> • 
+                                      Válido até: <strong>{new Date(latestTraining.validUntil).toLocaleDateString('pt-BR')}</strong>
+                                    </p>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleConfirmTraining(block)}
+                                    disabled={isSubmittingTraining === block.id}
+                                    className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-[11px] font-semibold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-2xs self-start sm:self-auto shrink-0"
+                                  >
+                                    <RotateCcw className="w-3 h-3 text-amber-600" />
+                                    <span>Fazer Reciclagem Agora</span>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 text-xs space-y-2">
+                                  <p className="text-amber-800 dark:text-amber-300">
+                                    ⚠️ <strong>Treinamento Formal Não Registrado:</strong> Para conformidade de auditoria Falconi, o responsável pela execução deste POP deve declarar sua capacitação.
+                                  </p>
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                                    <input
+                                      type="text"
+                                      placeholder="Nome completo do assistente / operador..."
+                                      value={trainingOperatorName}
+                                      onChange={(e) => setTrainingOperatorName(e.target.value)}
+                                      className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleConfirmTraining(block)}
+                                      disabled={isSubmittingTraining === block.id}
+                                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 shrink-0"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Confirmar Treinamento Concluído</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {trainingSuccessId === block.id && (
+                                <div className="p-2.5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-xs font-medium animate-in fade-in flex items-center gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600" />
+                                  <span>Capacitação Falconi registrada e homologada com sucesso! Válida por 180 dias.</span>
+                                </div>
+                              )}
+
+                            </div>
+
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
               )}
-
-            </div>
-          );
-        })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal: Anexar Vídeo & Prints ao POP */}
@@ -1062,6 +1128,137 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Leitura Completa do POP (Estilo Modal de Políticas Corporativas) */}
+      {viewingPop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    {viewingPop.code || 'POP'} • {viewingPop.version || 'v1.0'}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    Homologado por: {viewingPop.homologatedBy || 'Diretoria Executiva'}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  {viewingPop.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingPop(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content Scrollable */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 dark:text-slate-200">
+              
+              {/* Box de Resumo da Rotina & Critério de Aceite */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                  Critério de Aceite & Entregável Obrigatório (Método Falconi):
+                </span>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {viewingPop.deliverable}
+                </p>
+                <div className="flex flex-wrap gap-4 pt-1 text-[11px] text-slate-500">
+                  <span>Janela de Horário: <strong>{viewingPop.timeWindow}</strong></span>
+                  <span>Periodicidade: <strong className="capitalize">{viewingPop.frequency}</strong></span>
+                  <span>Ciclo de Reciclagem: <strong>{viewingPop.recyclingPeriodDays || 180} dias</strong></span>
+                </div>
+              </div>
+
+              {/* Seção de Vídeo-Treinamento Prático se houver */}
+              {viewingPop.videoUrl && (
+                <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
+                  <div className="p-3 bg-slate-950 flex items-center justify-between text-xs text-white">
+                    <span className="font-semibold flex items-center gap-1.5">
+                      <Play className="w-4 h-4 text-red-500 fill-red-500" />
+                      {viewingPop.videoTitle || 'Vídeo de Demonstração Prática'}
+                    </span>
+                    <a
+                      href={viewingPop.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Abrir no YouTube</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="relative aspect-video w-full">
+                    <iframe
+                      src={getEmbedYoutubeUrl(viewingPop.videoUrl) || ''}
+                      title={viewingPop.videoTitle || viewingPop.title}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Prints e Telas de Apoio se houver */}
+              {viewingPop.images && viewingPop.images.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-blue-500" />
+                    <span>Telas & Evidências de Referência:</span>
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {viewingPop.images.map(img => (
+                      <div key={img.id} className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900">
+                        <img src={img.url} alt={img.caption || 'Print'} className="w-full max-h-56 object-cover" />
+                        {img.caption && (
+                          <p className="p-2 text-[10px] text-slate-500 text-center border-t border-slate-200 dark:border-slate-800">
+                            {img.caption}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Texto Normativo e Passo a Passo (HTML ou Markdown) */}
+              <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm">
+                {viewingPop.sopMarkdown.includes('<') ? (
+                  <div 
+                    className="leading-relaxed space-y-4 font-normal text-slate-800 dark:text-slate-200"
+                    dangerouslySetInnerHTML={{ __html: viewingPop.sopMarkdown }} 
+                  />
+                ) : (
+                  <ReactMarkdown>{viewingPop.sopMarkdown}</ReactMarkdown>
+                )}
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400">
+                Procedimento Operacional Auditado • RGR Facilities
+              </span>
+              <button
+                type="button"
+                onClick={() => setViewingPop(null)}
+                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+              >
+                Fechar Leitura
+              </button>
+            </div>
+
           </div>
         </div>
       )}
