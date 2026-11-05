@@ -2278,7 +2278,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           </div>
                         </td>
 
-                        {/* Natureza & Status de Conclusão da Pauta */}
+                        {/* Natureza */}
                         <td className="py-3 px-4 align-top">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border shrink-0 ${
@@ -2291,16 +2291,6 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                             {agenda.isFixed && (
                               <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 shrink-0">
                                 Fixa
-                              </span>
-                            )}
-                            {agenda.status === 'concluded' ? (
-                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0 inline-flex items-center gap-0.5">
-                                <Check className="w-2.5 h-2.5" />
-                                Concluída
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 shrink-0">
-                                Em aberto
                               </span>
                             )}
                           </div>
