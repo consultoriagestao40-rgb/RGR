@@ -37,7 +37,10 @@ import {
   Tag,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  Lock,
+  Unlock,
+  RotateCcw
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
@@ -59,6 +62,7 @@ export interface CommitteeAgendaItem {
   category?: string;
   votes: { [memberName: string]: VoteChoice };
   resolutionNote?: string;
+  status?: 'pending' | 'concluded';
 }
 
 export interface CommitteeSession {
@@ -69,6 +73,7 @@ export interface CommitteeSession {
   status: 'concluded' | 'in_progress' | 'scheduled';
   agendas: CommitteeAgendaItem[];
   minuteRecorded?: boolean;
+  minuteRecordedAt?: string;
   aiReport?: {
     transcript: string;
     summary: string;
@@ -250,7 +255,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   // Estado dos colegiados com persistência sincronizada
   const [committees, setCommittees] = useState<CommitteeConfig[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('rgr_committees_state_v2');
+      const saved = localStorage.getItem('rgr_committees_state_v3');
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -264,7 +269,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('rgr_committees_state_v2', JSON.stringify(committees));
+      localStorage.setItem('rgr_committees_state_v3', JSON.stringify(committees));
     }
   }, [committees]);
 
@@ -361,11 +366,35 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     });
   }, [committees, searchTerm, typeFilter]);
 
-  // Votação Nominal em uma pauta
+  // Votação Nominal em uma pauta (dentro da sessão ativa)
   const handleVote = (agendaId: string, voterName: string, choice: VoteChoice) => {
     if (!activeCommittee) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
+
+      // Se estiver em uma sessão específica, atualiza dentro de session.agendas
+      if (activeSessionId && com.sessions && com.sessions.length > 0) {
+        return {
+          ...com,
+          sessions: com.sessions.map(ses => {
+            if (ses.id !== activeSessionId) return ses;
+            const updatedAgendas = (ses.agendas || com.agendas).map(ag => {
+              if (ag.id !== agendaId) return ag;
+              const currentVote = ag.votes[voterName];
+              const newVotes = { ...ag.votes };
+              if (currentVote === choice) {
+                delete newVotes[voterName];
+              } else {
+                newVotes[voterName] = choice;
+              }
+              return { ...ag, votes: newVotes };
+            });
+            return { ...ses, agendas: updatedAgendas };
+          })
+        };
+      }
+
+      // Fallback para as pautas base do comitê
       return {
         ...com,
         agendas: com.agendas.map(ag => {
@@ -388,9 +417,95 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     if (!activeCommittee) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
+
+      if (activeSessionId && com.sessions && com.sessions.length > 0) {
+        return {
+          ...com,
+          sessions: com.sessions.map(ses => {
+            if (ses.id !== activeSessionId) return ses;
+            const updatedAgendas = (ses.agendas || com.agendas).map(ag => 
+              ag.id === agendaId ? { ...ag, resolutionNote: note } : ag
+            );
+            return { ...ses, agendas: updatedAgendas };
+          })
+        };
+      }
+
       return {
         ...com,
         agendas: com.agendas.map(ag => ag.id === agendaId ? { ...ag, resolutionNote: note } : ag)
+      };
+    }));
+  };
+
+  // Concluir Pauta Deliberativa / Parecer Homologado
+  const handleConcludeAgenda = (agendaId: string) => {
+    if (!activeCommittee) return;
+    setCommittees(prev => prev.map(com => {
+      if (com.id !== activeCommittee.id) return com;
+
+      if (activeSessionId && com.sessions && com.sessions.length > 0) {
+        return {
+          ...com,
+          sessions: com.sessions.map(ses => {
+            if (ses.id !== activeSessionId) return ses;
+            const updatedAgendas = (ses.agendas || com.agendas).map(ag => 
+              ag.id === agendaId ? { ...ag, status: 'concluded' as const } : ag
+            );
+            return { ...ses, agendas: updatedAgendas };
+          })
+        };
+      }
+
+      return {
+        ...com,
+        agendas: com.agendas.map(ag => ag.id === agendaId ? { ...ag, status: 'concluded' as const } : ag)
+      };
+    }));
+    setVotingAgendaId(null);
+  };
+
+  // Reabrir Pauta para Edição
+  const handleReopenAgenda = (agendaId: string) => {
+    if (!activeCommittee) return;
+    setCommittees(prev => prev.map(com => {
+      if (com.id !== activeCommittee.id) return com;
+
+      if (activeSessionId && com.sessions && com.sessions.length > 0) {
+        return {
+          ...com,
+          sessions: com.sessions.map(ses => {
+            if (ses.id !== activeSessionId) return ses;
+            const updatedAgendas = (ses.agendas || com.agendas).map(ag => 
+              ag.id === agendaId ? { ...ag, status: 'pending' as const } : ag
+            );
+            return { ...ses, agendas: updatedAgendas };
+          })
+        };
+      }
+
+      return {
+        ...com,
+        agendas: com.agendas.map(ag => ag.id === agendaId ? { ...ag, status: 'pending' as const } : ag)
+      };
+    }));
+  };
+
+  // Reabrir Sessão Concluída (permitir novas edições)
+  const handleReopenSession = (sessionId: string) => {
+    if (!activeCommittee) return;
+    setCommittees(prev => prev.map(com => {
+      if (com.id !== activeCommittee.id) return com;
+      return {
+        ...com,
+        sessions: (com.sessions || []).map(ses => {
+          if (ses.id !== sessionId) return ses;
+          return {
+            ...ses,
+            status: 'in_progress' as const,
+            minuteRecorded: false
+          };
+        })
       };
     }));
   };
@@ -401,6 +516,20 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     if (!confirm('Deseja excluir esta pauta da ordem do dia?')) return;
     setCommittees(prev => prev.map(com => {
       if (com.id !== activeCommittee.id) return com;
+
+      if (activeSessionId && com.sessions && com.sessions.length > 0) {
+        return {
+          ...com,
+          sessions: com.sessions.map(ses => {
+            if (ses.id !== activeSessionId) return ses;
+            return {
+              ...ses,
+              agendas: (ses.agendas || com.agendas).filter(ag => ag.id !== agendaId)
+            };
+          })
+        };
+      }
+
       return {
         ...com,
         agendas: com.agendas.filter(ag => ag.id !== agendaId)
@@ -459,8 +588,25 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       const voters = activeCommittee.members.filter(m => m.isVoter);
       const listeners = activeCommittee.members.filter(m => !m.isVoter);
 
+      // Pega a sessão ativa ou primeira sessão
+      const currentActiveSession = activeCommittee.sessions?.find(s => s.id === activeSessionId) ||
+        activeCommittee.sessions?.[0] || {
+          id: `ses-${activeCommittee.id}-01`,
+          sessionCode: `SES-01/${new Date().getFullYear()}`,
+          title: `Sessão Ordinária de Governança • ${formatDateBR(selectedDate)}`,
+          date: selectedDate,
+          status: 'concluded' as const,
+          agendas: activeCommittee.agendas,
+          minuteRecorded: true
+        };
+
+      const agendasToRecord = currentActiveSession.agendas && currentActiveSession.agendas.length > 0
+        ? currentActiveSession.agendas
+        : activeCommittee.agendas;
+
       let deliberationsText = `## ATA OFICIAL DE GOVERNANÇA • ${activeCommittee.name.toUpperCase()}\n`;
-      deliberationsText += `**Data da Sessão:** ${formatDateBR(selectedDate)}\n`;
+      deliberationsText += `**Código da Sessão:** ${currentActiveSession.sessionCode}\n`;
+      deliberationsText += `**Data da Sessão:** ${formatDateBR(currentActiveSession.date || selectedDate)}\n`;
       deliberationsText += `**Presidência:** ${activeCommittee.presidentName} (${activeCommittee.presidentRole})\n`;
       deliberationsText += `**Periodicidade:** ${activeCommittee.cadence}\n\n`;
 
@@ -476,7 +622,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         });
       }
       deliberationsText += `\n### 2. DELIBERAÇÕES E EXTRATO DE VOTAÇÃO NOMINAL:\n\n`;
-      activeCommittee.agendas.forEach((agenda, idx) => {
+      agendasToRecord.forEach((agenda, idx) => {
         deliberationsText += `PAUTA ${idx + 1}.0 [${agenda.isDeliberative ? 'DELIBERATIVA' : 'INFORMATIVA'}]: "${agenda.title}"\n`;
         if (agenda.description) {
           deliberationsText += `Contextualização: ${agenda.description}\n`;
@@ -500,28 +646,60 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
       });
 
       // Inclui Resumo e Diretrizes da IA se houver
-      if (activeCommittee.sessionAiReport?.summary) {
+      const activeAiReport = currentActiveSession.aiReport || activeCommittee.sessionAiReport;
+      if (activeAiReport?.summary) {
         deliberationsText += `\n### 3. RESUMO EXECUTIVO & TRANSCRIÇÃO (ASSISTENTE DE IA):\n`;
-        deliberationsText += `${activeCommittee.sessionAiReport.summary}\n\n`;
-        if (activeCommittee.sessionAiReport.keyDecisions && activeCommittee.sessionAiReport.keyDecisions.length > 0) {
+        deliberationsText += `${activeAiReport.summary}\n\n`;
+        if (activeAiReport.keyDecisions && activeAiReport.keyDecisions.length > 0) {
           deliberationsText += `**Diretrizes Homologadas pela IA:**\n`;
-          activeCommittee.sessionAiReport.keyDecisions.forEach(d => {
+          activeAiReport.keyDecisions.forEach(d => {
             deliberationsText += `  - ${d}\n`;
           });
         }
       }
 
+      // 1. Marca no estado a sessão como CONCLUÍDA e Ata Lavrada
+      // Também conclui todas as pautas da sessão
+      const concludedAgendas = agendasToRecord.map(ag => ({ ...ag, status: 'concluded' as const }));
+
+      setCommittees(prev => prev.map(c => {
+        if (c.id !== activeCommittee.id) return c;
+
+        // Se o comitê ainda não tinha lista de sessions, inicializa com a sessão atual lavrada
+        const existingSessions = c.sessions && c.sessions.length > 0 ? c.sessions : [currentActiveSession];
+
+        const updatedSessions = existingSessions.map(ses => {
+          if (ses.id === currentActiveSession.id) {
+            return {
+              ...ses,
+              status: 'concluded' as const,
+              minuteRecorded: true,
+              minuteRecordedAt: new Date().toISOString(),
+              agendas: concludedAgendas
+            };
+          }
+          return ses;
+        });
+
+        return {
+          ...c,
+          sessions: updatedSessions,
+          agendas: concludedAgendas
+        };
+      }));
+
+      // 2. Persiste Ata no backend API
       const res = await fetch('/api/minutes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ritualId: `col-${activeCommittee.id}`,
           roleId: roles[0]?.id || 'role-ceo-01',
-          date: selectedDate,
-          title: `Ata da Sessão Oficial • ${activeCommittee.name}`,
+          date: currentActiveSession.date || selectedDate,
+          title: `Ata da Sessão Oficial • ${currentActiveSession.sessionCode} • ${activeCommittee.name}`,
           deliberations: deliberationsText,
-          agendaCheckedCount: activeCommittee.agendas.length,
-          agendaTotalCount: activeCommittee.agendas.length,
+          agendaCheckedCount: agendasToRecord.length,
+          agendaTotalCount: agendasToRecord.length,
           signedBy: `${activeCommittee.presidentName} (${activeCommittee.presidentRole})`,
           participants: activeCommittee.members.map(m => `${m.name} (${m.roleDescription})`)
         })
@@ -531,7 +709,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         setMinuteSuccessMessage(true);
         setTimeout(() => setMinuteSuccessMessage(false), 4000);
       } else {
-        alert('Ata registrada localmente com sucesso!');
+        setMinuteSuccessMessage(true);
+        setTimeout(() => setMinuteSuccessMessage(false), 4000);
       }
     } catch (err) {
       console.error('Erro ao lavrar ata:', err);
@@ -1474,8 +1653,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const voters = activeCommittee.members.filter(m => m.isVoter);
   const listeners = activeCommittee.members.filter(m => !m.isVoter);
 
-  // Histórico de sessões do comitê (se não tiver sessions cadastradas, cria sessões base padrão)
-  const committeeSessions: CommitteeSession[] = activeCommittee.sessions && activeCommittee.sessions.length > 0
+  // Histórico de sessões do comitê com ordenação decrescente:
+  // As sessões mais recentes / em andamento ficam no topo, e as mais antigas / finalizadas ficam abaixo.
+  const rawSessions = activeCommittee.sessions && activeCommittee.sessions.length > 0
     ? activeCommittee.sessions
     : [
         {
@@ -1483,12 +1663,25 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           sessionCode: `SES-01/${new Date().getFullYear()}`,
           title: `Sessão Ordinária de Governança • ${formatDateBR(selectedDate)}`,
           date: selectedDate,
-          status: 'concluded',
+          status: 'in_progress' as const,
           agendas: activeCommittee.agendas,
-          minuteRecorded: true,
+          minuteRecorded: false,
           aiReport: activeCommittee.sessionAiReport
         }
       ];
+
+  const committeeSessions: CommitteeSession[] = useMemo(() => {
+    return [...rawSessions].sort((a, b) => {
+      // 1. Sessões em andamento/abertas têm prioridade no topo
+      const aConcluded = a.status === 'concluded' || a.minuteRecorded;
+      const bConcluded = b.status === 'concluded' || b.minuteRecorded;
+      if (!aConcluded && bConcluded) return -1;
+      if (aConcluded && !bConcluded) return 1;
+
+      // 2. Ordenação por data decrescente (mais recente primeiro)
+      return (b.date || '').localeCompare(a.date || '');
+    });
+  }, [rawSessions]);
 
   const currentSession = committeeSessions.find(s => s.id === activeSessionId) || committeeSessions[0];
 
@@ -1521,19 +1714,29 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               type="button"
               onClick={() => {
                 const newCode = `SES-0${committeeSessions.length + 1}/${new Date().getFullYear()}`;
+                // Copia as pautas fixas ou padrão do comitê com status 'pending' e votos limpos para a nova sessão
+                const freshAgendas = (activeCommittee.agendas || []).map(ag => ({
+                  ...ag,
+                  id: `ag-ses-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                  votes: {},
+                  resolutionNote: '',
+                  status: 'pending' as const
+                }));
+
                 const newSes: CommitteeSession = {
                   id: `ses-${Date.now()}`,
                   sessionCode: newCode,
-                  title: `Sessão Extraordinária • ${formatDateBR(selectedDate)}`,
+                  title: `Sessão Ordinária • ${formatDateBR(selectedDate)}`,
                   date: selectedDate,
                   status: 'in_progress',
-                  agendas: [
+                  agendas: freshAgendas.length > 0 ? freshAgendas : [
                     {
                       id: `ag-new-${Date.now()}`,
                       title: 'Apreciação das Matérias em Pauta do Período',
                       isDeliberative: true,
                       isFixed: false,
-                      votes: {}
+                      votes: {},
+                      status: 'pending' as const
                     }
                   ]
                 };
@@ -1541,7 +1744,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   if (c.id !== activeCommittee.id) return c;
                   return {
                     ...c,
-                    sessions: [newSes, ...(c.sessions || [committeeSessions[0]])]
+                    sessions: [newSes, ...(c.sessions || [rawSessions[0]])]
                   };
                 }));
                 setActiveSessionId(newSes.id);
@@ -1716,20 +1919,39 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           )}
                         </td>
 
-                        {/* Ações - Botão idêntico ao "Sessões >" da tabela principal */}
+                        {/* Ações */}
                         <td className="py-3.5 px-4 align-middle text-right">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveSessionId(session.id);
-                            }}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-colors shadow-xs cursor-pointer shrink-0"
-                            title="Acessar as pautas e sala desta sessão"
-                          >
-                            <span>Acessar</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="inline-flex items-center gap-1.5 justify-end">
+                            {isConcluded && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Deseja reabrir a sessão ${session.sessionCode} para novas deliberações e edições de pauta?`)) {
+                                    handleReopenSession(session.id);
+                                  }
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                                title="Reabrir sessão para alterações"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Reabrir</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSessionId(session.id);
+                              }}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-colors shadow-xs cursor-pointer shrink-0"
+                              title="Acessar as pautas e sala desta sessão"
+                            >
+                              <span>Acessar</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1747,6 +1969,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   // CENÁRIO 3: DETALHE DA SESSÃO SELECIONADA (NÍVEL 3 - PAUTAS & DELIBERAÇÕES)
   // Ordem do dia linear, votações nominais e Gravador de IA
   // =========================================================================
+  const isSessionLocked = currentSession.status === 'concluded' || currentSession.minuteRecorded;
   const sessionAgendas = currentSession.agendas || activeCommittee.agendas;
   const filteredAgendas = sessionAgendas.filter(ag => {
     if (agendaFilter === 'deliberative') return ag.isDeliberative;
@@ -1808,15 +2031,38 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             <span>Configurar Assentos / Votantes</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleGenerateMinute}
-            disabled={isSavingMinute}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
-          >
-            <FileCheck2 className="w-4 h-4" />
-            <span>{isSavingMinute ? 'Lavrando Ata...' : 'Lavrar Ata da Sessão'}</span>
-          </button>
+          {/* Status / Ação da Sessão: Lavrar Ata ou Reabrir Sessão */}
+          {currentSession.status === 'concluded' || currentSession.minuteRecorded ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Ata Lavrada (Sessão Concluída)</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Deseja reabrir esta sessão para novas edições de pauta e deliberações?')) {
+                    handleReopenSession(currentSession.id);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                title="Reabrir sessão para alterações"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                <span>Reabrir Sessão</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleGenerateMinute}
+              disabled={isSavingMinute}
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              <FileCheck2 className="w-4 h-4" />
+              <span>{isSavingMinute ? 'Lavrando Ata...' : 'Lavrar Ata da Sessão'}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1969,21 +2215,23 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setNewAgendaTitle('');
-              setNewAgendaDesc('');
-              setNewAgendaCategory('Geral');
-              setNewAgendaIsDeliberative(true);
-              setNewAgendaIsFixed(false);
-              setIsAddAgendaModalOpen(true);
-            }}
-            className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Adicionar Pauta nesta Sessão</span>
-          </button>
+          {!(currentSession.status === 'concluded' || currentSession.minuteRecorded) && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewAgendaTitle('');
+                setNewAgendaDesc('');
+                setNewAgendaCategory('Geral');
+                setNewAgendaIsDeliberative(true);
+                setNewAgendaIsFixed(false);
+                setIsAddAgendaModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Adicionar Pauta nesta Sessão</span>
+            </button>
+          )}
         </div>
 
         {/* Tabela Corporativa de Pautas & Ordem do Dia */}
@@ -2032,7 +2280,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           </div>
                         </td>
 
-                        {/* Natureza */}
+                        {/* Natureza & Status de Conclusão da Pauta */}
                         <td className="py-3 px-4 align-top">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border shrink-0 ${
@@ -2045,6 +2293,16 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                             {agenda.isFixed && (
                               <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 shrink-0">
                                 Fixa
+                              </span>
+                            )}
+                            {agenda.status === 'concluded' ? (
+                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0 inline-flex items-center gap-0.5">
+                                <Check className="w-2.5 h-2.5" />
+                                Concluída
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 shrink-0">
+                                Em aberto
                               </span>
                             )}
                           </div>
@@ -2068,7 +2326,37 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         {/* Ações e Votação */}
                         <td className="py-3 px-4 align-top text-right">
                           <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                            {agenda.isDeliberative ? (
+                            {isSessionLocked ? (
+                              <button
+                                type="button"
+                                onClick={() => setVotingAgendaId(agenda.id)}
+                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 whitespace-nowrap"
+                                title="Visualizar extrato da pauta arquivada"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                                <span>Ver Parecer</span>
+                              </button>
+                            ) : agenda.status === 'concluded' ? (
+                              <div className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setVotingAgendaId(agenda.id)}
+                                  className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors border border-emerald-300 dark:border-emerald-800 cursor-pointer whitespace-nowrap"
+                                  title="Pauta concluída. Clique para revisar ou alterar parecer"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Concluída</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleReopenAgenda(agenda.id)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer transition-colors"
+                                  title="Reabrir pauta para edição"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : agenda.isDeliberative ? (
                               <button
                                 type="button"
                                 onClick={() => setVotingAgendaId(agenda.id)}
@@ -2090,14 +2378,16 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               </button>
                             )}
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteAgenda(agenda.id)}
-                              className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
-                              title="Excluir Pauta"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {!isSessionLocked && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAgenda(agenda.id)}
+                                className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
+                                title="Excluir Pauta"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -2272,23 +2562,50 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 </label>
                 <textarea
                   rows={3}
+                  disabled={isSessionLocked}
                   placeholder="Registre formalmente a resolução aprovada, exigências da mesa ou diretrizes..."
                   value={selectedVotingAgenda.resolutionNote || ''}
                   onChange={(e) => handleUpdateResolution(selectedVotingAgenda.id, e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-60 disabled:bg-slate-50"
                 />
               </div>
             </div>
 
             {/* Rodapé do Modal */}
-            <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setVotingAgendaId(null)}
-                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
-              >
-                Concluir & Salvar
-              </button>
+            <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+              <div>
+                {selectedVotingAgenda.status === 'concluded' ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Pauta Concluída & Homologada</span>
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-slate-400 italic">
+                    Clique em Concluir Pauta para registrar e fechar a matéria.
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVotingAgendaId(null)}
+                  className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                >
+                  Fechar
+                </button>
+
+                {!isSessionLocked && (
+                  <button
+                    type="button"
+                    onClick={() => handleConcludeAgenda(selectedVotingAgenda.id)}
+                    className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <span>Concluir Pauta</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -2595,10 +2912,26 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     category: newAgendaCategory.trim() || 'Geral',
                     isDeliberative: newAgendaIsDeliberative,
                     isFixed: newAgendaIsFixed,
-                    votes: {}
+                    votes: {},
+                    status: 'pending'
                   };
                   setCommittees(prev => prev.map(c => {
                     if (c.id !== activeCommittee.id) return c;
+
+                    // Se estiver em uma sessão ativa, insere a nova pauta nela
+                    if (activeSessionId && c.sessions && c.sessions.length > 0) {
+                      return {
+                        ...c,
+                        sessions: c.sessions.map(ses => {
+                          if (ses.id !== activeSessionId) return ses;
+                          return {
+                            ...ses,
+                            agendas: [...(ses.agendas || c.agendas), newAg]
+                          };
+                        })
+                      };
+                    }
+
                     return { ...c, agendas: [...c.agendas, newAg] };
                   }));
                   setIsAddAgendaModalOpen(false);
