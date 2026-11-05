@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { CorporatePolicy, OperationalRole, SystemUser } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
+import { RichTextEditor } from './RichTextEditor';
 
 interface CorporatePoliciesTabProps {
   currentUser?: SystemUser | null;
@@ -199,23 +200,25 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
     }
   };
 
-  // WORKFLOW 1: Enviar Minuta para Pauta do Colegiado
+  // WORKFLOW 1: Enviar Minuta para Pauta do Colegiado (injeta a pauta real no Comitê)
   const handleSubmitToCommittee = async (policy: CorporatePolicy) => {
-    const targetBodyName = policy.targetApproverBody === 'COM-FIN'
+    const targetBodyCode = policy.targetApproverBody || 'CONS-ADM';
+    const targetBodyName = targetBodyCode === 'COM-FIN'
       ? 'Comitê de Resultados & Finanças (COM-FIN)'
-      : policy.targetApproverBody === 'COM-CLI'
+      : targetBodyCode === 'COM-CLI'
       ? 'Comitê de Gestão de Clientes & Qualidade (COM-CLI)'
       : 'Conselho de Administração (CONS-ADM)';
 
     if (!confirm(`Deseja protocolar e submeter a proposta "${policy.code} - ${policy.title}" para a ordem do dia do colegiado [${targetBodyName}]?`)) return;
 
     try {
+      const today = new Date().toISOString().slice(0, 10);
       const res = await fetch(`/api/policies/${policy.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: 'in_review',
-          submittedAt: new Date().toISOString().slice(0, 10),
+          submittedAt: today,
           homologatedBy: targetBodyName
         })
       });
@@ -223,6 +226,44 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       if (res.ok) {
         const updated = await res.json();
         setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+
+        // Injeta automaticamente como Pauta Deliberativa no Colegiado salvo no localStorage
+        try {
+          const savedCommittees = localStorage.getItem('rgr_committees_state_v3');
+          if (savedCommittees) {
+            const parsed = JSON.parse(savedCommittees);
+            const targetCom = parsed.find((c: any) => c.code === targetBodyCode || c.id === targetBodyCode);
+            if (targetCom) {
+              const newAgendaItem = {
+                id: `agenda-pol-${policy.id}`,
+                title: `Apreciação e Homologação da Norma: ${policy.code} - ${policy.title}`,
+                description: `Proposta de Política Corporativa submetida por ${policy.authorName || 'Diretoria'}.\n\nSíntese: ${policy.description}`,
+                isFixed: false,
+                isDeliberative: true,
+                category: 'Governança & Políticas',
+                votes: {},
+                status: 'pending'
+              };
+
+              // Adiciona na lista base do comitê
+              targetCom.agendas = [newAgendaItem, ...(targetCom.agendas || [])];
+
+              // Se houver sessões em aberto / agendadas, adiciona na sessão ativa mais recente
+              if (targetCom.sessions && targetCom.sessions.length > 0) {
+                const latestSession = targetCom.sessions[0];
+                if (latestSession && latestSession.status !== 'concluded') {
+                  latestSession.agendas = [newAgendaItem, ...(latestSession.agendas || [])];
+                }
+              }
+
+              localStorage.setItem('rgr_committees_state_v3', JSON.stringify(parsed));
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Erro ao sincronizar pauta com o comitê:', storageErr);
+        }
+
+        alert(`✅ Proposta submetida com sucesso!\nUma pauta deliberativa foi incluída na Ordem do Dia de [${targetBodyName}].`);
       }
     } catch (err) {
       console.error('Erro ao submeter política:', err);
@@ -746,9 +787,13 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                 </div>
               )}
 
-              {/* Texto Normativo Formatado em Markdown */}
+              {/* Texto Normativo Formatado em HTML / Markdown */}
               <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm">
-                <ReactMarkdown>{viewingPolicy.contentMarkdown}</ReactMarkdown>
+                {viewingPolicy.contentMarkdown.includes('<') ? (
+                  <div dangerouslySetInnerHTML={{ __html: viewingPolicy.contentMarkdown }} />
+                ) : (
+                  <ReactMarkdown>{viewingPolicy.contentMarkdown}</ReactMarkdown>
+                )}
               </div>
 
             </div>
@@ -880,42 +925,62 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                 />
               </div>
 
-              {/* Anexar Imagens / Fotos */}
+              {/* Anexar Imagens / Fotos de Apoio */}
               <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2">
-                <label className="text-slate-700 dark:text-slate-300 font-semibold block flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Anexar Foto, Diagrama ou Modelo Ilustrativo (URL da Imagem)</span>
+                <label className="text-slate-700 dark:text-slate-300 font-semibold block flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Upload Real de Fotos & Anexos (PNG, JPG, PDF)</span>
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Selecione direto do seu computador
+                  </span>
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="Cole o link da imagem (ex: https://...)"
-                    className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
-                  />
-                  <input
-                    type="text"
-                    value={formData.imageCaption}
-                    onChange={(e) => setFormData({ ...formData, imageCaption: e.target.value })}
-                    placeholder="Legenda da imagem..."
-                    className="w-1/3 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-semibold cursor-pointer"
-                  >
-                    Adicionar
-                  </button>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <label className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 text-xs flex items-center justify-center gap-2 cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-colors">
+                    <Upload className="w-4 h-4 text-slate-400" />
+                    <span>Clique para escolher uma imagem do seu dispositivo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const base64 = event.target?.result as string;
+                          if (base64) {
+                            setImagesList(prev => [
+                              ...prev,
+                              { id: `img-${Date.now()}`, url: base64, caption: file.name }
+                            ]);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                        e.target.value = '';
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={formData.imageCaption}
+                      onChange={(e) => setFormData({ ...formData, imageCaption: e.target.value })}
+                      placeholder="Legenda da imagem..."
+                      className="w-44 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
                 </div>
 
                 {imagesList.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {imagesList.map(img => (
                       <div key={img.id} className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-lg">
-                        <ImageIcon className="w-3 h-3 text-blue-500 shrink-0" />
-                        <span className="text-[10px] truncate max-w-[120px]">{img.caption || img.url}</span>
+                        <img src={img.url} alt="Miniatura" className="w-5 h-5 rounded object-cover border border-slate-300" />
+                        <span className="text-[10px] truncate max-w-[120px]">{img.caption || 'Imagem'}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(img.id)}
@@ -929,14 +994,19 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                 )}
               </div>
 
-              <div>
-                <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Conteúdo Normativo Completo (Markdown)</label>
-                <textarea
-                  rows={8}
+              {/* Editor Rico WYSIWYG com Formatação e Upload Real de Fotos */}
+              <div className="space-y-1">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold block flex items-center justify-between">
+                  <span>Conteúdo Normativo da Política (Texto Oficial Formatado)</span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Negrito, Títulos, Fontes, Alinhamento, Cores e Imagens
+                  </span>
+                </label>
+                <RichTextEditor
                   value={formData.contentMarkdown}
-                  onChange={(e) => setFormData({ ...formData, contentMarkdown: e.target.value })}
-                  placeholder="Redija o texto oficial com seções, artigos, diretrizes e tabelas..."
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono text-xs"
+                  onChange={(html) => setFormData({ ...formData, contentMarkdown: html })}
+                  placeholder="Redija o texto oficial com artigos, regras, alíneas e insira imagens reais..."
+                  minHeight="320px"
                 />
               </div>
 
