@@ -20,7 +20,9 @@ import {
   Upload, 
   Undo, 
   Redo,
-  RemoveFormatting
+  Image as ImageIcon,
+  LayoutGrid,
+  Columns
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -33,8 +35,8 @@ interface RichTextEditorProps {
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
-  placeholder = 'Redija o texto oficial da política aqui...',
-  minHeight = '280px'
+  placeholder = 'Redija o texto oficial com passos, regras e fotos posicionadas onde desejar...',
+  minHeight = '360px'
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +44,6 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Sincroniza valor inicial
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
-      // Se for markdown ou texto puro sem tags HTML, converte quebras de linha para HTML
       if (value && !value.includes('<p>') && !value.includes('<div>') && !value.includes('<h1>')) {
         const formatted = value
           .replace(/### (.*?)\n/g, '<h3>$1</h3>')
@@ -66,13 +67,23 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
+  const insertHtmlAtCursor = (html: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    document.execCommand('insertHTML', false, html);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
   const handleInput = () => {
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
   };
 
-  // Upload real de arquivo de imagem do computador e inserção inline no cursor
+  // Upload real de arquivo de imagem do computador e inserção onde o cursor estiver
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,37 +97,90 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     reader.onload = (event) => {
       const base64Url = event.target?.result as string;
       if (base64Url && editorRef.current) {
-        // Cria elemento de imagem estilizado inline que se encaixa no fluxo do texto
+        // Bloco de imagem flexível com controles
         const imgHtml = `
-          <div style="margin: 16px 0; text-align: center;">
-            <img src="${base64Url}" alt="${file.name}" style="max-width: 100%; max-height: 480px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: inline-block;" />
-            <p style="font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic;">Evidência / Imagem Ilustrativa</p>
+          <div class="rgr-image-block" style="margin: 18px 0; text-align: center;">
+            <img src="${base64Url}" alt="${file.name}" style="max-width: 100%; max-height: 480px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: inline-block;" />
+            <p style="font-size: 11px; color: #64748b; margin-top: 6px; font-style: italic;">${file.name}</p>
           </div>
           <p><br></p>
         `;
-        document.execCommand('insertHTML', false, imgHtml);
-        if (editorRef.current) {
-          onChange(editorRef.current.innerHTML);
-        }
+        insertHtmlAtCursor(imgHtml);
       }
     };
     reader.readAsDataURL(file);
 
-    // Reseta o input para permitir selecionar o mesmo arquivo novamente se quiser
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Inserir Layout: Foto na Esquerda + Texto na Direita (Passo a Passo)
+  const insertPhotoLeftLayout = () => {
+    const layoutHtml = `
+      <div style="display: flex; flex-direction: row; gap: 20px; align-items: flex-start; margin: 20px 0; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
+        <div style="flex: 1; min-width: 200px; text-align: center;">
+          <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; background: #ffffff; color: #64748b; font-size: 12px;">
+            📸 <strong>[Clique aqui e use o botão 'Inserir Foto' acima para colocar a foto aqui]</strong>
+          </div>
+        </div>
+        <div style="flex: 1.5; min-width: 240px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #0f172a; font-weight: bold;">Passo 1: Descrição da Etapa</h4>
+          <p style="margin: 0 0 8px 0; font-size: 13px; color: #334155; line-height: 1.5;">Explique detalhadamente o que o operador deve fazer ao visualizar esta tela...</p>
+          <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #475569;">
+            <li>Verificação obrigatória 1</li>
+            <li>Critério de aceite 2</li>
+          </ul>
+        </div>
+      </div>
+      <p><br></p>
+    `;
+    insertHtmlAtCursor(layoutHtml);
+  };
+
+  // Inserir Layout: Texto na Esquerda + Foto na Direita
+  const insertPhotoRightLayout = () => {
+    const layoutHtml = `
+      <div style="display: flex; flex-direction: row; gap: 20px; align-items: flex-start; margin: 20px 0; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
+        <div style="flex: 1.5; min-width: 240px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #0f172a; font-weight: bold;">Passo 2: Ação no Sistema</h4>
+          <p style="margin: 0 0 8px 0; font-size: 13px; color: #334155; line-height: 1.5;">Descreva os botões a serem clicados ou campos preenchidos...</p>
+        </div>
+        <div style="flex: 1; min-width: 200px; text-align: center;">
+          <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; background: #ffffff; color: #64748b; font-size: 12px;">
+            📸 <strong>[Clique aqui e use o botão 'Inserir Foto' acima]</strong>
+          </div>
+        </div>
+      </div>
+      <p><br></p>
+    `;
+    insertHtmlAtCursor(layoutHtml);
+  };
+
+  // Inserir Layout: Cartão de Passo Normal (Foto Centralizada + Texto Embaixo)
+  const insertStepCard = () => {
+    const layoutHtml = `
+      <div style="margin: 20px 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #0f172a; font-weight: bold;">Etapa / Procedimento:</h4>
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #475569;">Descreva a instrução para o colaborador...</p>
+        <div style="text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px;">
+          <em>[Posicione o cursor aqui e insira a foto correspondente a esta etapa]</em>
+        </div>
+      </div>
+      <p><br></p>
+    `;
+    insertHtmlAtCursor(layoutHtml);
   };
 
   return (
     <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-xs focus-within:ring-1 focus-within:ring-blue-500 transition-all">
       
       {/* Barra de Ferramentas WYSIWYG de Alto Padrão */}
-      <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+      <div className="flex flex-wrap items-center gap-1.5 p-2 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
         
         {/* Desfazer / Refazer */}
         <button
           type="button"
           onClick={() => execCommand('undo')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-pointer"
           title="Desfazer (Ctrl+Z)"
         >
           <Undo className="w-3.5 h-3.5" />
@@ -124,13 +188,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('redo')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-pointer"
           title="Refazer (Ctrl+Y)"
         >
           <Redo className="w-3.5 h-3.5" />
         </button>
 
-        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
         {/* Formatação de Títulos / Cabeçalhos */}
         <select
@@ -148,26 +212,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <option value="h3">Título 3 (Subseção)</option>
         </select>
 
-        {/* Seletor de Família de Fonte */}
-        <select
-          onChange={(e) => execCommand('fontName', e.target.value)}
-          className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-800 dark:text-slate-200 cursor-pointer"
-          defaultValue="Inter, sans-serif"
-        >
-          <option value="Inter, sans-serif">Padrão (Inter)</option>
-          <option value="Arial, sans-serif">Arial</option>
-          <option value="'Times New Roman', serif">Times New Roman</option>
-          <option value="'Courier New', monospace">Courier (Mono)</option>
-          <option value="Georgia, serif">Georgia</option>
-        </select>
-
         {/* Seletor de Tamanho */}
         <select
           onChange={(e) => execCommand('fontSize', e.target.value)}
           className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-800 dark:text-slate-200 cursor-pointer"
           defaultValue="3"
         >
-          <option value="1">Muito Pequeno (10px)</option>
           <option value="2">Pequeno (12px)</option>
           <option value="3">Médio (14px Padrão)</option>
           <option value="4">Grande (16px)</option>
@@ -175,13 +225,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <option value="6">Título (24px)</option>
         </select>
 
-        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
-        {/* Estilos Básicos: Negrito, Itálico, Sublinhado, Riscado */}
+        {/* Estilos Básicos: Negrito, Itálico, Sublinhado */}
         <button
           type="button"
           onClick={() => execCommand('bold')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 font-bold"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 font-bold cursor-pointer"
           title="Negrito (Ctrl+B)"
         >
           <Bold className="w-3.5 h-3.5" />
@@ -189,7 +239,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('italic')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 italic"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 italic cursor-pointer"
           title="Itálico (Ctrl+I)"
         >
           <Italic className="w-3.5 h-3.5" />
@@ -197,27 +247,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('underline')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 underline"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 underline cursor-pointer"
           title="Sublinhado (Ctrl+U)"
         >
           <Underline className="w-3.5 h-3.5" />
         </button>
-        <button
-          type="button"
-          onClick={() => execCommand('strikeThrough')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 line-through"
-          title="Riscado"
-        >
-          <Strikethrough className="w-3.5 h-3.5" />
-        </button>
 
-        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
         {/* Alinhamento: Esquerda, Centro, Direita, Justificado */}
         <button
           type="button"
           onClick={() => execCommand('justifyLeft')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           title="Alinhar à Esquerda"
         >
           <AlignLeft className="w-3.5 h-3.5" />
@@ -225,7 +267,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyCenter')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           title="Centralizar"
         >
           <AlignCenter className="w-3.5 h-3.5" />
@@ -233,7 +275,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyRight')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           title="Alinhar à Direita"
         >
           <AlignRight className="w-3.5 h-3.5" />
@@ -241,54 +283,77 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyFull')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           title="Justificar"
         >
           <AlignJustify className="w-3.5 h-3.5" />
         </button>
 
-        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
         {/* Listas & Marcadores */}
         <button
           type="button"
           onClick={() => execCommand('insertUnorderedList')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
-          title="Lista com Marcadores"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+          title="Lista com Marcadores (Bullets)"
         >
           <List className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={() => execCommand('insertOrderedList')}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           title="Lista Numerada"
         >
           <ListOrdered className="w-3.5 h-3.5" />
         </button>
 
-        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+        <span className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
-        {/* Cores do Texto & Fundo */}
-        <div className="flex items-center gap-1" title="Cor do Texto">
-          <Palette className="w-3.5 h-3.5 text-slate-500" />
-          <input
-            type="color"
-            onChange={(e) => execCommand('foreColor', e.target.value)}
-            defaultValue="#0f172a"
-            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
-          />
+        {/* Layouts Pré-formatados de POP (Foto + Texto Lado a Lado ou Abaixo) */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={insertPhotoLeftLayout}
+            className="px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors flex items-center gap-1 cursor-pointer"
+            title="Inserir Bloco: Foto na Esquerda + Texto na Direita"
+          >
+            <Columns className="w-3 h-3 text-blue-500" />
+            <span>Foto Esq.</span>
+          </button>
+          <button
+            type="button"
+            onClick={insertPhotoRightLayout}
+            className="px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors flex items-center gap-1 cursor-pointer"
+            title="Inserir Bloco: Texto na Esquerda + Foto na Direita"
+          >
+            <Columns className="w-3 h-3 text-purple-500" />
+            <span>Foto Dir.</span>
+          </button>
+          <button
+            type="button"
+            onClick={insertStepCard}
+            className="px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors flex items-center gap-1 cursor-pointer"
+            title="Inserir Bloco: Cartão de Passo Inteiro"
+          >
+            <LayoutGrid className="w-3 h-3 text-emerald-500" />
+            <span>Cartão Passo</span>
+          </button>
         </div>
 
-        {/* Botão de Upload Real de Imagem */}
+        {/* Botão de Upload Real de Imagem (Insere exatamente no Cursor) */}
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1 px-2.5 py-1 rounded bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold cursor-pointer border border-blue-200 dark:border-blue-800 transition-colors ml-auto"
-          title="Fazer Upload de Foto/Imagem do Computador"
+          onClick={() => {
+            if (editorRef.current) editorRef.current.focus();
+            fileInputRef.current?.click();
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors ml-auto"
+          title="Escolha uma imagem do seu computador para inserir exatamente onde o cursor estiver"
         >
           <Upload className="w-3.5 h-3.5" />
-          <span>Upload de Imagem Real</span>
+          <span>Inserir Foto no Cursor</span>
         </button>
         <input
           ref={fileInputRef}
@@ -300,13 +365,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       </div>
 
-      {/* Área Editável WYSIWYG */}
+      {/* Área Editável WYSIWYG de Alta Precisão */}
       <div
         ref={editorRef}
         contentEditable
         onInput={handleInput}
         style={{ minHeight }}
-        className="p-4 focus:outline-none text-slate-900 dark:text-slate-100 prose dark:prose-invert max-w-none text-sm leading-relaxed overflow-y-auto"
+        className="p-5 focus:outline-none text-slate-900 dark:text-slate-100 prose dark:prose-invert max-w-none text-sm leading-relaxed overflow-y-auto"
         data-placeholder={placeholder}
       />
     </div>

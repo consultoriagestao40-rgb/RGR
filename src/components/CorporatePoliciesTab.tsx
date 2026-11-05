@@ -765,37 +765,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                 </div>
               </div>
 
-              {/* Imagens / Fotos e Evidências Vinculadas */}
-              {viewingPolicy.images && viewingPolicy.images.length > 0 && (
-                <div className="space-y-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800">
-                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-blue-500" />
-                    <span>Evidências, Fotos e Diagramas Anexados</span>
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {viewingPolicy.images.map(img => (
-                      <div key={img.id} className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                        <img 
-                          src={img.url} 
-                          alt={img.caption || 'Foto anexada'} 
-                          className="w-full max-h-72 object-contain bg-slate-100 dark:bg-slate-950 p-1"
-                        />
-                        {img.caption && (
-                          <p className="p-2 text-xs text-slate-600 dark:text-slate-300 text-center font-medium border-t border-slate-100 dark:border-slate-800">
-                            {img.caption}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Texto Normativo Formatado em HTML / Markdown */}
+              {/* Texto Normativo Formatado em HTML / Markdown (com Fotos posicionadas no fluxo) */}
               <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm">
                 {viewingPolicy.contentMarkdown.includes('<') ? (
                   <div 
-                    className="leading-relaxed space-y-3"
+                    className="leading-relaxed space-y-4 font-normal text-slate-800 dark:text-slate-200"
                     dangerouslySetInnerHTML={{ __html: viewingPolicy.contentMarkdown }} 
                   />
                 ) : (
