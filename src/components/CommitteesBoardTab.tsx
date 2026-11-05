@@ -802,17 +802,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
                   <th className="py-3.5 px-4">Órgão Colegiado & Sigla</th>
                   <th className="py-3.5 px-4">Presidência</th>
-                  <th className="py-3.5 px-4 text-center">Frequência / Cadência</th>
-                  <th className="py-3.5 px-4 text-center">Integrantes (Mesa)</th>
-                  <th className="py-3.5 px-4 text-center">Sessões Realizadas</th>
+                  <th className="py-3.5 px-4 text-center">Frequência</th>
                   <th className="py-3.5 px-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
                 {filteredCommittees.map(com => {
                   const isBoard = com.type === 'board';
-                  const voters = com.members.filter(m => m.isVoter);
-                  const sessionsCount = (com.sessions?.length || 0) + 1; // sessões gravadas ou ciclo ativo
 
                   return (
                     <tr 
@@ -822,7 +818,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       }`}
                     >
                       {/* Sigla e Nome */}
-                      <td className="py-3 px-4 align-middle">
+                      <td className="py-3.5 px-4 align-middle">
                         <div className="flex items-center gap-2.5">
                           <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
                             isBoard
@@ -840,7 +836,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 truncate max-w-sm">
+                            <div className="text-[11px] text-slate-400 truncate max-w-md">
                               {com.description}
                             </div>
                           </div>
@@ -848,7 +844,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       </td>
 
                       {/* Presidência */}
-                      <td className="py-3 px-4 align-middle">
+                      <td className="py-3.5 px-4 align-middle">
                         <div className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 leading-tight">
                           <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{com.presidentName}</span>
@@ -858,56 +854,24 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Frequência / Cadência */}
-                      <td className="py-3 px-4 align-middle text-center">
+                      {/* Frequência */}
+                      <td className="py-3.5 px-4 align-middle text-center">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 font-mono text-[11px] font-medium">
                           <Calendar className="w-3 h-3 text-slate-400" />
                           <span>{com.cadence}</span>
                         </span>
                       </td>
 
-                      {/* Integrantes (Mesa) */}
-                      <td className="py-3 px-4 align-middle text-center">
-                        <button
-                          type="button"
-                          onClick={() => setManagingCommitteeId(com.id)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-[11px] font-medium cursor-pointer transition-colors"
-                          title="Clique para gerenciar os integrantes da mesa e permissões de voto"
-                        >
-                          <Users className="w-3 h-3 text-blue-500" />
-                          <span>{com.members.length} Integrantes</span>
-                          <span className="text-[9px] font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1 rounded border border-emerald-200 dark:border-emerald-900">
-                            {voters.length} Votantes
-                          </span>
-                        </button>
-                      </td>
-
-                      {/* Sessões Realizadas */}
-                      <td className="py-3 px-4 align-middle text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveCommitteeId(com.id);
-                            setActiveSessionId(null);
-                          }}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 font-medium text-[11px] cursor-pointer transition-colors"
-                          title="Acessar histórico de sessões do colegiado"
-                        >
-                          <Landmark className="w-3 h-3 text-amber-500" />
-                          <span>{sessionsCount} {sessionsCount === 1 ? 'Sessão' : 'Sessões'}</span>
-                        </button>
-                      </td>
-
-                      {/* Ações */}
-                      <td className="py-3 px-4 align-middle text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      {/* Ações: Integrantes + Acessar Sessões */}
+                      <td className="py-3.5 px-4 align-middle text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => setManagingCommitteeId(com.id)}
-                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
                             title="Configurar Assentos e Membros da Mesa"
                           >
-                            <Settings className="w-3 h-3 text-slate-400" />
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
                             <span>Integrantes</span>
                           </button>
 
@@ -917,10 +881,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               setActiveCommitteeId(com.id);
                               setActiveSessionId(null);
                             }}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-                            title="Ver histórico de sessões deste colegiado"
+                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                            title="Acessar as sessões deste colegiado"
                           >
-                            <span>Ver Sessões</span>
+                            <span>Sessões</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
