@@ -85,7 +85,9 @@ export interface CommitteeConfig {
   description: string;
   presidentName: string;
   presidentRole: string;
-  cadence: string; // Ex: 'Mensal', 'Quinzenal'
+  cadence: string; // Ex: 'Mensal', 'Quinzenal', 'Semanal'
+  meetingDay?: string; // Ex: 'Segunda-feira', 'Último dia do mês', 'Quarta-feira'
+  meetingTime?: string; // Ex: '10:00'
   members: BoardMember[];
   agendas: CommitteeAgendaItem[]; // Pautas ativas/modelo base
   sessions?: CommitteeSession[]; // Histórico de todas as sessões realizadas
@@ -245,10 +247,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }
   ];
 
-  // Estado dos colegiados com persistência
+  // Estado dos colegiados com persistência sincronizada
   const [committees, setCommittees] = useState<CommitteeConfig[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('rgr_committees_state');
+      const saved = localStorage.getItem('rgr_committees_state_v2');
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -262,7 +264,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('rgr_committees_state', JSON.stringify(committees));
+      localStorage.setItem('rgr_committees_state_v2', JSON.stringify(committees));
     }
   }, [committees]);
 
@@ -327,6 +329,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [editComPresident, setEditComPresident] = useState('');
   const [editComRole, setEditComRole] = useState('');
   const [editComCadence, setEditComCadence] = useState('');
+  const [editComMeetingDay, setEditComMeetingDay] = useState('');
+  const [editComMeetingTime, setEditComMeetingTime] = useState('');
   const [newAgendaIsFixed, setNewAgendaIsFixed] = useState(false);
 
   // Filtro de Pautas da Sessão
@@ -806,13 +810,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         {/* Tabela de Colegiados */}
         <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed">
+            <table className="w-full text-left border-collapse min-w-[760px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
-                  <th className="py-3.5 px-4 w-[42%]">Órgão Colegiado & Sigla</th>
-                  <th className="py-3.5 px-4 w-[28%]">Presidência</th>
-                  <th className="py-3.5 px-4 w-[16%] text-center">Frequência</th>
-                  <th className="py-3.5 px-4 w-[14%] text-right">Ações</th>
+                  <th className="py-3.5 px-4 min-w-[280px]">Órgão Colegiado & Sigla</th>
+                  <th className="py-3.5 px-4 min-w-[200px]">Presidência</th>
+                  <th className="py-3.5 px-4 min-w-[130px] text-center">Frequência</th>
+                  <th className="py-3.5 px-4 min-w-[150px] text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
@@ -826,10 +830,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         isBoard ? 'bg-amber-50/20 dark:bg-amber-950/10' : ''
                       }`}
                     >
-                      {/* Sigla e Nome com quebra de texto elegante */}
+                      {/* Sigla e Nome com quebra de texto elegante e centralização vertical */}
                       <td className="py-3.5 px-4 align-middle">
-                        <div className="flex items-start gap-2.5">
-                          <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 mt-0.5 ${
+                        <div className="flex items-center gap-2.5">
+                          <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
                             isBoard
                               ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
@@ -852,7 +856,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Presidência com quebra de linha */}
+                      {/* Presidência com quebra de linha e centralização vertical */}
                       <td className="py-3.5 px-4 align-middle">
                         <div className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 leading-tight">
                           <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -863,8 +867,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </p>
                       </td>
 
-                      {/* Frequência Compacta (Uma Linha Só) */}
-                      <td className="py-3 px-4 align-middle text-center">
+                      {/* Frequência com badge claro e botão de edição discreto */}
+                      <td className="py-3.5 px-4 align-middle text-center">
                         <button
                           type="button"
                           onClick={() => {
@@ -875,17 +879,20 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                             setEditComPresident(com.presidentName);
                             setEditComRole(com.presidentRole);
                             setEditComCadence(com.cadence);
+                            setEditComMeetingDay(com.meetingDay || '');
+                            setEditComMeetingTime(com.meetingTime || '');
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium whitespace-nowrap cursor-pointer transition-colors"
-                          title="Clique para configurar frequência, renomear ou encerrar colegiado"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-medium whitespace-nowrap cursor-pointer transition-colors shadow-2xs"
+                          title="Clique para configurar dia, horário e periodicidade das sessões"
                         >
                           <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                           <span>{com.cadence.split('(')[0].trim()}</span>
+                          <span className="text-[9px] text-slate-400 font-mono">✎</span>
                         </button>
                       </td>
 
                       {/* Ações: Configurar / Editar + Integrantes + Acessar Sessões */}
-                      <td className="py-3 px-4 align-middle text-right">
+                      <td className="py-3.5 px-4 align-middle text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
@@ -897,9 +904,11 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               setEditComPresident(com.presidentName);
                               setEditComRole(com.presidentRole);
                               setEditComCadence(com.cadence);
+                              setEditComMeetingDay(com.meetingDay || '');
+                              setEditComMeetingTime(com.meetingTime || '');
                             }}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
-                            title="Editar comitê (Renomear, mudar frequência ou excluir)"
+                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700 shrink-0"
+                            title="Editar comitê (Renomear, dia, hora ou encerrar)"
                           >
                             <Settings className="w-3.5 h-3.5" />
                           </button>
@@ -907,7 +916,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           <button
                             type="button"
                             onClick={() => setManagingCommitteeId(com.id)}
-                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
                             title="Configurar Assentos e Membros da Mesa"
                           >
                             <Users className="w-3 h-3 text-slate-400" />
@@ -1127,7 +1136,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Frequência das Sessões</label>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Periodicidade das Sessões</label>
                     <select
                       value={editComCadence.split('(')[0].trim()}
                       onChange={(e) => setEditComCadence(e.target.value)}
@@ -1141,6 +1150,42 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       <option value="Semestral">Semestral</option>
                       <option value="Anual">Anual</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Configuração Detalhada de Dia e Horário da Reunião */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                  <div>
+                    <label className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                      Dia da Reunião
+                    </label>
+                    <select
+                      value={editComMeetingDay}
+                      onChange={(e) => setEditComMeetingDay(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-medium"
+                    >
+                      <option value="">Selecione o dia...</option>
+                      <option value="Segundas-feiras">Toda Segunda-feira</option>
+                      <option value="Terças-feiras">Toda Terça-feira</option>
+                      <option value="Quartas-feiras">Toda Quarta-feira</option>
+                      <option value="Quintas-feiras">Toda Quinta-feira</option>
+                      <option value="Sextas-feiras">Toda Sexta-feira</option>
+                      <option value="1º dia útil do mês">1º dia útil do mês</option>
+                      <option value="5º dia útil do mês">5º dia útil do mês</option>
+                      <option value="Última quinta-feira do mês">Última quinta-feira do mês</option>
+                      <option value="Último dia do mês">Último dia do mês</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                      Horário da Sessão
+                    </label>
+                    <input
+                      type="time"
+                      value={editComMeetingTime}
+                      onChange={(e) => setEditComMeetingTime(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                    />
                   </div>
                 </div>
 
@@ -1197,6 +1242,15 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       }
                       setCommittees(prev => prev.map(c => {
                         if (c.id !== editingCommittee.id) return c;
+                        
+                        // Monta texto enriquecido de cadência se dia/hora forem preenchidos
+                        let formattedCadence = editComCadence.trim() || c.cadence;
+                        if (editComMeetingDay || editComMeetingTime) {
+                          const base = editComCadence.split('(')[0].trim();
+                          const details = [editComMeetingDay, editComMeetingTime ? `às ${editComMeetingTime}` : ''].filter(Boolean).join(' ');
+                          formattedCadence = details ? `${base} (${details})` : base;
+                        }
+
                         return {
                           ...c,
                           name: editComName.trim(),
@@ -1204,7 +1258,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           description: editComDesc.trim(),
                           presidentName: editComPresident.trim() || c.presidentName,
                           presidentRole: editComRole.trim() || c.presidentRole,
-                          cadence: editComCadence.trim() || c.cadence
+                          cadence: formattedCadence,
+                          meetingDay: editComMeetingDay,
+                          meetingTime: editComMeetingTime
                         };
                       }));
                       setEditingCommittee(null);
