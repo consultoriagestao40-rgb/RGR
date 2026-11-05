@@ -40,7 +40,8 @@ import {
   Volume2,
   Lock,
   Unlock,
-  RotateCcw
+  RotateCcw,
+  Pencil
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
@@ -1073,7 +1074,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </button>
                       </td>
 
-                      {/* Ações: Integrantes + Acessar Sessões */}
+                      {/* Ações: Integrantes + Acessar Sessões + Editar + Excluir */}
                       <td className="py-3.5 px-4 align-middle text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
@@ -1097,6 +1098,40 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           >
                             <span>Sessões</span>
                             <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Botão Editar Comitê */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCommittee(com);
+                              setEditComName(com.name);
+                              setEditComCode(com.code);
+                              setEditComDesc(com.description);
+                              setEditComPresident(com.presidentName);
+                              setEditComRole(com.presidentRole);
+                              setEditComCadence(com.cadence);
+                              setEditComMeetingDay(com.meetingDay || '');
+                              setEditComMeetingTime(com.meetingTime || '');
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                            title="Editar dados do colegiado"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Botão Excluir Comitê */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Tem certeza que deseja excluir o colegiado "${com.name}"? Todas as sessões e pautas vinculadas serão removidas.`)) {
+                                setCommittees(prev => prev.filter(c => c.id !== com.id));
+                              }
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
+                            title="Excluir este colegiado"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
