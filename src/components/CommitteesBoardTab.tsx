@@ -318,6 +318,15 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [newAgendaDesc, setNewAgendaDesc] = useState('');
   const [newAgendaCategory, setNewAgendaCategory] = useState('Governança');
   const [newAgendaIsDeliberative, setNewAgendaIsDeliberative] = useState(true);
+
+  // Modal para Editar Colegiado (Renomear, Trocar Presidente, Frequência, Encerrar/Excluir)
+  const [editingCommittee, setEditingCommittee] = useState<CommitteeConfig | null>(null);
+  const [editComName, setEditComName] = useState('');
+  const [editComCode, setEditComCode] = useState('');
+  const [editComDesc, setEditComDesc] = useState('');
+  const [editComPresident, setEditComPresident] = useState('');
+  const [editComRole, setEditComRole] = useState('');
+  const [editComCadence, setEditComCadence] = useState('');
   const [newAgendaIsFixed, setNewAgendaIsFixed] = useState(false);
 
   // Filtro de Pautas da Sessão
@@ -797,13 +806,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         {/* Tabela de Colegiados */}
         <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse table-fixed">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
-                  <th className="py-3.5 px-4">Órgão Colegiado & Sigla</th>
-                  <th className="py-3.5 px-4">Presidência</th>
-                  <th className="py-3.5 px-4 text-center">Frequência</th>
-                  <th className="py-3.5 px-4 text-right">Ações</th>
+                  <th className="py-3.5 px-4 w-[42%]">Órgão Colegiado & Sigla</th>
+                  <th className="py-3.5 px-4 w-[28%]">Presidência</th>
+                  <th className="py-3.5 px-4 w-[16%] text-center">Frequência</th>
+                  <th className="py-3.5 px-4 w-[14%] text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
@@ -817,18 +826,18 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         isBoard ? 'bg-amber-50/20 dark:bg-amber-950/10' : ''
                       }`}
                     >
-                      {/* Sigla e Nome */}
+                      {/* Sigla e Nome com quebra de texto elegante */}
                       <td className="py-3.5 px-4 align-middle">
-                        <div className="flex items-center gap-2.5">
-                          <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
+                        <div className="flex items-start gap-2.5">
+                          <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 mt-0.5 ${
                             isBoard
                               ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                           }`}>
                             {com.code}
                           </span>
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
                               <span>{com.name}</span>
                               {isBoard && (
                                 <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-900/50 px-1.5 py-0.2 rounded border border-amber-300 dark:border-amber-800">
@@ -836,42 +845,72 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 truncate max-w-md">
+                            <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5 line-clamp-2 break-words">
                               {com.description}
-                            </div>
+                            </p>
                           </div>
                         </div>
                       </td>
 
-                      {/* Presidência */}
+                      {/* Presidência com quebra de linha */}
                       <td className="py-3.5 px-4 align-middle">
                         <div className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 leading-tight">
                           <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>{com.presidentName}</span>
+                          <span className="truncate">{com.presidentName}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5">
+                        <p className="text-[10px] text-slate-400 leading-normal mt-0.5 line-clamp-2 break-words">
                           {com.presidentRole}
-                        </div>
+                        </p>
                       </td>
 
-                      {/* Frequência */}
-                      <td className="py-3.5 px-4 align-middle text-center">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 font-mono text-[11px] font-medium">
-                          <Calendar className="w-3 h-3 text-slate-400" />
-                          <span>{com.cadence}</span>
-                        </span>
+                      {/* Frequência Compacta (Uma Linha Só) */}
+                      <td className="py-3 px-4 align-middle text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCommittee(com);
+                            setEditComName(com.name);
+                            setEditComCode(com.code);
+                            setEditComDesc(com.description);
+                            setEditComPresident(com.presidentName);
+                            setEditComRole(com.presidentRole);
+                            setEditComCadence(com.cadence);
+                          }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium whitespace-nowrap cursor-pointer transition-colors"
+                          title="Clique para configurar frequência, renomear ou encerrar colegiado"
+                        >
+                          <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span>{com.cadence.split('(')[0].trim()}</span>
+                        </button>
                       </td>
 
-                      {/* Ações: Integrantes + Acessar Sessões */}
-                      <td className="py-3.5 px-4 align-middle text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      {/* Ações: Configurar / Editar + Integrantes + Acessar Sessões */}
+                      <td className="py-3 px-4 align-middle text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCommittee(com);
+                              setEditComName(com.name);
+                              setEditComCode(com.code);
+                              setEditComDesc(com.description);
+                              setEditComPresident(com.presidentName);
+                              setEditComRole(com.presidentRole);
+                              setEditComCadence(com.cadence);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                            title="Editar comitê (Renomear, mudar frequência ou excluir)"
+                          >
+                            <Settings className="w-3.5 h-3.5" />
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => setManagingCommitteeId(com.id)}
-                            className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
                             title="Configurar Assentos e Membros da Mesa"
                           >
-                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                            <Users className="w-3 h-3 text-slate-400" />
                             <span>Integrantes</span>
                           </button>
 
@@ -881,7 +920,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               setActiveCommitteeId(com.id);
                               setActiveSessionId(null);
                             }}
-                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-colors shadow-xs cursor-pointer shrink-0"
                             title="Acessar as sessões deste colegiado"
                           >
                             <span>Sessões</span>
@@ -966,13 +1005,19 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   </div>
                   <div>
                     <label className="text-[10px] text-slate-500 font-medium block mb-1">Periodicidade de Reunião</label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Mensal (Última terça)"
+                    <select
                       value={newComCadence}
                       onChange={(e) => setNewComCadence(e.target.value)}
                       className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
-                    />
+                    >
+                      <option value="Semanal">Semanal</option>
+                      <option value="Quinzenal">Quinzenal</option>
+                      <option value="Mensal">Mensal</option>
+                      <option value="Bimestral">Bimestral</option>
+                      <option value="Trimestral">Trimestral</option>
+                      <option value="Semestral">Semestral</option>
+                      <option value="Anual">Anual</option>
+                    </select>
                   </div>
                 </div>
 
@@ -1024,6 +1069,151 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 >
                   Salvar Colegiado
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Editar Colegiado (Renomear, Frequência, Presidente ou Encerrar/Excluir) */}
+        {editingCommittee && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Configurar Órgão Colegiado
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingCommittee(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Código / Sigla</label>
+                    <input
+                      type="text"
+                      value={editComCode}
+                      onChange={(e) => setEditComCode(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Nome do Colegiado</label>
+                    <input
+                      type="text"
+                      value={editComName}
+                      onChange={(e) => setEditComName(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Presidente da Mesa</label>
+                    <input
+                      type="text"
+                      value={editComPresident}
+                      onChange={(e) => setEditComPresident(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Frequência das Sessões</label>
+                    <select
+                      value={editComCadence.split('(')[0].trim()}
+                      onChange={(e) => setEditComCadence(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    >
+                      <option value="Semanal">Semanal</option>
+                      <option value="Quinzenal">Quinzenal</option>
+                      <option value="Mensal">Mensal</option>
+                      <option value="Bimestral">Bimestral</option>
+                      <option value="Trimestral">Trimestral</option>
+                      <option value="Semestral">Semestral</option>
+                      <option value="Anual">Anual</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Cargo / Título Institucional</label>
+                  <input
+                    type="text"
+                    value={editComRole}
+                    onChange={(e) => setEditComRole(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Finalidade / Descrição</label>
+                  <textarea
+                    rows={3}
+                    value={editComDesc}
+                    onChange={(e) => setEditComDesc(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm(`Tem certeza que deseja encerrar e excluir o colegiado "${editingCommittee.name}"?`)) {
+                      setCommittees(prev => prev.filter(c => c.id !== editingCommittee.id));
+                      setEditingCommittee(null);
+                    }
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Encerrar Comitê</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCommittee(null)}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!editComName.trim()) {
+                        alert('Informe o nome do comitê.');
+                        return;
+                      }
+                      setCommittees(prev => prev.map(c => {
+                        if (c.id !== editingCommittee.id) return c;
+                        return {
+                          ...c,
+                          name: editComName.trim(),
+                          code: editComCode.trim() || c.code,
+                          description: editComDesc.trim(),
+                          presidentName: editComPresident.trim() || c.presidentName,
+                          presidentRole: editComRole.trim() || c.presidentRole,
+                          cadence: editComCadence.trim() || c.cadence
+                        };
+                      }));
+                      setEditingCommittee(null);
+                    }}
+                    className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+                  >
+                    Salvar Alterações
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1762,14 +1952,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse table-fixed">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
-                    <th className="py-3 px-4">Pauta & Matéria</th>
-                    <th className="py-3 px-4">Natureza</th>
-                    <th className="py-3 px-4">Contexto / Parecer</th>
-                    <th className="py-3 px-4 text-center">Status / Votação</th>
-                    <th className="py-3 px-4 text-right">Ações</th>
+                    <th className="py-3 px-4 w-[42%]">Pauta & Matéria</th>
+                    <th className="py-3 px-4 w-[16%]">Natureza</th>
+                    <th className="py-3 px-4 w-[24%]">Contexto / Parecer</th>
+                    <th className="py-3 px-4 w-[18%] text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
@@ -1782,18 +1971,18 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         key={agenda.id}
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors"
                       >
-                        {/* Pauta & Matéria */}
-                        <td className="py-3 px-4 align-middle">
-                          <div className="flex items-center gap-2.5">
-                            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                        {/* Pauta & Matéria com texto COMPLETO (sem truncar) */}
+                        <td className="py-3 px-4 align-top">
+                          <div className="flex items-start gap-2.5">
+                            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 mt-0.5">
                               PAUTA {idx + 1}.0
                             </span>
-                            <div className="min-w-0 max-w-md">
-                              <div className="font-bold text-slate-900 dark:text-white truncate">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-slate-900 dark:text-white break-words leading-snug">
                                 {agenda.title}
                               </div>
                               {agenda.category && (
-                                <div className="text-[11px] text-slate-400">
+                                <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
                                   {agenda.category}
                                 </div>
                               )}
@@ -1802,9 +1991,9 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </td>
 
                         {/* Natureza */}
-                        <td className="py-3 px-4 align-middle whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border ${
+                        <td className="py-3 px-4 align-top">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border shrink-0 ${
                               agenda.isDeliberative 
                                 ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
@@ -1812,21 +2001,21 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               {agenda.isDeliberative ? 'Deliberativa' : 'Informativa'}
                             </span>
                             {agenda.isFixed && (
-                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 shrink-0">
                                 Fixa
                               </span>
                             )}
                           </div>
                         </td>
 
-                        {/* Contexto / Parecer */}
-                        <td className="py-3 px-4 align-middle text-slate-500 dark:text-slate-400 max-w-sm">
+                        {/* Contexto / Parecer com texto completo */}
+                        <td className="py-3 px-4 align-top text-slate-500 dark:text-slate-400">
                           {agenda.resolutionNote ? (
-                            <p className="line-clamp-2 leading-relaxed text-slate-800 dark:text-slate-200">
+                            <p className="leading-relaxed text-slate-800 dark:text-slate-200 break-words">
                               <strong className="font-semibold text-slate-900 dark:text-white">Parecer:</strong> {agenda.resolutionNote}
                             </p>
                           ) : agenda.description ? (
-                            <p className="line-clamp-2 leading-relaxed">
+                            <p className="leading-relaxed break-words">
                               {agenda.description}
                             </p>
                           ) : (
@@ -1834,28 +2023,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                           )}
                         </td>
 
-                        {/* Status / Votação */}
-                        <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
-                          {agenda.isDeliberative && summary ? (
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border uppercase tracking-wider ${summary.badgeClass}`}>
-                              {summary.badgeText}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-[11px]">
-                              <FileText className="w-3 h-3 text-slate-400" />
-                              <span>Ciência Registrada</span>
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Ações */}
-                        <td className="py-3 px-4 align-middle text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
+                        {/* Ações e Votação */}
+                        <td className="py-3 px-4 align-top text-right">
+                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
                             {agenda.isDeliberative ? (
                               <button
                                 type="button"
                                 onClick={() => setVotingAgendaId(agenda.id)}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer whitespace-nowrap"
                                 title="Abrir painel de votação nominal e parecer"
                               >
                                 <Vote className="w-3.5 h-3.5" />
@@ -1865,7 +2040,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setVotingAgendaId(agenda.id)}
-                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 whitespace-nowrap"
                                 title="Visualizar detalhes e registrar anotação"
                               >
                                 <FileText className="w-3.5 h-3.5 text-slate-400" />
