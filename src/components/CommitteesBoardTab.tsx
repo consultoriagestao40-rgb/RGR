@@ -61,6 +61,22 @@ export interface CommitteeAgendaItem {
   resolutionNote?: string;
 }
 
+export interface CommitteeSession {
+  id: string;
+  sessionCode: string; // Ex: SES-01/2026
+  title: string;
+  date: string;
+  status: 'concluded' | 'in_progress' | 'scheduled';
+  agendas: CommitteeAgendaItem[];
+  minuteRecorded?: boolean;
+  aiReport?: {
+    transcript: string;
+    summary: string;
+    keyDecisions?: string[];
+    recordedAt?: string;
+  };
+}
+
 export interface CommitteeConfig {
   id: string;
   name: string;
@@ -71,7 +87,8 @@ export interface CommitteeConfig {
   presidentRole: string;
   cadence: string; // Ex: 'Mensal', 'Quinzenal'
   members: BoardMember[];
-  agendas: CommitteeAgendaItem[];
+  agendas: CommitteeAgendaItem[]; // Pautas ativas/modelo base
+  sessions?: CommitteeSession[]; // Histórico de todas as sessões realizadas
   // Relatório de IA da Sessão (Gravação / Transcrição / Resumo)
   sessionAiReport?: {
     transcript: string;
@@ -249,8 +266,11 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     }
   }, [committees]);
 
-  // Colegiado ativo na tela (null = tabela geral; string = sessão aberta)
+  // Colegiado ativo na tela (null = tabela geral; string = painel do colegiado)
   const [activeCommitteeId, setActiveCommitteeId] = useState<string | null>(null);
+
+  // Sessão ativa selecionada dentro do colegiado (null = lista de sessões; string = pautas da sessão)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Modal / Gaveta de Deliberação & Votação da Pauta
   const [votingAgendaId, setVotingAgendaId] = useState<string | null>(null);
@@ -781,10 +801,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
                   <th className="py-3.5 px-4">Órgão Colegiado & Sigla</th>
-                  <th className="py-3.5 px-4">Presidência & Cadência</th>
-                  <th className="py-3.5 px-4">Membros da Mesa (Assentos)</th>
-                  <th className="py-3.5 px-4 text-center">Ordem do Dia</th>
-                  <th className="py-3.5 px-4 text-center">Deliberações</th>
+                  <th className="py-3.5 px-4">Presidência</th>
+                  <th className="py-3.5 px-4 text-center">Frequência / Cadência</th>
+                  <th className="py-3.5 px-4 text-center">Integrantes (Mesa)</th>
+                  <th className="py-3.5 px-4 text-center">Sessões Realizadas</th>
                   <th className="py-3.5 px-4 text-right">Ações</th>
                 </tr>
               </thead>
@@ -792,7 +812,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 {filteredCommittees.map(com => {
                   const isBoard = com.type === 'board';
                   const voters = com.members.filter(m => m.isVoter);
-                  const deliberativeCount = com.agendas.filter(a => a.isDeliberative).length;
+                  const sessionsCount = (com.sessions?.length || 0) + 1; // sessões gravadas ou ciclo ativo
 
                   return (
                     <tr 
@@ -827,47 +847,55 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Presidência & Cadência */}
+                      {/* Presidência */}
                       <td className="py-3 px-4 align-middle">
                         <div className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 leading-tight">
                           <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{com.presidentName}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                          {com.cadence}
+                        <div className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5">
+                          {com.presidentRole}
                         </div>
                       </td>
 
-                      {/* Assentos na Mesa (Compacto) */}
-                      <td className="py-3 px-4 align-middle">
+                      {/* Frequência / Cadência */}
+                      <td className="py-3 px-4 align-middle text-center">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 font-mono text-[11px] font-medium">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <span>{com.cadence}</span>
+                        </span>
+                      </td>
+
+                      {/* Integrantes (Mesa) */}
+                      <td className="py-3 px-4 align-middle text-center">
                         <button
                           type="button"
                           onClick={() => setManagingCommitteeId(com.id)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 text-xs font-medium cursor-pointer transition-colors"
-                          title="Clique para gerenciar os integrantes da mesa"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-[11px] font-medium cursor-pointer transition-colors"
+                          title="Clique para gerenciar os integrantes da mesa e permissões de voto"
                         >
-                          <Users className="w-3.5 h-3.5 text-slate-500" />
-                          <span>{com.members.length} Assentos</span>
-                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1 rounded border border-emerald-200 dark:border-emerald-900">
+                          <Users className="w-3 h-3 text-blue-500" />
+                          <span>{com.members.length} Integrantes</span>
+                          <span className="text-[9px] font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1 rounded border border-emerald-200 dark:border-emerald-900">
                             {voters.length} Votantes
                           </span>
                         </button>
                       </td>
 
-                      {/* Pautas */}
+                      {/* Sessões Realizadas */}
                       <td className="py-3 px-4 align-middle text-center">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 font-medium text-[11px]">
-                          <FileText className="w-3 h-3 text-blue-500" />
-                          <span>{com.agendas.length} Pautas</span>
-                        </span>
-                      </td>
-
-                      {/* Votações */}
-                      <td className="py-3 px-4 align-middle text-center">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 font-medium text-[11px]">
-                          <Vote className="w-3 h-3 text-amber-500" />
-                          <span>{deliberativeCount} Votações</span>
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCommitteeId(com.id);
+                            setActiveSessionId(null);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 font-medium text-[11px] cursor-pointer transition-colors"
+                          title="Acessar histórico de sessões do colegiado"
+                        >
+                          <Landmark className="w-3 h-3 text-amber-500" />
+                          <span>{sessionsCount} {sessionsCount === 1 ? 'Sessão' : 'Sessões'}</span>
+                        </button>
                       </td>
 
                       {/* Ações */}
@@ -885,11 +913,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
                           <button
                             type="button"
-                            onClick={() => setActiveCommitteeId(com.id)}
+                            onClick={() => {
+                              setActiveCommitteeId(com.id);
+                              setActiveSessionId(null);
+                            }}
                             className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-                            title="Abrir sessão e pautas deliberativas"
+                            title="Ver histórico de sessões deste colegiado"
                           >
-                            <span>Abrir Sessão</span>
+                            <span>Ver Sessões</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -1242,21 +1273,293 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   }
 
   // =========================================================================
-  // CENÁRIO 2: SALA DE SESSÃO OFICIAL (Atlas Governance Style)
-  // Tabela executiva de Ordem do Dia idêntica ao Perfil da Cadeira
+  // CENÁRIO 2: LISTA DE SESSÕES OFICIAIS DO COLEGIADO (NÍVEL 2)
+  // Mostra cada sessão/reunião realizada ou agendada
   // =========================================================================
   const isBoard = activeCommittee.type === 'board';
   const voters = activeCommittee.members.filter(m => m.isVoter);
   const listeners = activeCommittee.members.filter(m => !m.isVoter);
 
-  const filteredAgendas = activeCommittee.agendas.filter(ag => {
+  // Histórico de sessões do comitê (se não tiver sessions cadastradas, cria sessões base padrão)
+  const committeeSessions: CommitteeSession[] = activeCommittee.sessions && activeCommittee.sessions.length > 0
+    ? activeCommittee.sessions
+    : [
+        {
+          id: `ses-${activeCommittee.id}-01`,
+          sessionCode: `SES-01/${new Date().getFullYear()}`,
+          title: `Sessão Ordinária de Governança • ${formatDateBR(selectedDate)}`,
+          date: selectedDate,
+          status: 'concluded',
+          agendas: activeCommittee.agendas,
+          minuteRecorded: true,
+          aiReport: activeCommittee.sessionAiReport
+        }
+      ];
+
+  const currentSession = committeeSessions.find(s => s.id === activeSessionId) || committeeSessions[0];
+
+  // Se o usuário ainda não abriu uma sessão específica, exibe a TABELA DE SESSÕES
+  if (!activeSessionId) {
+    return (
+      <div className="space-y-5 max-w-7xl mx-auto pb-12">
+        {/* Navegação Superior */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setActiveCommitteeId(null)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar para Lista de Colegiados & Comitês</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setManagingCommitteeId(activeCommittee.id)}
+              className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Users className="w-3.5 h-3.5 text-slate-500" />
+              <span>Integrantes da Mesa ({activeCommittee.members.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const newCode = `SES-0${committeeSessions.length + 1}/${new Date().getFullYear()}`;
+                const newSes: CommitteeSession = {
+                  id: `ses-${Date.now()}`,
+                  sessionCode: newCode,
+                  title: `Sessão Extraordinária • ${formatDateBR(selectedDate)}`,
+                  date: selectedDate,
+                  status: 'in_progress',
+                  agendas: [
+                    {
+                      id: `ag-new-${Date.now()}`,
+                      title: 'Apreciação das Matérias em Pauta do Período',
+                      isDeliberative: true,
+                      isFixed: false,
+                      votes: {}
+                    }
+                  ]
+                };
+                setCommittees(prev => prev.map(c => {
+                  if (c.id !== activeCommittee.id) return c;
+                  return {
+                    ...c,
+                    sessions: [newSes, ...(c.sessions || [committeeSessions[0]])]
+                  };
+                }));
+                setActiveSessionId(newSes.id);
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Abrir Nova Sessão</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Header do Colegiado */}
+        <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-3.5">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="space-y-1 max-w-3xl">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
+                  isBoard
+                    ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                }`}>
+                  {activeCommittee.code}
+                </span>
+                <span className="text-xs text-slate-500 font-mono">
+                  Cadência Oficial: <strong className="text-slate-800 dark:text-slate-200">{activeCommittee.cadence}</strong>
+                </span>
+              </div>
+
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {activeCommittee.name}
+              </h1>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {activeCommittee.description}
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-[#0c121e] border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 shrink-0 text-xs space-y-0.5">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block font-mono">
+                Presidência da Mesa
+              </span>
+              <div className="font-bold text-slate-900 dark:text-white">
+                {activeCommittee.presidentName}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                {activeCommittee.presidentRole}
+              </div>
+            </div>
+          </div>
+
+          {/* Barra de Integrantes */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">Integrantes da Mesa:</span>
+              {activeCommittee.members.map(m => (
+                <span
+                  key={m.id}
+                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-xs ${
+                    m.isVoter
+                      ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                      : 'bg-slate-100/50 dark:bg-slate-800/40 border-dashed border-slate-300 dark:border-slate-700 text-slate-400 italic'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${m.isVoter ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                  <span className="font-medium">{m.name}</span>
+                  <span className={`text-[8px] font-mono px-1 rounded ${
+                    m.isVoter ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-400'
+                  }`}>
+                    {m.isVoter ? 'VOTA' : 'OUV'}
+                  </span>
+                </span>
+              ))}
+            </div>
+
+            <div className="font-mono text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              Quórum Habilitado: {voters.length} Votantes
+            </div>
+          </div>
+        </div>
+
+        {/* TABELA CORPORATIVA DE SESSÕES REALIZADAS & AGENDADAS */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase font-mono tracking-wider flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-amber-500" />
+              <span>Sessões Oficiais & Atas ({committeeSessions.length})</span>
+            </h2>
+            <span className="text-xs text-slate-400">
+              Clique em uma sessão para acessar as pautas, deliberações e o gravador de IA
+            </span>
+          </div>
+
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                    <th className="py-3 px-4">Código & Sessão</th>
+                    <th className="py-3 px-4">Data da Reunião</th>
+                    <th className="py-3 px-4 text-center">Pautas Tratadas</th>
+                    <th className="py-3 px-4 text-center">Deliberações</th>
+                    <th className="py-3 px-4 text-center">Status / Ata</th>
+                    <th className="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
+                  {committeeSessions.map(session => {
+                    const sessionAgendas = session.agendas || activeCommittee.agendas;
+                    const deliberativeAgendas = sessionAgendas.filter(a => a.isDeliberative);
+                    const isConcluded = session.status === 'concluded' || session.minuteRecorded;
+
+                    return (
+                      <tr
+                        key={session.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors cursor-pointer"
+                        onClick={() => setActiveSessionId(session.id)}
+                      >
+                        {/* Código & Sessão */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                              {session.sessionCode}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 dark:text-white truncate">
+                                {session.title}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                {activeCommittee.name}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Data */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="text-slate-800 dark:text-slate-200 font-mono text-xs flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{formatDateBR(session.date)}</span>
+                          </div>
+                        </td>
+
+                        {/* Pautas */}
+                        <td className="py-3.5 px-4 align-middle text-center">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 font-medium text-[11px]">
+                            <FileText className="w-3 h-3 text-blue-500" />
+                            <span>{sessionAgendas.length} Pautas</span>
+                          </span>
+                        </td>
+
+                        {/* Deliberações */}
+                        <td className="py-3.5 px-4 align-middle text-center">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 font-medium text-[11px]">
+                            <Vote className="w-3 h-3 text-amber-500" />
+                            <span>{deliberativeAgendas.length} Deliberações</span>
+                          </span>
+                        </td>
+
+                        {/* Status / Ata */}
+                        <td className="py-3.5 px-4 align-middle text-center">
+                          {isConcluded ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Ata Lavrada</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              <span>Em Andamento</span>
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Ações */}
+                        <td className="py-3.5 px-4 align-middle text-right">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSessionId(session.id);
+                            }}
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                          >
+                            <span>Acessar Pautas</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // CENÁRIO 3: DETALHE DA SESSÃO SELECIONADA (NÍVEL 3 - PAUTAS & DELIBERAÇÕES)
+  // Ordem do dia linear, votações nominais e Gravador de IA
+  // =========================================================================
+  const sessionAgendas = currentSession.agendas || activeCommittee.agendas;
+  const filteredAgendas = sessionAgendas.filter(ag => {
     if (agendaFilter === 'deliberative') return ag.isDeliberative;
     if (agendaFilter === 'informative') return !ag.isDeliberative;
     if (agendaFilter === 'fixed') return ag.isFixed;
     return true;
   });
 
-  const selectedVotingAgenda = activeCommittee.agendas.find(a => a.id === votingAgendaId);
+  const selectedVotingAgenda = sessionAgendas.find(a => a.id === votingAgendaId);
   const votingAgendaSummary = selectedVotingAgenda?.isDeliberative ? getVotingSummary(selectedVotingAgenda) : null;
 
   return (
@@ -1266,13 +1569,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         <button
           type="button"
           onClick={() => {
-            setActiveCommitteeId(null);
+            setActiveSessionId(null);
             setVotingAgendaId(null);
           }}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Voltar para Lista de Colegiados & Comitês</span>
+          <span>Voltar para Lista de Sessões • {activeCommittee.name}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -1281,10 +1584,11 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             type="button"
             onClick={() => {
               // Carrega relatório existente se houver
-              if (activeCommittee.sessionAiReport) {
-                setAiTranscript(activeCommittee.sessionAiReport.transcript || '');
-                setAiSummary(activeCommittee.sessionAiReport.summary || '');
-                setAiKeyDecisions(activeCommittee.sessionAiReport.keyDecisions || []);
+              const report = currentSession.aiReport || activeCommittee.sessionAiReport;
+              if (report) {
+                setAiTranscript(report.transcript || '');
+                setAiSummary(report.summary || '');
+                setAiKeyDecisions(report.keyDecisions || []);
               }
               setIsAiRecorderOpen(true);
             }}
@@ -1293,7 +1597,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             <span>Gravador & Resumo IA</span>
-            {activeCommittee.sessionAiReport && (
+            {(currentSession.aiReport || activeCommittee.sessionAiReport) && (
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" title="Relatório de IA Salvo" />
             )}
           </button>
@@ -1330,11 +1634,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         </div>
       )}
 
-      {/* Header Institucional do Colegiado */}
+      {/* Header da Sessão */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl p-5 shadow-xs space-y-3.5">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
           <div className="space-y-1 max-w-3xl">
             <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                {currentSession.sessionCode}
+              </span>
               <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
                 isBoard
                   ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
@@ -1343,16 +1650,16 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                 {activeCommittee.code}
               </span>
               <span className="text-xs text-slate-500 font-mono">
-                Cadência Oficial: <strong className="text-slate-800 dark:text-slate-200">{activeCommittee.cadence}</strong>
+                Data da Sessão: <strong className="text-slate-800 dark:text-slate-200">{formatDateBR(currentSession.date)}</strong>
               </span>
             </div>
 
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {activeCommittee.name}
+              {currentSession.title}
             </h1>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              {activeCommittee.description}
+              {activeCommittee.name} • Cadência: {activeCommittee.cadence}
             </p>
           </div>
 
@@ -1394,13 +1701,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {activeCommittee.sessionAiReport && (
+            {(currentSession.aiReport || activeCommittee.sessionAiReport) && (
               <button
                 type="button"
                 onClick={() => {
-                  setAiTranscript(activeCommittee.sessionAiReport?.transcript || '');
-                  setAiSummary(activeCommittee.sessionAiReport?.summary || '');
-                  setAiKeyDecisions(activeCommittee.sessionAiReport?.keyDecisions || []);
+                  const rep = currentSession.aiReport || activeCommittee.sessionAiReport;
+                  setAiTranscript(rep?.transcript || '');
+                  setAiSummary(rep?.summary || '');
+                  setAiKeyDecisions(rep?.keyDecisions || []);
                   setIsAiRecorderOpen(true);
                 }}
                 className="inline-flex items-center gap-1 text-[11px] font-mono text-purple-700 dark:text-purple-300 font-semibold bg-purple-50 dark:bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800 hover:bg-purple-100 cursor-pointer transition-colors"
@@ -1431,7 +1739,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   : 'text-slate-600 dark:text-slate-400'
               }`}
             >
-              Todas as Pautas ({activeCommittee.agendas.length})
+              Todas as Pautas ({sessionAgendas.length})
             </button>
             <button
               onClick={() => setAgendaFilter('deliberative')}
@@ -1441,7 +1749,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   : 'text-slate-600 dark:text-slate-400'
               }`}
             >
-              Deliberativas ({activeCommittee.agendas.filter(a => a.isDeliberative).length})
+              Deliberativas ({sessionAgendas.filter(a => a.isDeliberative).length})
             </button>
             <button
               onClick={() => setAgendaFilter('fixed')}
@@ -1451,7 +1759,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   : 'text-slate-600 dark:text-slate-400'
               }`}
             >
-              Pautas Fixas ({activeCommittee.agendas.filter(a => a.isFixed).length})
+              Pautas Fixas ({sessionAgendas.filter(a => a.isFixed).length})
             </button>
             <button
               onClick={() => setAgendaFilter('informative')}
@@ -1461,7 +1769,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                   : 'text-slate-600 dark:text-slate-400'
               }`}
             >
-              Informativas ({activeCommittee.agendas.filter(a => !a.isDeliberative).length})
+              Informativas ({sessionAgendas.filter(a => !a.isDeliberative).length})
             </button>
           </div>
 
@@ -1478,11 +1786,11 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>+ Adicionar Pauta</span>
+            <span>+ Adicionar Pauta nesta Sessão</span>
           </button>
         </div>
 
-        {/* Tabela Corporativa de Pautas & Ordem do Dia (Exatamente no Padrão das Cadeiras) */}
+        {/* Tabela Corporativa de Pautas & Ordem do Dia */}
         <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl shadow-xs overflow-hidden">
           {filteredAgendas.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
