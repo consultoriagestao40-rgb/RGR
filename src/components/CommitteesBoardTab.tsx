@@ -1670,18 +1670,16 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
         }
       ];
 
-  const committeeSessions: CommitteeSession[] = useMemo(() => {
-    return [...rawSessions].sort((a, b) => {
-      // 1. Sessões em andamento/abertas têm prioridade no topo
-      const aConcluded = a.status === 'concluded' || a.minuteRecorded;
-      const bConcluded = b.status === 'concluded' || b.minuteRecorded;
-      if (!aConcluded && bConcluded) return -1;
-      if (aConcluded && !bConcluded) return 1;
+  const committeeSessions: CommitteeSession[] = [...rawSessions].sort((a, b) => {
+    // 1. Sessões em andamento/abertas têm prioridade no topo
+    const aConcluded = a.status === 'concluded' || a.minuteRecorded;
+    const bConcluded = b.status === 'concluded' || b.minuteRecorded;
+    if (!aConcluded && bConcluded) return -1;
+    if (aConcluded && !bConcluded) return 1;
 
-      // 2. Ordenação por data decrescente (mais recente primeiro)
-      return (b.date || '').localeCompare(a.date || '');
-    });
-  }, [rawSessions]);
+    // 2. Ordenação por data decrescente (mais recente primeiro)
+    return (b.date || '').localeCompare(a.date || '');
+  });
 
   const currentSession = committeeSessions.find(s => s.id === activeSessionId) || committeeSessions[0];
 
