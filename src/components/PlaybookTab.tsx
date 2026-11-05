@@ -18,10 +18,16 @@ import {
   RotateCcw,
   Sparkles,
   ExternalLink,
-  Plus
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Upload,
+  BookOpen
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, PopTrainingRecord, SystemUser } from '@/lib/types';
 import { formatBlockFrequency } from '@/lib/frequency';
+import { RichTextEditor } from './RichTextEditor';
 
 interface PlaybookTabProps {
   role: OperationalRole | null;
@@ -52,6 +58,25 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
   const [mediaImageUrl, setMediaImageUrl] = useState('');
   const [mediaImageCaption, setMediaImageCaption] = useState('');
   const [mediaImagesList, setMediaImagesList] = useState<{ id: string; url: string; caption?: string }[]>([]);
+
+  // Modal de Criação / Edição de POP Completo (com RichTextEditor, Vídeo e Imagens)
+  const [isPopModalOpen, setIsPopModalOpen] = useState(false);
+  const [editingPopBlock, setEditingPopBlock] = useState<RoutineBlock | null>(null);
+  const [popFormData, setPopFormData] = useState({
+    code: '',
+    title: '',
+    timeWindow: '08:30 - 09:30',
+    deliverable: '',
+    sopMarkdown: '',
+    frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
+    dayOfWeek: 1,
+    dayOfMonth: 1,
+    version: 'v1.0',
+    homologatedBy: 'Diretoria Executiva',
+    videoUrl: '',
+    videoTitle: '',
+    recyclingPeriodDays: 180
+  });
 
   const toggleExpand = (id: string) => {
     setExpandedBlockIds(prev => ({
@@ -162,6 +187,108 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
     setMediaImageCaption('');
   };
 
+  // Abre Modal para Cadastrar Novo POP
+  const handleOpenCreatePopModal = () => {
+    setEditingPopBlock(null);
+    const nextIndex = blocks.length + 1;
+    const rolePrefix = role?.code ? role.code.replace('CAD-', '') : 'OPE';
+    setPopFormData({
+      code: `POP-${rolePrefix}-00${nextIndex}`,
+      title: '',
+      timeWindow: '08:30 - 09:30',
+      deliverable: '',
+      sopMarkdown: `### 1. Objetivo & Aplicação do Procedimento\nDescreva detalhadamente o passo a passo desta rotina operacional...\n\n---\n\n### 2. Passo a Passo Operacional Padronizado\nUtilize os botões acima para inserir etapas com foto na esquerda ou direita, ou insira vídeos explicativos.\n\n---\n\n### 3. Critério de Aceite & Entregável\n- Descrição clara da evidência ou documento que comprova a execução.`,
+      frequency: 'daily',
+      dayOfWeek: 1,
+      dayOfMonth: 1,
+      version: 'v1.0',
+      homologatedBy: 'Diretoria Executiva',
+      videoUrl: '',
+      videoTitle: '',
+      recyclingPeriodDays: 180
+    });
+    setMediaImagesList([]);
+    setIsPopModalOpen(true);
+  };
+
+  // Abre Modal para Editar POP Existente
+  const handleOpenEditPopModal = (block: RoutineBlock) => {
+    setEditingPopBlock(block);
+    setPopFormData({
+      code: block.code || '',
+      title: block.title,
+      timeWindow: block.timeWindow,
+      deliverable: block.deliverable,
+      sopMarkdown: block.sopMarkdown,
+      frequency: block.frequency,
+      dayOfWeek: block.dayOfWeek || 1,
+      dayOfMonth: block.dayOfMonth || 1,
+      version: block.version || 'v1.0',
+      homologatedBy: block.homologatedBy || 'Diretoria Executiva',
+      videoUrl: block.videoUrl || '',
+      videoTitle: block.videoTitle || '',
+      recyclingPeriodDays: block.recyclingPeriodDays || 180
+    });
+    setMediaImagesList(block.images || []);
+    setIsPopModalOpen(true);
+  };
+
+  // Salva POP (Criação ou Edição)
+  const handleSavePop = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!role || !popFormData.title.trim() || !popFormData.deliverable.trim()) return;
+
+    const payload = {
+      roleId: role.id,
+      code: popFormData.code.trim() || undefined,
+      title: popFormData.title.trim(),
+      timeWindow: popFormData.timeWindow.trim(),
+      deliverable: popFormData.deliverable.trim(),
+      sopMarkdown: popFormData.sopMarkdown,
+      frequency: popFormData.frequency,
+      dayOfWeek: popFormData.frequency === 'weekly' ? Number(popFormData.dayOfWeek) : null,
+      dayOfMonth: popFormData.frequency === 'monthly' ? Number(popFormData.dayOfMonth) : null,
+      version: popFormData.version.trim() || 'v1.0',
+      homologatedBy: popFormData.homologatedBy.trim() || 'Diretoria Executiva',
+      videoUrl: popFormData.videoUrl.trim() || null,
+      videoTitle: popFormData.videoTitle.trim() || null,
+      images: mediaImagesList,
+      recyclingPeriodDays: Number(popFormData.recyclingPeriodDays) || 180
+    };
+
+    try {
+      if (editingPopBlock) {
+        await fetch(`/api/blocks/${editingPopBlock.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await fetch('/api/blocks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      setIsPopModalOpen(false);
+      if (onRefreshBlocks) onRefreshBlocks();
+    } catch (err) {
+      console.error('Erro ao salvar POP:', err);
+    }
+  };
+
+  // Exclui POP
+  const handleDeletePop = async (block: RoutineBlock) => {
+    if (!confirm(`Deseja realmente excluir o procedimento "${block.code} - ${block.title}"?`)) return;
+    try {
+      await fetch(`/api/blocks/${block.id}`, { method: 'DELETE' });
+      if (onRefreshBlocks) onRefreshBlocks();
+    } catch (err) {
+      console.error('Erro ao excluir POP:', err);
+    }
+  };
+
   // Salva Vídeo e Imagens no POP
   const handleSaveMedia = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,6 +341,13 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2 no-print">
+          <button
+            onClick={handleOpenCreatePopModal}
+            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Cadastrar Novo POP</span>
+          </button>
           <button
             onClick={expandAll}
             className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
@@ -312,10 +446,23 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     {block.version || 'v1.0'}
                   </span>
+
+                  {/* Botão de Edição Completa do POP */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEditPopModal(block);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Editar Procedimento (Passos, Fotos, Vídeo e Textos)"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
 
                   {/* Botão para Anexar Vídeo / Imagem */}
                   <button
@@ -324,7 +471,7 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                       e.stopPropagation();
                       handleOpenMediaModal(block);
                     }}
-                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     title="Anexar Vídeo do YouTube ou Imagens ao POP"
                   >
                     <Video className="w-4 h-4" />
@@ -342,8 +489,21 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                     {copiedId === block.id ? (
                       <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-3.5 h-3.5" />
                     )}
+                  </button>
+
+                  {/* Excluir POP */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePop(block);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                    title="Excluir POP"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
 
                   <div className="p-1 text-slate-400">
@@ -425,10 +585,14 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                     </div>
                   )}
 
-                  {/* 3. TEXTO NORMATIVO DO POP (MARKDOWN) */}
+                  {/* 3. TEXTO NORMATIVO DO POP (HTML / MARKDOWN FORMATADO) */}
                   <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-2xs">
                     <div className="sop-content prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                      <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
+                      {block.sopMarkdown.includes('<') ? (
+                        <div dangerouslySetInnerHTML={{ __html: block.sopMarkdown }} />
+                      ) : (
+                        <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
+                      )}
                     </div>
                   </div>
 
@@ -630,6 +794,270 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
                   className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 rounded-lg font-semibold cursor-pointer shadow-xs"
                 >
                   Salvar Multimídia
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cadastro & Edição Completa de Procedimento Operacional Padrão (POP) */}
+      {isPopModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-5xl w-full max-h-[94vh] flex flex-col shadow-2xl">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {editingPopBlock ? 'Editar Procedimento Operacional Padrão (POP)' : 'Cadastrar Novo Procedimento Operacional (POP)'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Cadeira Operacional: <strong>{role.title} ({role.code || 'CAD-01'})</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPopModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form Body Scrollable */}
+            <form onSubmit={handleSavePop} className="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+              
+              {/* Linha 1: Código, Janela de Horário e Versão */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                    Código do POP
+                  </label>
+                  <input
+                    type="text"
+                    value={popFormData.code}
+                    onChange={(e) => setPopFormData({ ...popFormData, code: e.target.value.toUpperCase() })}
+                    placeholder="Ex: POP-OPE-001"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                    Janela de Horário da Rotina
+                  </label>
+                  <input
+                    type="text"
+                    value={popFormData.timeWindow}
+                    onChange={(e) => setPopFormData({ ...popFormData, timeWindow: e.target.value })}
+                    required
+                    placeholder="Ex: 08:30 - 09:30"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                    Versão Oficial & Homologador
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={popFormData.version}
+                      onChange={(e) => setPopFormData({ ...popFormData, version: e.target.value })}
+                      required
+                      placeholder="v1.0"
+                      className="w-20 px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono text-center"
+                    />
+                    <input
+                      type="text"
+                      value={popFormData.homologatedBy}
+                      onChange={(e) => setPopFormData({ ...popFormData, homologatedBy: e.target.value })}
+                      placeholder="Ex: Diretoria Executiva"
+                      className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Linha 2: Título do POP */}
+              <div>
+                <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
+                  Título do Macroprocesso / POP
+                </label>
+                <input
+                  type="text"
+                  value={popFormData.title}
+                  onChange={(e) => setPopFormData({ ...popFormData, title: e.target.value })}
+                  required
+                  placeholder="Ex: Auditoria Diária de Ponto Eletrônico e Escalas de Cobertura"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 text-sm font-semibold"
+                />
+              </div>
+
+              {/* Linha 3: Periodicidade Falconi & Entregável Binário */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-slate-700 dark:text-slate-300 font-semibold block">
+                    Frequência da Execução na Linha do Tempo
+                  </label>
+                  <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setPopFormData({ ...popFormData, frequency: 'daily' })}
+                      className={`py-1 rounded-md text-xs font-semibold cursor-pointer ${
+                        popFormData.frequency === 'daily'
+                          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Diária
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPopFormData({ ...popFormData, frequency: 'weekly' })}
+                      className={`py-1 rounded-md text-xs font-semibold cursor-pointer ${
+                        popFormData.frequency === 'weekly'
+                          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Semanal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPopFormData({ ...popFormData, frequency: 'monthly' })}
+                      className={`py-1 rounded-md text-xs font-semibold cursor-pointer ${
+                        popFormData.frequency === 'monthly'
+                          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Mensal
+                    </button>
+                  </div>
+
+                  {popFormData.frequency === 'weekly' && (
+                    <div className="pt-1">
+                      <label className="text-slate-500 block mb-1">Dia da Semana:</label>
+                      <select
+                        value={popFormData.dayOfWeek}
+                        onChange={(e) => setPopFormData({ ...popFormData, dayOfWeek: Number(e.target.value) })}
+                        className="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+                      >
+                        <option value={1}>Segunda-feira</option>
+                        <option value={2}>Terça-feira</option>
+                        <option value={3}>Quarta-feira</option>
+                        <option value={4}>Quinta-feira</option>
+                        <option value={5}>Sexta-feira</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {popFormData.frequency === 'monthly' && (
+                    <div className="pt-1">
+                      <label className="text-slate-500 block mb-1">Dia do Mês (1 a 31):</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        value={popFormData.dayOfMonth}
+                        onChange={(e) => setPopFormData({ ...popFormData, dayOfMonth: Number(e.target.value) })}
+                        className="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-slate-700 dark:text-slate-300 font-semibold block">
+                    Entregável Obrigatório (Critério de Aceite)
+                  </label>
+                  <input
+                    type="text"
+                    value={popFormData.deliverable}
+                    onChange={(e) => setPopFormData({ ...popFormData, deliverable: e.target.value })}
+                    required
+                    placeholder="Ex: Espelho de ponto 100% auditado e faltas cobertas"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-medium"
+                  />
+                  <div className="flex items-center justify-between text-slate-500 pt-1">
+                    <span>Reciclagem Falconi (dias):</span>
+                    <input
+                      type="number"
+                      min={30}
+                      max={730}
+                      value={popFormData.recyclingPeriodDays}
+                      onChange={(e) => setPopFormData({ ...popFormData, recyclingPeriodDays: Number(e.target.value) })}
+                      className="w-20 px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 text-right font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Linha 4: Vídeo-Treinamento (YouTube / Loom) */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Video className="w-4 h-4 text-red-500" />
+                    <span>Vídeo-Treinamento Prático (YouTube ou Loom)</span>
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Será renderizado como player interativo no POP
+                  </span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="url"
+                    value={popFormData.videoUrl}
+                    onChange={(e) => setPopFormData({ ...popFormData, videoUrl: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=... ou https://www.loom.com/share/..."
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                  <input
+                    type="text"
+                    value={popFormData.videoTitle}
+                    onChange={(e) => setPopFormData({ ...popFormData, videoTitle: e.target.value })}
+                    placeholder="Título da vídeo-aula (Ex: Demonstração no Sistema)"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              {/* Linha 5: Editor Rico WYSIWYG com Passo a Passo (Foto na esquerda/direita, Vídeo no meio, etc) */}
+              <div className="space-y-1">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold block flex items-center justify-between">
+                  <span>Passo a Passo Operacional (Editor Visual Padronizado)</span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Clique em "+ Passo (Foto Esq / Texto Dir)" ou "+ Vídeo Player" para diagramar
+                  </span>
+                </label>
+                <RichTextEditor
+                  value={popFormData.sopMarkdown}
+                  onChange={(html) => setPopFormData({ ...popFormData, sopMarkdown: html })}
+                  placeholder="Descreva o passo a passo detalhado deste procedimento operacional..."
+                  minHeight="340px"
+                />
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsPopModalOpen(false)}
+                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Salvar Procedimento (POP)</span>
                 </button>
               </div>
 

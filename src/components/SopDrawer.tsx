@@ -85,11 +85,15 @@ export const SopDrawer: React.FC<SopDrawerProps> = ({
             </div>
           </div>
 
-          {/* SOP Markdown Content Body */}
+          {/* SOP Content Body (HTML ou Markdown) */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
             {block.sopMarkdown ? (
               <div className="sop-content prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed">
-                <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
+                {block.sopMarkdown.includes('<') ? (
+                  <div dangerouslySetInnerHTML={{ __html: block.sopMarkdown }} />
+                ) : (
+                  <ReactMarkdown>{block.sopMarkdown}</ReactMarkdown>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 text-slate-400">

@@ -16,7 +16,10 @@ import {
   Redo,
   Image as ImageIcon,
   Columns,
-  Trash2
+  Trash2,
+  Video,
+  Play,
+  Maximize2
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -76,6 +79,65 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
+  };
+
+  // Helper para converter URL em embed do YouTube ou Loom
+  const getEmbedVideoUrl = (rawUrl: string) => {
+    if (!rawUrl) return null;
+    const url = rawUrl.trim();
+    try {
+      if (url.includes('youtube.com/watch?v=')) {
+        const videoId = url.split('watch?v=')[1]?.split('&')[0];
+        return `https://www.youtube.com/embed/${videoId}`;
+      } else if (url.includes('youtu.be/')) {
+        const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}`;
+      } else if (url.includes('youtube.com/embed/')) {
+        return url;
+      } else if (url.includes('loom.com/share/')) {
+        const videoId = url.split('loom.com/share/')[1]?.split('?')[0];
+        return `https://www.loom.com/embed/${videoId}`;
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  };
+
+  // Inserir Bloco de Vídeo Embed no local do cursor
+  const insertVideoBlockAtCursor = () => {
+    const videoUrl = prompt('Insira o link do vídeo (YouTube ou Loom):');
+    if (!videoUrl || !videoUrl.trim()) return;
+
+    const embedUrl = getEmbedVideoUrl(videoUrl);
+    if (!embedUrl) return;
+
+    const titlePrompt = prompt('Título ou descrição do vídeo (Opcional):') || 'Vídeo de Demonstração / Treinamento';
+
+    const videoHtml = `
+      <div class="rgr-video-block" style="margin: 20px 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #0f172a; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #1e293b; color: #f8fafc; font-size: 12px; font-weight: 600;">
+          <span style="display: flex; align-items: center; gap: 6px;">
+            ▶️ ${titlePrompt}
+          </span>
+          <a href="${videoUrl}" target="_blank" rel="noreferrer" style="color: #60a5fa; font-size: 11px; text-decoration: none;">
+            Abrir Externo ↗
+          </a>
+        </div>
+        <div style="position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 480px; background: #000000;">
+          <iframe 
+            src="${embedUrl}" 
+            title="${titlePrompt}"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+      <p><br></p>
+    `;
+
+    insertHtmlAtCursor(videoHtml);
   };
 
   // Upload solto de foto no cursor
@@ -310,6 +372,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <span>+ Passo (Texto Esq / Foto Dir)</span>
           </button>
         </div>
+
+        {/* Inserir Vídeo Embed (YouTube / Loom) em qualquer posição */}
+        <button
+          type="button"
+          onClick={insertVideoBlockAtCursor}
+          className="flex items-center gap-1 px-2.5 py-1 rounded bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 border border-red-200/80 dark:border-red-900/60 text-xs font-semibold cursor-pointer transition-colors"
+          title="Inserir vídeo interativo (YouTube/Loom) na posição do cursor"
+        >
+          <Video className="w-3.5 h-3.5 text-red-600 fill-red-500/20" />
+          <span>+ Vídeo Player</span>
+        </button>
 
         {/* Upload Solto de Imagem */}
         <button
