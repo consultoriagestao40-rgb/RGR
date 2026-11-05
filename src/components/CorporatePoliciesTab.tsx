@@ -765,32 +765,13 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                 </div>
               </div>
 
-              {/* Imagens Anexadas à Política */}
-              {viewingPolicy.images && viewingPolicy.images.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Diagramas, Organogramas e Evidências Ilustrativas</span>
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {viewingPolicy.images.map(img => (
-                      <div key={img.id} className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900">
-                        <img src={img.url} alt={img.caption || 'Imagem da política'} className="w-full h-44 object-cover hover:scale-105 transition-transform" />
-                        {img.caption && (
-                          <p className="p-2 text-[11px] text-slate-500 dark:text-slate-400 text-center border-t border-slate-200 dark:border-slate-800">
-                            {img.caption}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Texto Normativo Formatado em HTML / Markdown */}
+              {/* Texto Normativo Formatado em HTML / Markdown (Imagens no fluxo do texto) */}
               <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm">
                 {viewingPolicy.contentMarkdown.includes('<') ? (
-                  <div dangerouslySetInnerHTML={{ __html: viewingPolicy.contentMarkdown }} />
+                  <div 
+                    className="leading-relaxed space-y-3"
+                    dangerouslySetInnerHTML={{ __html: viewingPolicy.contentMarkdown }} 
+                  />
                 ) : (
                   <ReactMarkdown>{viewingPolicy.contentMarkdown}</ReactMarkdown>
                 )}

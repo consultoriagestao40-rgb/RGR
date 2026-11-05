@@ -72,7 +72,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
-  // Upload real de arquivo de imagem do computador
+  // Upload real de arquivo de imagem do computador e inserção inline no cursor
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -85,9 +85,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64Url = event.target?.result as string;
-      if (base64Url) {
-        // Insere a imagem no ponto exato do cursor
-        execCommand('insertImage', base64Url);
+      if (base64Url && editorRef.current) {
+        // Cria elemento de imagem estilizado inline que se encaixa no fluxo do texto
+        const imgHtml = `
+          <div style="margin: 16px 0; text-align: center;">
+            <img src="${base64Url}" alt="${file.name}" style="max-width: 100%; max-height: 480px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: inline-block;" />
+            <p style="font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic;">Evidência / Imagem Ilustrativa</p>
+          </div>
+          <p><br></p>
+        `;
+        document.execCommand('insertHTML', false, imgHtml);
+        if (editorRef.current) {
+          onChange(editorRef.current.innerHTML);
+        }
       }
     };
     reader.readAsDataURL(file);
