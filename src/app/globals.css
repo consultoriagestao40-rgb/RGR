@@ -266,12 +266,40 @@ body {
     page-break-inside: auto;
   }
 
-  /* When printing a single policy or POP modal, hide everything else */
-  body.printing-single-doc #__next > *:not(.printing-doc-container),
-  body.printing-single-doc main,
-  body.printing-single-doc nav,
-  body.printing-single-doc header {
-    display: none !important;
+  /* When printing a single policy or POP modal: isolate printable document and unbind fixed modal */
+  body.printing-single-doc * {
+    visibility: hidden !important;
+  }
+
+  body.printing-single-doc .printing-doc-container,
+  body.printing-single-doc .printing-doc-container * {
+    visibility: visible !important;
+  }
+
+  body.printing-single-doc .printing-doc-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    z-index: 999999 !important;
+    display: block !important;
+  }
+
+  body.printing-single-doc #printable-policy-sheet,
+  body.printing-single-doc #printable-pop-sheet {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* High contrast dark text on paper */

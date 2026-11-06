@@ -763,6 +763,27 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in printing-doc-container">
           <div id="printable-policy-sheet" className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl">
             
+            {/* Print-Only Official Letterhead */}
+            <div className="hidden print:flex items-center justify-between pb-4 border-b-2 border-slate-900 mb-4 px-6 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-sm font-mono tracking-tight">
+                  RGR
+                </div>
+                <div>
+                  <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">
+                    RGR • Gerenciamento da Rotina & Governança
+                  </h1>
+                  <p className="text-[11px] text-slate-600">
+                    Facilities Brasil S.A. • Política Corporativa Institucional
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] font-mono text-slate-500 uppercase block">Norma Regulamentar</span>
+                <span className="text-[11px] font-mono font-bold text-slate-900">{viewingPolicy.code} • {viewingPolicy.version}</span>
+              </div>
+            </div>
+
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
               <div>
@@ -781,7 +802,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
               <button
                 type="button"
                 onClick={() => setViewingPolicy(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer no-print"
               >
                 <X className="w-5 h-5" />
               </button>
