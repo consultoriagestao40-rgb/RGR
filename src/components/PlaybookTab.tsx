@@ -32,6 +32,7 @@ import {
 import { OperationalRole, RoutineBlock, PopTrainingRecord, SystemUser } from '@/lib/types';
 import { formatBlockFrequency } from '@/lib/frequency';
 import { RichTextEditor } from './RichTextEditor';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface PlaybookTabProps {
   role: OperationalRole | null;
@@ -84,6 +85,11 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
     videoTitle: '',
     recyclingPeriodDays: 180
   });
+
+  // Fechar modais ao pressionar ESC
+  useEscKey(!!viewingPop, () => setViewingPop(null));
+  useEscKey(isPopModalOpen, () => setIsPopModalOpen(false));
+  useEscKey(!!editingMediaBlock, () => setEditingMediaBlock(null));
 
   const toggleExpand = (id: string) => {
     setExpandedBlockIds(prev => ({
@@ -519,7 +525,7 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
 
                         {/* 5. Versão */}
                         <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
-                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-block shadow-2xs">
                             {block.version || 'v1.0'}
                           </span>
                         </td>

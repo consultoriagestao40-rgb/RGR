@@ -33,6 +33,7 @@ import {
 import { CorporatePolicy, OperationalRole, SystemUser } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
 import { RichTextEditor } from './RichTextEditor';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface CorporatePoliciesTabProps {
   currentUser?: SystemUser | null;
@@ -86,17 +87,47 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
 
   const [imagesList, setImagesList] = useState<{ id: string; url: string; caption?: string }[]>([]);
 
-  // Carrega Políticas
+  // Fechar modais ao pressionar ESC
+  useEscKey(!!viewingPolicy, () => setViewingPolicy(null));
+  useEscKey(isModalOpen, () => setIsModalOpen(false));
+  useEscKey(!!approvingPolicy, () => setApprovingPolicy(null));
+
+  // Carrega Políticas (com persistência local como fallback)
   const fetchPolicies = async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/policies');
       if (res.ok) {
         const data = await res.json();
+        // Mescla com dados locais se houverem políticas salvas/editadas localmente
+        const localSaved = localStorage.getItem('rgr_corporate_policies_v1');
+        if (localSaved) {
+          try {
+            const parsedLocal: CorporatePolicy[] = JSON.parse(localSaved);
+            if (Array.isArray(parsedLocal) && parsedLocal.length > 0) {
+              // Atualiza o estado com a versão local mais recente
+              setPolicies(parsedLocal);
+              setIsLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.error('Erro ao ler políticas do localStorage:', e);
+          }
+        }
         setPolicies(data);
+        localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(data));
+      } else {
+        const localSaved = localStorage.getItem('rgr_corporate_policies_v1');
+        if (localSaved) {
+          setPolicies(JSON.parse(localSaved));
+        }
       }
     } catch (err) {
       console.error('Erro ao buscar políticas:', err);
+      const localSaved = localStorage.getItem('rgr_corporate_policies_v1');
+      if (localSaved) {
+        setPolicies(JSON.parse(localSaved));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +211,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         });
         if (res.ok) {
           const updated = await res.json();
-          setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+          setPolicies(prev => {
+            const next = prev.map(p => p.id === updated.id ? updated : p);
+            localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(next));
+            return next;
+          });
           setIsModalOpen(false);
         }
       } else {
@@ -191,7 +226,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         });
         if (res.ok) {
           const created = await res.json();
-          setPolicies(prev => [created, ...prev]);
+          setPolicies(prev => {
+            const next = [created, ...prev];
+            localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(next));
+            return next;
+          });
           setIsModalOpen(false);
         }
       }
@@ -300,7 +339,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
 
       if (res.ok) {
         const updated = await res.json();
-        setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+        setPolicies(prev => {
+          const next = prev.map(p => p.id === updated.id ? updated : p);
+          localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(next));
+          return next;
+        });
         setApprovingPolicy(null);
       }
     } catch (err) {
@@ -323,7 +366,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
 
       if (res.ok) {
         const updated = await res.json();
-        setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+        setPolicies(prev => {
+          const next = prev.map(p => p.id === updated.id ? updated : p);
+          localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(next));
+          return next;
+        });
       }
     } catch (err) {
       console.error('Erro ao revogar política:', err);
@@ -336,7 +383,11 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
     try {
       const res = await fetch(`/api/policies/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setPolicies(prev => prev.filter(p => p.id !== id));
+        setPolicies(prev => {
+          const next = prev.filter(p => p.id !== id);
+          localStorage.setItem('rgr_corporate_policies_v1', JSON.stringify(next));
+          return next;
+        });
         if (viewingPolicy?.id === id) setViewingPolicy(null);
       }
     } catch (err) {

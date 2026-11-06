@@ -18,6 +18,7 @@ import {
   Building
 } from 'lucide-react';
 import { SystemUser, OperationalRole, UserAccessRole } from '@/lib/types';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface UsersManagementSectionProps {
   users: SystemUser[];
@@ -45,6 +46,9 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
   const [hasAllAccess, setHasAllAccess] = useState(false);
   const [mustChangePassword, setMustChangePassword] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fechar modal ao pressionar ESC
+  useEscKey(isModalOpen, () => setIsModalOpen(false));
 
   const handleOpenModal = (user?: SystemUser) => {
     if (user) {

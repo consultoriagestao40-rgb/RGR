@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, Check, Save, Plus, Trash2, ShieldCheck, Briefcase } from 'lucide-react';
 import { OperationalRole, RoleProfile, RoleResponsibilityGroup } from '@/lib/types';
 import { getDefaultRoleProfile } from '@/lib/default-profiles';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface EditRoleProfileModalProps {
   isOpen: boolean;
@@ -53,6 +54,9 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fechar ao pressionar ESC
+  useEscKey(isOpen, onClose);
 
   if (!isOpen) return null;
 

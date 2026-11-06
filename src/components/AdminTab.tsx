@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, DailyRitual, SystemUser, RitualType, RitualFrequency, MonthlyScheduleType } from '@/lib/types';
 import { WEEK_DAYS, formatRitualFrequency, formatBlockFrequency } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface AdminTabProps {
   roles: OperationalRole[];
@@ -66,6 +67,10 @@ export const AdminTab: React.FC<AdminTabProps> = ({
 
   // Ritual form
   const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
+
+  // Fechar modais ao pressionar ESC
+  useEscKey(isBlockModalOpen, () => setIsBlockModalOpen(false));
+  useEscKey(isRitualModalOpen, () => setIsRitualModalOpen(false));
   const [editingRitual, setEditingRitual] = useState<DailyRitual | null>(null);
   const [ritualCode, setRitualCode] = useState('');
   const [ritualTimeSlot, setRitualTimeSlot] = useState('');

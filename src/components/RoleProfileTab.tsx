@@ -34,6 +34,7 @@ import { OperationalRole, RoleProfile, RoutineBlock, DailyRitual, RitualType, Ri
 import { getDefaultRoleProfile } from '@/lib/default-profiles';
 import { WEEK_DAYS, formatBlockFrequency, formatRitualFrequency } from '@/lib/frequency';
 import { EditRoleProfileModal } from './EditRoleProfileModal';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface RoleProfileTabProps {
   roles: OperationalRole[];
@@ -78,6 +79,10 @@ export const RoleProfileTab: React.FC<RoleProfileTabProps> = ({
 
   // Ritual Modal State (Ritos da Cadeira)
   const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
+
+  // Fechar modais ao pressionar ESC
+  useEscKey(isBlockModalOpen, () => setIsBlockModalOpen(false));
+  useEscKey(isRitualModalOpen, () => setIsRitualModalOpen(false));
   const [editingRitual, setEditingRitual] = useState<DailyRitual | null>(null);
   const [ritualCode, setRitualCode] = useState('');
   const [ritualTimeSlot, setRitualTimeSlot] = useState('');

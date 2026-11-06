@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 export interface BoardMember {
   id: string;
@@ -345,6 +346,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   // Status
   const [minuteSuccessMessage, setMinuteSuccessMessage] = useState(false);
   const [isSavingMinute, setIsSavingMinute] = useState(false);
+
+  // Fechar modais ao pressionar tecla ESC
+  useEscKey(!!votingAgendaId, () => setVotingAgendaId(null));
+  useEscKey(isAiRecorderOpen, () => setIsAiRecorderOpen(false));
+  useEscKey(isNewCommitteeModalOpen, () => setIsNewCommitteeModalOpen(false));
+  useEscKey(!!managingCommitteeId, () => setManagingCommitteeId(null));
+  useEscKey(isAddAgendaModalOpen, () => setIsAddAgendaModalOpen(false));
+  useEscKey(!!editingCommittee, () => setEditingCommittee(null));
 
   const activeCommittee = useMemo(() => {
     if (!activeCommitteeId) return null;

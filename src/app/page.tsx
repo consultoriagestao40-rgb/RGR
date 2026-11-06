@@ -28,6 +28,7 @@ import { OperationalRole, RoutineBlock, RoutineBlockWithExecution, DailyRitual, 
 import { INITIAL_ROLES, INITIAL_BLOCKS, INITIAL_RITUALS, INITIAL_USERS } from '@/lib/seed-data';
 import { evaluateDelay } from '@/lib/timeline-utils';
 import { SYSTEM_START_DATE, isWeekend } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 export default function HomePage() {
   const [roles, setRoles] = useState<OperationalRole[]>(INITIAL_ROLES);
@@ -83,6 +84,16 @@ export default function HomePage() {
 
   // Password change modal (voluntary)
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+
+  // Fechamento de Modais e Drawers com tecla ESC
+  useEscKey(isSopDrawerOpen, () => setIsSopDrawerOpen(false));
+  useEscKey(isObsModalOpen, () => setIsObsModalOpen(false));
+  useEscKey(isMinuteModalOpen, () => setIsMinuteModalOpen(false));
+  useEscKey(isMeetingAiModalOpen, () => setIsMeetingAiModalOpen(false));
+  useEscKey(isCreateRoleModalOpen, () => setIsCreateRoleModalOpen(false));
+  useEscKey(isDelayModalOpen, () => setIsDelayModalOpen(false));
+  useEscKey(isAddAgendaModalOpen, () => setIsAddAgendaModalOpen(false));
+  useEscKey(isChangePasswordModalOpen, () => setIsChangePasswordModalOpen(false));
 
   // Sidebar collapsed state with localStorage persistence
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
