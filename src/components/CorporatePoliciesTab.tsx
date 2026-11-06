@@ -708,6 +708,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             </button>
                           )}
 
+                          {/* Ações Padronizadas: Ler, Editar, Revogar (se vigente) e Excluir */}
                           <button
                             type="button"
                             onClick={() => setViewingPolicy(pol)}
@@ -727,7 +728,7 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
 
-                          {pol.status === 'active' ? (
+                          {pol.status === 'active' && (
                             <button
                               type="button"
                               onClick={() => handleRevokePolicy(pol)}
@@ -736,16 +737,16 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
                             </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePolicy(pol.id, pol.title)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
-                              title="Excluir minuta"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePolicy(pol.id, pol.title)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer shrink-0"
+                            title="Excluir política permanentemente"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
 
                         </div>
                       </td>
