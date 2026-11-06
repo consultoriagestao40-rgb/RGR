@@ -1147,8 +1147,8 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
 
       {/* Modal: Leitura Completa do POP (Estilo Modal de Políticas Corporativas) */}
       {viewingPop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xs animate-in fade-in printing-doc-container">
+          <div id="printable-pop-sheet" className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl">
             
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
@@ -1259,17 +1259,36 @@ export const PlaybookTab: React.FC<PlaybookTabProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between no-print">
               <span className="text-[11px] text-slate-400">
                 Procedimento Operacional Auditado • RGR Facilities
               </span>
-              <button
-                type="button"
-                onClick={() => setViewingPop(null)}
-                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
-              >
-                Fechar Leitura
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const originalTitle = document.title;
+                    document.title = `${viewingPop.code || 'POP'} - ${viewingPop.title}`;
+                    document.body.classList.add('printing-single-doc');
+                    window.print();
+                    setTimeout(() => {
+                      document.title = originalTitle;
+                      document.body.classList.remove('printing-single-doc');
+                    }, 1000);
+                  }}
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Gerar PDF / Imprimir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingPop(null)}
+                  className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 cursor-pointer shadow-xs"
+                >
+                  Fechar Leitura
+                </button>
+              </div>
             </div>
 
           </div>
