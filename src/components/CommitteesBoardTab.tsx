@@ -317,9 +317,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [newComType, setNewComType] = useState<'board' | 'committee'>('committee');
 
   // Helper para gerar sigla/código automático inteligente a partir do nome e tipo
-  const generateCommitteeCode = (name: string, type: 'board' | 'committee') => {
+  const generateCommitteeCode = (name: string, type: 'board' | 'committee', existingList: CommitteeConfig[] = committees) => {
     const prefix = type === 'board' ? 'CONS' : 'COM';
-    if (!name.trim()) return `${prefix}-01`;
+    const cleanName = (name || '').trim();
+
+    if (!cleanName) {
+      const nextNum = existingList.filter(c => c.type === type).length + 1;
+      return `${prefix}-0${nextNum}`;
+    }
 
     const stopWords = new Set([
       'DE', 'DO', 'DA', 'DOS', 'DAS', 'E', '&', 'PARA', 'COM', 'EM', 'POR', 'NO', 'NA', 'NOS', 'NAS', 'UM', 'UMA', 'A', 'O',
@@ -327,7 +332,7 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
     ]);
 
     // Extrair palavras significativas
-    const words = name
+    const words = cleanName
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '') // remove acentos
       .toUpperCase()
@@ -337,18 +342,18 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
     let slug = '';
     if (words.length === 0) {
-      slug = 'GER';
+      const nextNum = existingList.filter(c => c.type === type).length + 1;
+      slug = `0${nextNum}`;
     } else if (words.length === 1) {
       slug = words[0].substring(0, 4);
     } else if (words.length === 2) {
-      slug = (words[0].substring(0, 3) + '-' + words[1].substring(0, 3));
+      slug = `${words[0].substring(0, 3)}-${words[1].substring(0, 3)}`;
     } else {
-      // 3 ou mais palavras: pegar 2 ou 3 letras das principais
-      slug = words.slice(0, 3).map(w => w.substring(0, 2)).join('');
+      // 3 ou mais palavras: pegar as 2 ou 3 primeiras letras
+      slug = words.slice(0, 3).map(w => w.substring(0, 3)).join('');
     }
 
-    const candidate = `${prefix}-${slug}`;
-    return candidate;
+    return `${prefix}-${slug}`;
   };
 
   // Modal para Gerenciar Assentos
@@ -1337,10 +1342,14 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       alert('Informe o nome do comitê.');
                       return;
                     }
+                    const resolvedCode = newComCode.trim() && newComCode.trim() !== 'COM' && newComCode.trim() !== 'CONS'
+                      ? newComCode.trim()
+                      : generateCommitteeCode(newComName, newComType);
+
                     const newCom: CommitteeConfig = {
                       id: `com-${Date.now()}`,
                       name: newComName.trim(),
-                      code: newComCode.trim() || 'COM',
+                      code: resolvedCode,
                       type: newComType,
                       description: newComDesc.trim() || 'Comitê estratégico de governança.',
                       presidentName: newComPresident.trim() || 'A Definir',
