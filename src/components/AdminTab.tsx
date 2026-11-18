@@ -9,7 +9,9 @@ import {
   Landmark,
   CheckSquare,
   Calendar,
-  Clock
+  Clock,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { OperationalRole, RoutineBlock, DailyRitual, SystemUser, RitualType, RitualFrequency, MonthlyScheduleType } from '@/lib/types';
 import { WEEK_DAYS, formatRitualFrequency, formatBlockFrequency } from '@/lib/frequency';
@@ -50,6 +52,36 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   const [roleCode, setRoleCode] = useState('');
   const [roleDept, setRoleDept] = useState('');
   const [roleDesc, setRoleDesc] = useState('');
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+
+  const handleGenerateAiDescription = async () => {
+    if (!roleTitle.trim()) {
+      alert('Informe primeiro o Título do Cargo / Cadeira para que a IA possa elaborar a descrição.');
+      return;
+    }
+    setIsGeneratingDesc(true);
+    try {
+      const res = await fetch('/api/ai/role-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: roleTitle.trim(),
+          department: roleDept.trim(),
+          code: roleCode.trim()
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.description) {
+          setRoleDesc(data.description);
+        }
+      }
+    } catch (err) {
+      console.error('Error generating description with AI:', err);
+    } finally {
+      setIsGeneratingDesc(false);
+    }
+  };
 
   // Block form
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
@@ -654,12 +686,33 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 />
               </div>
               <div>
-                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium">Escopo de Atuação e Responsabilidade</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-600 dark:text-slate-400 font-medium">Escopo de Atuação e Responsabilidade</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAiDescription}
+                    disabled={isGeneratingDesc}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer disabled:opacity-50"
+                    title="Gerar descrição executiva automaticamente com IA"
+                  >
+                    {isGeneratingDesc ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
+                        <span>Gerando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                        <span>Gerar com IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <textarea
                   value={roleDesc}
                   onChange={(e) => setRoleDesc(e.target.value)}
                   rows={3}
-                  placeholder="Descreva o objetivo da cadeira e a missão do profissional..."
+                  placeholder="Descreva o objetivo da cadeira e a missão do profissional (ou clique em 'Gerar com IA')..."
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 leading-relaxed"
                 />
               </div>

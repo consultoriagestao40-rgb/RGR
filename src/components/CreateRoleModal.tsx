@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Users, Check, Building, Plus, Pencil, Trash2 } from 'lucide-react';
+import { X, Users, Check, Building, Plus, Pencil, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
 
 interface CreateRoleModalProps {
@@ -29,6 +29,36 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+
+  const handleGenerateAiDescription = async () => {
+    if (!title.trim()) {
+      alert('Informe primeiro o Título do Cargo / Cadeira para que a IA possa elaborar o escopo de atuação.');
+      return;
+    }
+    setIsGeneratingDesc(true);
+    try {
+      const res = await fetch('/api/ai/role-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          department: department.trim(),
+          code: code.trim()
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.description) {
+          setDescription(data.description);
+        }
+      }
+    } catch (err) {
+      console.error('Error generating description with AI:', err);
+    } finally {
+      setIsGeneratingDesc(false);
+    }
+  };
 
   useEffect(() => {
     if (roleToEdit) {
@@ -188,14 +218,35 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
           </div>
 
           <div>
-            <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">
-              Escopo de Atuação e Responsabilidade (Objetivo da cadeira)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-slate-700 dark:text-slate-300 font-semibold">
+                Escopo de Atuação e Responsabilidade
+              </label>
+              <button
+                type="button"
+                onClick={handleGenerateAiDescription}
+                disabled={isGeneratingDesc}
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                title="Gerar escopo e missão executiva com IA"
+              >
+                {isGeneratingDesc ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
+                    <span>Gerando descrição...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    <span>Gerar com IA</span>
+                  </>
+                )}
+              </button>
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              placeholder="Ex: Cadeira de controle e tesouraria diária responsável pelo fluxo de caixa, borderô de pagamentos a fornecedores de Facilities e prestação de contas matinal."
+              placeholder="Descreva o objetivo da cadeira e a missão do profissional (ou clique em 'Gerar com IA')..."
               required
               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors leading-relaxed"
             />
