@@ -559,15 +559,15 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
       {/* Tabela Padronizada Atlas de Políticas Corporativas */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1e293b] rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse table-fixed min-w-[900px]">
+          <table className="w-full text-left border-collapse table-fixed min-w-[1080px]">
             <thead>
               <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-4 w-[36%]">Código & Política</th>
-                <th className="py-3 px-4 w-[16%]">Categoria</th>
-                <th className="py-3 px-4 w-[18%]">Instância Deliberadora</th>
-                <th className="py-3 px-4 w-[14%] text-center">Status</th>
-                <th className="py-3 px-4 w-[10%] text-center">Vigência</th>
-                <th className="py-3 px-4 w-[16%] text-right">Ações</th>
+                <th className="py-3 px-4 w-[30%]">Código & Política</th>
+                <th className="py-3 px-4 w-[14%]">Categoria</th>
+                <th className="py-3 px-4 w-[16%]">Instância Deliberadora</th>
+                <th className="py-3 px-4 w-[11%] text-center">Status</th>
+                <th className="py-3 px-4 w-[9%] text-center">Vigência</th>
+                <th className="py-3 px-4 w-[20%] text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
