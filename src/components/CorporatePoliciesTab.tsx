@@ -32,6 +32,7 @@ import {
   Printer
 } from 'lucide-react';
 import { CorporatePolicy, OperationalRole, SystemUser } from '@/lib/types';
+import { INITIAL_COMMITTEES } from '@/lib/committees-seed';
 import ReactMarkdown from 'react-markdown';
 import { RichTextEditor } from './RichTextEditor';
 import { useEscKey } from '@/lib/use-esc-key';
@@ -40,12 +41,14 @@ interface CorporatePoliciesTabProps {
   currentUser?: SystemUser | null;
   currentRole?: OperationalRole | null;
   roles?: OperationalRole[];
+  onNavigateToCommittees?: (committeeId?: string) => void;
 }
 
 export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
   currentUser,
   currentRole,
-  roles = []
+  roles = [],
+  onNavigateToCommittees
 }) => {
   const [policies, setPolicies] = useState<CorporatePolicy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -268,42 +271,46 @@ export const CorporatePoliciesTab: React.FC<CorporatePoliciesTabProps> = ({
         setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
 
         // Injeta automaticamente como Pauta Deliberativa no Colegiado salvo no localStorage
+        let targetComFoundId: string | null = null;
         try {
           const savedCommittees = localStorage.getItem('rgr_committees_state_v3');
-          if (savedCommittees) {
-            const parsed = JSON.parse(savedCommittees);
-            const targetCom = parsed.find((c: any) => c.code === targetBodyCode || c.id === targetBodyCode);
-            if (targetCom) {
-              const newAgendaItem = {
-                id: `agenda-pol-${policy.id}`,
-                title: `Apreciação e Homologação da Norma: ${policy.code} - ${policy.title}`,
-                description: `Proposta de Política Corporativa submetida por ${policy.authorName || 'Diretoria'}.\n\nSíntese: ${policy.description}`,
-                isFixed: false,
-                isDeliberative: true,
-                category: 'Governança & Políticas',
-                votes: {},
-                status: 'pending'
-              };
+          const parsed = savedCommittees ? JSON.parse(savedCommittees) : INITIAL_COMMITTEES;
+          const targetCom = parsed.find((c: any) => c.code === targetBodyCode || c.id === targetBodyCode);
+          if (targetCom) {
+            targetComFoundId = targetCom.id;
+            const newAgendaItem = {
+              id: `agenda-pol-${policy.id}`,
+              title: `Apreciação e Homologação da Norma: ${policy.code} - ${policy.title}`,
+              description: `Proposta de Política Corporativa submetida por ${policy.authorName || 'Diretoria'}.\n\nSíntese: ${policy.description}`,
+              isFixed: false,
+              isDeliberative: true,
+              category: 'Governança & Políticas',
+              votes: {},
+              status: 'pending'
+            };
 
-              // Adiciona na lista base do comitê
-              targetCom.agendas = [newAgendaItem, ...(targetCom.agendas || [])];
+            // Adiciona na lista base do comitê (evita duplicar se já existir)
+            targetCom.agendas = [newAgendaItem, ...(targetCom.agendas || []).filter((a: any) => a.id !== newAgendaItem.id)];
 
-              // Se houver sessões em aberto / agendadas, adiciona na sessão ativa mais recente
-              if (targetCom.sessions && targetCom.sessions.length > 0) {
-                const latestSession = targetCom.sessions[0];
-                if (latestSession && latestSession.status !== 'concluded') {
-                  latestSession.agendas = [newAgendaItem, ...(latestSession.agendas || [])];
-                }
+            // Se houver sessões em aberto / agendadas, adiciona na sessão ativa mais recente
+            if (targetCom.sessions && targetCom.sessions.length > 0) {
+              const latestSession = targetCom.sessions[0];
+              if (latestSession && latestSession.status !== 'concluded') {
+                latestSession.agendas = [newAgendaItem, ...(latestSession.agendas || []).filter((a: any) => a.id !== newAgendaItem.id)];
               }
-
-              localStorage.setItem('rgr_committees_state_v3', JSON.stringify(parsed));
             }
+
+            localStorage.setItem('rgr_committees_state_v3', JSON.stringify(parsed));
           }
         } catch (storageErr) {
           console.warn('Erro ao sincronizar pauta com o comitê:', storageErr);
         }
 
-        alert(`✅ Proposta submetida com sucesso!\nUma pauta deliberativa foi incluída na Ordem do Dia de [${targetBodyName}].`);
+        if (confirm(`✅ Proposta submetida com sucesso à Ordem do Dia de [${targetBodyName}]!\n\nDeseja ir agora para a tela do Comitê para apreciar e votar esta pauta?`)) {
+          if (onNavigateToCommittees) {
+            onNavigateToCommittees(targetComFoundId || undefined);
+          }
+        }
       }
     } catch (err) {
       console.error('Erro ao submeter política:', err);

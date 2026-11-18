@@ -60,6 +60,7 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<'timeline' | 'dispatch' | 'calendar' | 'actions' | 'ranking' | 'playbook' | 'role-profile' | 'minutes' | 'committees' | 'policies' | 'admin' | 'users'>('timeline');
   const [roleProfileDetailId, setRoleProfileDetailId] = useState<string | null>(null);
+  const [targetCommitteeId, setTargetCommitteeId] = useState<string | null>(null);
 
   // Drawers and Modals
   const [activeSopBlock, setActiveSopBlock] = useState<RoutineBlockWithExecution | null>(null);
@@ -692,6 +693,7 @@ export default function HomePage() {
               users={users}
               currentUser={currentUser}
               onNavigateToMinutes={() => setActiveTab('minutes')}
+              initialCommitteeId={targetCommitteeId}
             />
           )}
 
@@ -700,6 +702,10 @@ export default function HomePage() {
               currentUser={currentUser}
               currentRole={selectedRole}
               roles={roles}
+              onNavigateToCommittees={(committeeId) => {
+                setTargetCommitteeId(committeeId || null);
+                setActiveTab('committees');
+              }}
             />
           )}
 

@@ -116,6 +116,7 @@ interface CommitteesBoardTabProps {
   users?: SystemUser[];
   onNavigateToActions?: () => void;
   onNavigateToMinutes?: () => void;
+  initialCommitteeId?: string | null;
 }
 
 export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
@@ -126,7 +127,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   onOpenMinuteModal,
   users = [],
   onNavigateToActions,
-  onNavigateToMinutes
+  onNavigateToMinutes,
+  initialCommitteeId = null
 }) => {
   // Lista Padrão de Colegiados
   const defaultCommittees: CommitteeConfig[] = [
@@ -276,7 +278,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   }, [committees]);
 
   // Colegiado ativo na tela (null = tabela geral; string = painel do colegiado)
-  const [activeCommitteeId, setActiveCommitteeId] = useState<string | null>(null);
+  const [activeCommitteeId, setActiveCommitteeId] = useState<string | null>(initialCommitteeId || null);
+
+  React.useEffect(() => {
+    if (initialCommitteeId) {
+      setActiveCommitteeId(initialCommitteeId);
+    }
+  }, [initialCommitteeId]);
 
   // Sessão ativa selecionada dentro do colegiado (null = lista de sessões; string = pautas da sessão)
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -1874,7 +1882,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
   // Histórico de sessões do comitê com ordenação decrescente:
   // As sessões mais recentes / em andamento ficam no topo, e as mais antigas / finalizadas ficam abaixo.
-  const rawSessions = activeCommittee.sessions && activeCommittee.sessions.length > 0
+  // Nota: se activeCommittee.sessions for um array vazio [] (todas as sessões foram excluídas), respeita a lista vazia.
+  const rawSessions = activeCommittee.sessions !== undefined
     ? activeCommittee.sessions
     : [
         {
@@ -2135,7 +2144,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                                 if (confirm(`Tem certeza que deseja excluir a sessão "${session.sessionCode}" (${session.title})? Esta ação não pode ser desfeita.`)) {
                                   setCommittees(prev => prev.map(c => {
                                     if (c.id !== activeCommittee.id) return c;
-                                    const nextSessions = (c.sessions || []).filter(s => s.id !== session.id);
+                                    const baseSessions = c.sessions !== undefined ? c.sessions : committeeSessions;
+                                    const nextSessions = baseSessions.filter(s => s.id !== session.id);
                                     return {
                                       ...c,
                                       sessions: nextSessions
@@ -2258,7 +2268,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                       }
                       setCommittees(prev => prev.map(c => {
                         if (c.id !== activeCommittee.id) return c;
-                        const updatedSessions = (c.sessions || [committeeSessions[0]]).map(s => {
+                        const baseSessions = c.sessions !== undefined ? c.sessions : committeeSessions;
+                        const updatedSessions = baseSessions.map(s => {
                           if (s.id !== editingSession.id) return s;
                           return {
                             ...s,
@@ -2427,9 +2438,10 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
 
                       setCommittees(prev => prev.map(c => {
                         if (c.id !== activeCommittee.id) return c;
+                        const baseSessions = c.sessions !== undefined ? c.sessions : committeeSessions;
                         return {
                           ...c,
-                          sessions: [newSes, ...(c.sessions || [rawSessions[0]])]
+                          sessions: [newSes, ...baseSessions]
                         };
                       }));
 
