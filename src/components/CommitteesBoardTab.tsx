@@ -44,7 +44,7 @@ import {
   Pencil
 } from 'lucide-react';
 import { OperationalRole, SystemUser, VoteChoice } from '@/lib/types';
-import { formatDateBR } from '@/lib/frequency';
+import { formatDateBR, parseLocalDate } from '@/lib/frequency';
 import { useEscKey } from '@/lib/use-esc-key';
 
 export interface BoardMember {
@@ -381,6 +381,55 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   const [editComMeetingTime, setEditComMeetingTime] = useState('');
   const [newAgendaIsFixed, setNewAgendaIsFixed] = useState(false);
 
+  // Helper para calcular a data nativa da próxima sessão com base na cadência e dia definidos
+  const calculateDefaultSessionDate = (committee: CommitteeConfig, referenceDateStr: string = selectedDate): string => {
+    const meetingDayStr = (committee.meetingDay || committee.cadence || '').toLowerCase();
+    const ref = parseLocalDate(referenceDateStr);
+    const dayOfWeekMap: { [key: string]: number } = {
+      'segunda': 1,
+      'terça': 2,
+      'terca': 2,
+      'quarta': 3,
+      'quinta': 4,
+      'sexta': 5
+    };
+
+    let targetDayOfWeek = -1;
+    for (const [key, dow] of Object.entries(dayOfWeekMap)) {
+      if (meetingDayStr.includes(key)) {
+        targetDayOfWeek = dow;
+        break;
+      }
+    }
+
+    if (targetDayOfWeek !== -1) {
+      const currentDow = ref.getDay();
+      let diff = targetDayOfWeek - currentDow;
+      if (diff < 0) diff += 7; // Próximo dia da semana configurado
+      const targetDate = new Date(ref);
+      targetDate.setDate(ref.getDate() + diff);
+      return targetDate.toISOString().split('T')[0];
+    }
+
+    if (meetingDayStr.includes('último dia') || meetingDayStr.includes('ultimo dia')) {
+      const lastDay = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+      return lastDay.toISOString().split('T')[0];
+    }
+
+    return referenceDateStr;
+  };
+  // Modal para Editar Sessão (Mudar Data / Título)
+  const [editingSession, setEditingSession] = useState<CommitteeSession | null>(null);
+  const [editSessionDate, setEditSessionDate] = useState('');
+  const [editSessionTitle, setEditSessionTitle] = useState('');
+  const [editSessionCode, setEditSessionCode] = useState('');
+
+  // Modal para Criar Nova Sessão (Ordinária ou Extraordinária)
+  const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
+  const [newSessionType, setNewSessionType] = useState<'ordinary' | 'extraordinary'>('ordinary');
+  const [newSessionDate, setNewSessionDate] = useState('');
+  const [newSessionTitle, setNewSessionTitle] = useState('');
+
   // Filtro de Pautas da Sessão
   const [agendaFilter, setAgendaFilter] = useState<'all' | 'deliberative' | 'informative' | 'fixed'>('all');
 
@@ -395,6 +444,8 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
   useEscKey(!!managingCommitteeId, () => setManagingCommitteeId(null));
   useEscKey(isAddAgendaModalOpen, () => setIsAddAgendaModalOpen(false));
   useEscKey(!!editingCommittee, () => setEditingCommittee(null));
+  useEscKey(!!editingSession, () => setEditingSession(null));
+  useEscKey(isNewSessionModalOpen, () => setIsNewSessionModalOpen(false));
 
   const activeCommittee = useMemo(() => {
     if (!activeCommitteeId) return null;
@@ -1879,41 +1930,13 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
             <button
               type="button"
               onClick={() => {
-                const newCode = `SES-0${committeeSessions.length + 1}/${new Date().getFullYear()}`;
-                // Copia as pautas fixas ou padrão do comitê com status 'pending' e votos limpos para a nova sessão
-                const freshAgendas = (activeCommittee.agendas || []).map(ag => ({
-                  ...ag,
-                  id: `ag-ses-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                  votes: {},
-                  resolutionNote: '',
-                  status: 'pending' as const
-                }));
-
-                const newSes: CommitteeSession = {
-                  id: `ses-${Date.now()}`,
-                  sessionCode: newCode,
-                  title: `Sessão Ordinária • ${formatDateBR(selectedDate)}`,
-                  date: selectedDate,
-                  status: 'in_progress',
-                  agendas: freshAgendas.length > 0 ? freshAgendas : [
-                    {
-                      id: `ag-new-${Date.now()}`,
-                      title: 'Apreciação das Matérias em Pauta do Período',
-                      isDeliberative: true,
-                      isFixed: false,
-                      votes: {},
-                      status: 'pending' as const
-                    }
-                  ]
-                };
-                setCommittees(prev => prev.map(c => {
-                  if (c.id !== activeCommittee.id) return c;
-                  return {
-                    ...c,
-                    sessions: [newSes, ...(c.sessions || [rawSessions[0]])]
-                  };
-                }));
-                setActiveSessionId(newSes.id);
+                const nextNum = committeeSessions.length + 1;
+                const newCode = `SES-0${nextNum}/${new Date().getFullYear()}`;
+                const defaultDate = calculateDefaultSessionDate(activeCommittee, selectedDate);
+                setNewSessionType('ordinary');
+                setNewSessionDate(defaultDate);
+                setNewSessionTitle(`Sessão Ordinária • ${formatDateBR(defaultDate)}`);
+                setIsNewSessionModalOpen(true);
               }}
               className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
@@ -2088,6 +2111,44 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
                         {/* Ações */}
                         <td className="py-3.5 px-4 align-middle text-right">
                           <div className="inline-flex items-center gap-1.5 justify-end">
+                            {/* Editar data e título da sessão */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingSession(session);
+                                setEditSessionDate(session.date);
+                                setEditSessionTitle(session.title);
+                                setEditSessionCode(session.sessionCode);
+                              }}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs shrink-0"
+                              title="Editar data ou dados da sessão"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Excluir sessão */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm(`Tem certeza que deseja excluir a sessão "${session.sessionCode}" (${session.title})? Esta ação não pode ser desfeita.`)) {
+                                  setCommittees(prev => prev.map(c => {
+                                    if (c.id !== activeCommittee.id) return c;
+                                    const nextSessions = (c.sessions || []).filter(s => s.id !== session.id);
+                                    return {
+                                      ...c,
+                                      sessions: nextSessions
+                                    };
+                                  }));
+                                }
+                              }}
+                              className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer shadow-2xs shrink-0"
+                              title="Excluir sessão"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+
                             {isConcluded && (
                               <button
                                 type="button"
@@ -2126,6 +2187,263 @@ export const CommitteesBoardTab: React.FC<CommitteesBoardTabProps> = ({
               </table>
             </div>
           </div>
+
+          {/* Modal: Editar Sessão (Alterar Data e Título) */}
+          {editingSession && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-emerald-600" />
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Editar Sessão Colegiada
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingSession(null)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Código da Sessão</label>
+                    <input
+                      type="text"
+                      value={editSessionCode}
+                      onChange={(e) => setEditSessionCode(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Data da Reunião</label>
+                    <input
+                      type="date"
+                      value={editSessionDate}
+                      onChange={(e) => setEditSessionDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Título da Sessão</label>
+                    <input
+                      type="text"
+                      value={editSessionTitle}
+                      onChange={(e) => setEditSessionTitle(e.target.value)}
+                      placeholder="Ex: Sessão Ordinária de Governança"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingSession(null)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!editSessionDate) {
+                        alert('Informe a data da sessão.');
+                        return;
+                      }
+                      setCommittees(prev => prev.map(c => {
+                        if (c.id !== activeCommittee.id) return c;
+                        const updatedSessions = (c.sessions || [committeeSessions[0]]).map(s => {
+                          if (s.id !== editingSession.id) return s;
+                          return {
+                            ...s,
+                            date: editSessionDate,
+                            title: editSessionTitle.trim() || `Sessão • ${formatDateBR(editSessionDate)}`,
+                            sessionCode: editSessionCode.trim() || s.sessionCode
+                          };
+                        });
+                        return {
+                          ...c,
+                          sessions: updatedSessions
+                        };
+                      }));
+                      setEditingSession(null);
+                    }}
+                    className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+                  >
+                    Salvar Alterações
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Abrir Nova Sessão (Ordinária ou Extraordinária) */}
+          {isNewSessionModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-emerald-600" />
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Abrir Sessão Colegiada
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsNewSessionModalOpen(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  {/* Tipo: Ordinária x Extraordinária */}
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Tipo da Sessão</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewSessionType('ordinary');
+                          setNewSessionTitle(`Sessão Ordinária • ${formatDateBR(newSessionDate)}`);
+                        }}
+                        className={`p-2 rounded-xl border text-center font-semibold cursor-pointer transition-colors ${
+                          newSessionType === 'ordinary'
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800'
+                        }`}
+                      >
+                        Sessão Ordinária
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewSessionType('extraordinary');
+                          setNewSessionTitle(`Sessão Extraordinária • ${formatDateBR(newSessionDate)}`);
+                        }}
+                        className={`p-2 rounded-xl border text-center font-semibold cursor-pointer transition-colors ${
+                          newSessionType === 'extraordinary'
+                            ? 'bg-amber-600 text-white border-transparent shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800'
+                        }`}
+                      >
+                        ⚡ Extraordinária
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Data da Reunião com atalho para a Data Nativa da Cadência */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[10px] text-slate-500 font-medium">Data da Reunião</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const natDate = calculateDefaultSessionDate(activeCommittee, selectedDate);
+                          setNewSessionDate(natDate);
+                          setNewSessionTitle(`${newSessionType === 'extraordinary' ? 'Sessão Extraordinária' : 'Sessão Ordinária'} • ${formatDateBR(natDate)}`);
+                        }}
+                        className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold hover:underline cursor-pointer"
+                        title="Usar o dia oficial configurado no comitê"
+                      >
+                        Dia Nativo da Cadência ({activeCommittee.meetingDay || activeCommittee.cadence.split('(')[0].trim()})
+                      </button>
+                    </div>
+                    <input
+                      type="date"
+                      value={newSessionDate}
+                      onChange={(e) => {
+                        const d = e.target.value;
+                        setNewSessionDate(d);
+                        setNewSessionTitle(`${newSessionType === 'extraordinary' ? 'Sessão Extraordinária' : 'Sessão Ordinária'} • ${formatDateBR(d)}`);
+                      }}
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-medium block mb-1">Título da Sessão</label>
+                    <input
+                      type="text"
+                      value={newSessionTitle}
+                      onChange={(e) => setNewSessionTitle(e.target.value)}
+                      placeholder="Ex: Sessão Extraordinária de Aprovação Orçamentária"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewSessionModalOpen(false)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newSessionDate) {
+                        alert('Informe a data da sessão.');
+                        return;
+                      }
+                      const nextNum = committeeSessions.length + 1;
+                      const sessionCode = `${newSessionType === 'extraordinary' ? 'SES-EXT' : 'SES'}-0${nextNum}/${new Date().getFullYear()}`;
+
+                      // Copia as pautas fixas ou modelo base com status 'pending' e votos zerados
+                      const freshAgendas = (activeCommittee.agendas || []).map(ag => ({
+                        ...ag,
+                        id: `ag-ses-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        votes: {},
+                        resolutionNote: '',
+                        status: 'pending' as const
+                      }));
+
+                      const newSes: CommitteeSession = {
+                        id: `ses-${Date.now()}`,
+                        sessionCode,
+                        title: newSessionTitle.trim() || `Sessão • ${formatDateBR(newSessionDate)}`,
+                        date: newSessionDate,
+                        status: 'in_progress',
+                        agendas: freshAgendas.length > 0 ? freshAgendas : [
+                          {
+                            id: `ag-new-${Date.now()}`,
+                            title: 'Apreciação das Matérias em Pauta do Período',
+                            isDeliberative: true,
+                            isFixed: false,
+                            votes: {},
+                            status: 'pending' as const
+                          }
+                        ]
+                      };
+
+                      setCommittees(prev => prev.map(c => {
+                        if (c.id !== activeCommittee.id) return c;
+                        return {
+                          ...c,
+                          sessions: [newSes, ...(c.sessions || [rawSessions[0]])]
+                        };
+                      }));
+
+                      setIsNewSessionModalOpen(false);
+                      setActiveSessionId(newSes.id);
+                    }}
+                    className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+                  >
+                    Criar e Abrir Sala
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
