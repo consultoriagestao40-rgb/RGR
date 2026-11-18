@@ -123,7 +123,7 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
       return;
     }
 
-    const finalAllowedRoles = hasAllAccess || roleType === 'admin' 
+    const finalAllowedRoles = hasAllAccess 
       ? ['*'] 
       : allowedRoleIds;
 
@@ -590,7 +590,7 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                     </p>
                   </label>
 
-                  {/* Admin */}
+                  {/* Admin / Diretoria */}
                   <label className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
                     roleType === 'admin'
                       ? 'border-slate-900 dark:border-blue-500 bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white ring-1 ring-slate-900/20'
@@ -603,7 +603,6 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                       checked={roleType === 'admin'}
                       onChange={() => {
                         setRoleType('admin');
-                        setHasAllAccess(true);
                       }}
                       className="sr-only"
                     />
@@ -612,7 +611,7 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                       <span className="text-xs font-bold">Diretoria / Admin</span>
                     </div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                      Acesso total, governança e criação de cadeiras.
+                      Governança, atas e comitês. Cadeiras configuráveis.
                     </p>
                   </label>
 
@@ -624,24 +623,25 @@ export const UsersManagementSection: React.FC<UsersManagementSectionProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Building className="w-3.5 h-3.5 text-slate-500" />
-                    Cadeiras Operacionais Permitidas
+                    Cadeiras Operacionais Autorizadas
                   </span>
                   
-                  {roleType === 'admin' && (
-                    <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={hasAllAccess}
-                        onChange={(e) => setHasAllAccess(e.target.checked)}
-                        className="rounded text-slate-900 focus:ring-0"
-                      />
-                      <span>Acesso Total (*)</span>
-                    </label>
-                  )}
+                  <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasAllAccess}
+                      onChange={(e) => setHasAllAccess(e.target.checked)}
+                      className="rounded text-slate-900 focus:ring-0"
+                    />
+                    <span>Acesso Irrestrito a Todas (*)</span>
+                  </label>
                 </div>
 
                 {!hasAllAccess ? (
                   <div className="space-y-1.5 max-h-48 overflow-y-auto p-1.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 px-1 py-0.5">
+                      Marque somente as cadeiras que este diretor/usuário pode visualizar e despachar:
+                    </p>
                     {roles.map(r => {
                       const isSelected = allowedRoleIds.includes(r.id);
                       return (

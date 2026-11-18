@@ -237,8 +237,7 @@ export default function HomePage() {
     setCurrentUser(user);
 
     // If new user does not have permission for the current chair, switch to an authorized chair
-    const hasAccess = user.roleType === 'admin' || 
-                      user.allowedRoleIds.includes('*') || 
+    const hasAccess = user.allowedRoleIds.includes('*') || 
                       user.allowedRoleIds.includes(selectedRoleId);
 
     if (!hasAccess) {

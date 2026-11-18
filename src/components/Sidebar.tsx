@@ -128,7 +128,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Filter roles accessible to this user
   const allowedRoles = React.useMemo(() => {
-    if (!currentUser || currentUser.roleType === 'admin' || currentUser.allowedRoleIds.includes('*')) {
+    if (!currentUser) return roles;
+    if (currentUser.allowedRoleIds.includes('*')) {
       return roles;
     }
     const filtered = roles.filter(r => currentUser.allowedRoleIds.includes(r.id));
