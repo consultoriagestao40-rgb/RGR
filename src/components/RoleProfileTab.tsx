@@ -28,12 +28,16 @@ import {
   Trash2,
   Landmark,
   CheckSquare,
-  X
+  X,
+  Upload,
+  Image as ImageIcon,
+  Video
 } from 'lucide-react';
 import { OperationalRole, RoleProfile, RoutineBlock, DailyRitual, RitualType, RitualFrequency, MonthlyScheduleType } from '@/lib/types';
 import { getDefaultRoleProfile } from '@/lib/default-profiles';
 import { WEEK_DAYS, formatBlockFrequency, formatRitualFrequency } from '@/lib/frequency';
 import { EditRoleProfileModal } from './EditRoleProfileModal';
+import { RichTextEditor } from './RichTextEditor';
 import { useEscKey } from '@/lib/use-esc-key';
 
 interface RoleProfileTabProps {
@@ -76,6 +80,9 @@ export const RoleProfileTab: React.FC<RoleProfileTabProps> = ({
   const [blockDayOfMonth, setBlockDayOfMonth] = useState<number>(20);
   const [blockVersion, setBlockVersion] = useState('v1.0');
   const [blockHomologated, setBlockHomologated] = useState('Diretoria Executiva');
+  const [blockImagesList, setBlockImagesList] = useState<{ id: string; url: string; caption?: string }[]>([]);
+  const [blockVideoUrl, setBlockVideoUrl] = useState('');
+  const [blockVideoTitle, setBlockVideoTitle] = useState('');
 
   // Ritual Modal State (Ritos da Cadeira)
   const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
@@ -159,6 +166,9 @@ export const RoleProfileTab: React.FC<RoleProfileTabProps> = ({
       setBlockDayOfMonth(block.dayOfMonth ?? 20);
       setBlockVersion(block.version || 'v1.0');
       setBlockHomologated(block.homologatedBy || 'Diretoria Executiva');
+      setBlockImagesList(block.images || []);
+      setBlockVideoUrl(block.videoUrl || '');
+      setBlockVideoTitle(block.videoTitle || '');
     } else {
       setEditingBlock(null);
       setBlockCode(`POP-${activeRole?.code ? activeRole.code.replace('CAD-', '') : '01'}-0${chairBlocks.length + 1}`);
@@ -171,6 +181,9 @@ export const RoleProfileTab: React.FC<RoleProfileTabProps> = ({
       setBlockDayOfMonth(20);
       setBlockVersion('v1.0');
       setBlockHomologated('Diretoria Executiva');
+      setBlockImagesList([]);
+      setBlockVideoUrl('');
+      setBlockVideoTitle('');
     }
     setIsBlockModalOpen(true);
   };
@@ -189,7 +202,10 @@ export const RoleProfileTab: React.FC<RoleProfileTabProps> = ({
       dayOfWeek: blockFrequency === 'weekly' ? Number(blockDayOfWeek) : undefined,
       dayOfMonth: blockFrequency === 'monthly' ? Number(blockDayOfMonth) : undefined,
       version: blockVersion,
-      homologatedBy: blockHomologated
+      homologatedBy: blockHomologated,
+      images: blockImagesList,
+      videoUrl: blockVideoUrl || undefined,
+      videoTitle: blockVideoTitle || undefined
     };
 
     if (editingBlock) {
@@ -1192,11 +1208,11 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
 
       {/* MODAL: CRIAR OU EDITAR ATIVIDADE / POP (COM FREQUÊNCIA E HORÁRIO) */}
       {isBlockModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in my-6 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {editingBlock ? 'Editar Atividade / POP' : 'Adicionar Nova Atividade / POP'}
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -1206,14 +1222,14 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
               <button
                 type="button"
                 onClick={() => setIsBlockModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveBlock} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSaveBlock} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">Código do POP</label>
                   <input
@@ -1246,7 +1262,7 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                   onChange={(e) => setBlockTitle(e.target.value)}
                   placeholder="Ex: Faturamento Diário de Contratos, Medições & Emissão de NFS-e"
                   required
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
@@ -1333,14 +1349,76 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                 />
               </div>
 
-              <div>
-                <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">Procedimento Operacional Padrão (POP em Markdown)</label>
-                <textarea
-                  rows={4}
+              {/* Anexos de Fotos do Passo a Passo */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Fotos & Prints do Passo a Passo (PNG, JPG)</span>
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Selecione direto do computador para o POP
+                  </span>
+                </label>
+
+                <label className="flex px-3 py-2 bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 text-xs items-center justify-center gap-2 cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-colors">
+                  <Upload className="w-4 h-4 text-slate-400" />
+                  <span>Clique para anexar foto / print do passo a passo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const base64 = event.target?.result as string;
+                        if (base64) {
+                          setBlockImagesList(prev => [
+                            ...prev,
+                            { id: `img-${Date.now()}`, url: base64, caption: file.name }
+                          ]);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+                </label>
+
+                {blockImagesList.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {blockImagesList.map(img => (
+                      <div key={img.id} className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-lg">
+                        <img src={img.url} alt="Miniatura" className="w-6 h-6 rounded object-cover border border-slate-300" />
+                        <span className="text-[10px] truncate max-w-[140px] text-slate-700 dark:text-slate-300">{img.caption || 'Foto'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setBlockImagesList(prev => prev.filter(i => i.id !== img.id))}
+                          className="text-rose-500 hover:text-rose-700 font-bold ml-1 cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Editor Rico com Formatação Padronizada */}
+              <div className="space-y-1">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-between">
+                  <span>Procedimento Operacional Padrão (Passo a Passo com Formatação Visual)</span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Negrito, listas, títulos e fotos com layout estruturado
+                  </span>
+                </label>
+                <RichTextEditor
                   value={blockSopMarkdown}
-                  onChange={(e) => setBlockSopMarkdown(e.target.value)}
-                  placeholder="Passo a passo padronizado que o operador deve seguir..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  onChange={(html) => setBlockSopMarkdown(html)}
+                  placeholder="Escreva o passo a passo com fotos, regras e procedimentos detalhados..."
+                  minHeight="320px"
                 />
               </div>
 
@@ -1369,13 +1447,13 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                 <button
                   type="button"
                   onClick={() => setIsBlockModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg font-semibold shadow-xs"
+                  className="px-5 py-2 bg-atlas-600 hover:bg-atlas-700 text-white rounded-lg font-semibold shadow-xs cursor-pointer"
                 >
                   Salvar Atividade
                 </button>
@@ -1387,11 +1465,11 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
 
       {/* MODAL: CRIAR OU EDITAR RITO / REUNIÃO (COM HORÁRIO E FREQUÊNCIA) */}
       {isRitualModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-800 dark:text-white shadow-2xl animate-in fade-in my-6 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {editingRitual ? 'Editar Rito de Despacho' : 'Cadastrar Novo Rito de Despacho'}
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -1401,14 +1479,14 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
               <button
                 type="button"
                 onClick={() => setIsRitualModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveRitual} className="space-y-3.5">
-              <div className="grid grid-cols-3 gap-3">
+            <form onSubmit={handleSaveRitual} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">Código</label>
                   <input
@@ -1451,7 +1529,7 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                   onChange={(e) => setRitualTitle(e.target.value)}
                   placeholder="Ex: Despacho Financeiro da Tarde & Liberação de Pagamentos (com o CEO)"
                   required
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
@@ -1585,17 +1663,19 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                 )}
               </div>
 
-              <div>
-                <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">
-                  Itens da Pauta (uma pauta por linha)
+              {/* Pauta com Editor Rico com Formatação */}
+              <div className="space-y-1">
+                <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-between">
+                  <span>Itens da Pauta & Roteiro do Rito (Formatação Visual)</span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Pautas estruturadas, tópicos e formatação de texto
+                  </span>
                 </label>
-                <textarea
-                  rows={4}
+                <RichTextEditor
                   value={ritualItemsText}
-                  onChange={(e) => setRitualItemsText(e.target.value)}
-                  placeholder="Pauta 1&#10;Pauta 2&#10;Pauta 3"
-                  required
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  onChange={(html) => setRitualItemsText(html)}
+                  placeholder="Liste as pautas, tópicos deliberativos e orientações deste rito..."
+                  minHeight="220px"
                 />
               </div>
 
@@ -1603,13 +1683,13 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
                 <button
                   type="button"
                   onClick={() => setIsRitualModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-xs"
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-xs cursor-pointer"
                 >
                   Salvar Rito
                 </button>

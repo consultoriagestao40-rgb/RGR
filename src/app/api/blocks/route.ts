@@ -30,6 +30,9 @@ export async function POST(req: Request) {
     }
     const block = await createRoutineBlock({
       roleId: body.roleId,
+      code: body.code || undefined,
+      version: body.version || 'v1.0',
+      homologatedBy: body.homologatedBy || undefined,
       timeWindow: body.timeWindow,
       title: body.title,
       deliverable: body.deliverable,
@@ -37,7 +40,10 @@ export async function POST(req: Request) {
       frequency: body.frequency || 'daily',
       dayOfWeek: body.dayOfWeek ?? null,
       dayOfMonth: body.dayOfMonth ?? null,
-      orderIndex: body.orderIndex || 0
+      orderIndex: body.orderIndex || 0,
+      videoUrl: body.videoUrl || undefined,
+      videoTitle: body.videoTitle || undefined,
+      images: body.images || undefined
     });
     return NextResponse.json(block, { status: 201 });
   } catch (error) {
