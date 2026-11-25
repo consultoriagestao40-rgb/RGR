@@ -51,7 +51,11 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
     const users = await getUsers();
-    const targetUser = users.find(u => u.id === userId);
+    // Se userId for passado, procura por ele. Se não ou se o usuário não tiver conexão, procura o usuário conectado (ex: admin/CEO)
+    let targetUser = userId ? users.find(u => u.id === userId) : null;
+    if (!targetUser || !targetUser.googleConnectedEmail) {
+      targetUser = users.find(u => u.googleConnectedEmail && (u.googleCalendarToken || u.googleRefreshToken)) || null;
+    }
 
     if (!targetUser || !targetUser.googleConnectedEmail) {
       return NextResponse.json({ events: [] });

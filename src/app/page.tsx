@@ -140,8 +140,14 @@ export default function HomePage() {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setUsers(data);
-        // keep current user updated if edited
-        setCurrentUser(prev => data.find(u => u.id === prev.id) || prev);
+        // keep current user updated if edited and persist in localStorage
+        setCurrentUser(prev => {
+          const fresh = data.find(u => u.id === prev.id) || prev;
+          try {
+            localStorage.setItem('rgr_session_user', JSON.stringify(fresh));
+          } catch (e) {}
+          return fresh;
+        });
       }
     } catch (err) {
       console.error('Error fetching users:', err);

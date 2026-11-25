@@ -69,29 +69,30 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   const [isLoadingGoogle, setIsLoadingGoogle] = React.useState(false);
 
   React.useEffect(() => {
-    if (!currentUser || !currentUser.googleConnectedEmail) {
-      setGoogleEvents([]);
-      return;
-    }
-
     let isMounted = true;
     setIsLoadingGoogle(true);
-    fetch(`/api/calendar/google-events?userId=${currentUser.id}&date=${selectedDate}`)
+    const userIdParam = currentUser?.id ? `&userId=${currentUser.id}` : '';
+    fetch(`/api/calendar/google-events?date=${selectedDate}${userIdParam}`)
       .then(res => res.json())
       .then(data => {
         if (isMounted && data.success && Array.isArray(data.events)) {
           // Filtra apenas eventos que NÃO são rotinas geradas pelo RGR (ou seja, compromissos pessoais, reuniões externas)
           const externalOnly = data.events.filter((e: any) => !e.isRgrEvent);
           setGoogleEvents(externalOnly);
+        } else if (isMounted) {
+          setGoogleEvents([]);
         }
       })
-      .catch(err => console.error('Erro ao buscar eventos do Google Calendar:', err))
+      .catch(err => {
+        console.error('Erro ao buscar eventos do Google Calendar:', err);
+        if (isMounted) setGoogleEvents([]);
+      })
       .finally(() => {
         if (isMounted) setIsLoadingGoogle(false);
       });
 
     return () => { isMounted = false; };
-  }, [currentUser, selectedDate]);
+  }, [currentUser?.id, currentUser?.googleConnectedEmail, selectedDate]);
   if (!role) {
     return (
       <div className="text-center py-20 text-slate-500 font-medium">
@@ -341,7 +342,7 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
               </h4>
             </div>
             <span className="text-[11px] font-mono text-blue-700 dark:text-blue-300">
-              Sincronizado com: {currentUser?.googleConnectedEmail}
+              {currentUser?.googleConnectedEmail ? `Sincronizado com: ${currentUser.googleConnectedEmail}` : 'Google Agenda Sincronizada'}
             </span>
           </div>
 
