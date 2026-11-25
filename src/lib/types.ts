@@ -34,6 +34,7 @@ export interface OperationalRole {
   department: string;
   description: string;
   code?: string; // Ex: CAD-FIN-01
+  googleCalendarEmail?: string; // E-mail da ponta (@gmail.com) para receber as rotinas na agenda
   createdAt: string;
   profile?: RoleProfile;
 }

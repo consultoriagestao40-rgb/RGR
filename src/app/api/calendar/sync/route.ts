@@ -135,7 +135,13 @@ export async function POST(request: NextRequest) {
         (e.description && e.description.includes(`ritual_id:${ritual.id}`)) || e.summary === summary
       );
 
-      const eventPayload = {
+      // Se a cadeira tem e-mail do operador configurado, adiciona como participante/convidado
+      const attendees: { email: string }[] = [];
+      if (role?.googleCalendarEmail && role.googleCalendarEmail.includes('@')) {
+        attendees.push({ email: role.googleCalendarEmail.trim() });
+      }
+
+      const eventPayload: any = {
         summary,
         description: `${description}\n\n[rgr_meta: ritual_id:${ritual.id} | date:${targetDate}]`,
         start: {
@@ -149,8 +155,12 @@ export async function POST(request: NextRequest) {
         colorId: '9' // Bold Blue para governança
       };
 
+      if (attendees.length > 0) {
+        eventPayload.attendees = attendees;
+      }
+
       if (existing) {
-        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.id}`, {
+        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.id}?sendUpdates=all`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -160,7 +170,7 @@ export async function POST(request: NextRequest) {
         });
         updatedCount++;
       } else {
-        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -205,7 +215,13 @@ export async function POST(request: NextRequest) {
         (e.description && e.description.includes(`block_id:${block.id}`)) || e.summary === summary
       );
 
-      const eventPayload = {
+      // Se a cadeira tem e-mail do operador configurado, adiciona como participante/convidado
+      const attendees: { email: string }[] = [];
+      if (role?.googleCalendarEmail && role.googleCalendarEmail.includes('@')) {
+        attendees.push({ email: role.googleCalendarEmail.trim() });
+      }
+
+      const eventPayload: any = {
         summary,
         description: `${description}\n\n[rgr_meta: block_id:${block.id} | date:${targetDate}]`,
         start: {
@@ -219,8 +235,12 @@ export async function POST(request: NextRequest) {
         colorId: '2' // Verde sálvia para rotina diária
       };
 
+      if (attendees.length > 0) {
+        eventPayload.attendees = attendees;
+      }
+
       if (existing) {
-        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.id}`, {
+        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.id}?sendUpdates=all`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -230,7 +250,7 @@ export async function POST(request: NextRequest) {
         });
         updatedCount++;
       } else {
-        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,

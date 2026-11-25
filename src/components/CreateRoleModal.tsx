@@ -27,6 +27,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Operações');
   const [description, setDescription] = useState('');
+  const [googleCalendarEmail, setGoogleCalendarEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
@@ -66,11 +67,13 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
       setTitle(roleToEdit.title || '');
       setDepartment(roleToEdit.department || 'Operações');
       setDescription(roleToEdit.description || '');
+      setGoogleCalendarEmail(roleToEdit.googleCalendarEmail || '');
     } else {
       setCode(`CAD-0${existingCount + 1}`);
       setTitle('');
       setDepartment('Operações');
       setDescription('');
+      setGoogleCalendarEmail('');
     }
   }, [roleToEdit, existingCount, isOpen]);
 
@@ -92,7 +95,8 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
           code: code.trim(),
           title: title.trim(),
           department: department.trim(),
-          description: description.trim()
+          description: description.trim(),
+          googleCalendarEmail: googleCalendarEmail.trim() || undefined
         })
       });
 
@@ -215,6 +219,26 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
               required
               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors"
             />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Google Agenda do Operador / Colaborador (Convite Automático)</span>
+              </label>
+              <span className="text-[10px] text-slate-400 font-mono">Opcional</span>
+            </div>
+            <input
+              type="email"
+              value={googleCalendarEmail}
+              onChange={(e) => setGoogleCalendarEmail(e.target.value)}
+              placeholder="exemplo: colaborador.ponta@gmail.com"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-colors placeholder:font-sans"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Ao sincronizar o calendário no RGR, todas as rotinas e ritos desta cadeira serão enviados automaticamente para o app Google Agenda no smartphone deste colaborador.
+            </p>
           </div>
 
           <div>

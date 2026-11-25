@@ -56,6 +56,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   const [roleCode, setRoleCode] = useState('');
   const [roleDept, setRoleDept] = useState('');
   const [roleDesc, setRoleDesc] = useState('');
+  const [roleGoogleEmail, setRoleGoogleEmail] = useState('');
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
 
   const handleGenerateAiDescription = async () => {
@@ -155,12 +156,14 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       setRoleTitle(role.title);
       setRoleDept(role.department);
       setRoleDesc(role.description);
+      setRoleGoogleEmail(role.googleCalendarEmail || '');
     } else {
       setEditingRole(null);
       setRoleCode(`CAD-${(roles.length + 1).toString().padStart(2, '0')}`);
       setRoleTitle('');
       setRoleDept('Operações & Facilities');
       setRoleDesc('');
+      setRoleGoogleEmail('');
     }
     setIsRoleModalOpen(true);
   };
@@ -177,7 +180,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           title: roleTitle,
           code: roleCode,
           department: roleDept,
-          description: roleDesc
+          description: roleDesc,
+          googleCalendarEmail: roleGoogleEmail.trim() || undefined
         })
       });
     } else {
@@ -188,7 +192,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           title: roleTitle,
           code: roleCode,
           department: roleDept,
-          description: roleDesc
+          description: roleDesc,
+          googleCalendarEmail: roleGoogleEmail.trim() || undefined
         })
       });
       const created = await res.json();
@@ -626,6 +631,16 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
                     {role.description}
                   </p>
+                  {role.googleCalendarEmail ? (
+                    <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md border border-emerald-200/80 dark:border-emerald-800/60 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="truncate">{role.googleCalendarEmail}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-[10px] text-slate-400 italic">
+                      Sem Google Agenda vinculada
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
@@ -692,6 +707,23 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                   required
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
+              </div>
+              <div>
+                <label className="text-slate-600 dark:text-slate-400 block mb-1 font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Google Agenda do Operador / Colaborador</span>
+                  <span className="text-[10px] text-slate-400 font-normal ml-auto">(Convite Automático)</span>
+                </label>
+                <input
+                  type="email"
+                  value={roleGoogleEmail}
+                  onChange={(e) => setRoleGoogleEmail(e.target.value)}
+                  placeholder="exemplo: colaborador.ponta@gmail.com"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono text-xs"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Ao sincronizar, o RGR convida este e-mail para que as rotinas e ritos apareçam no app Google Agenda do celular do colaborador.
+                </p>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">

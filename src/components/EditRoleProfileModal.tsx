@@ -28,6 +28,7 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
   const [contractType, setContractType] = useState(currentProfile.contractType || 'CLT – Efetivo');
   const [workSchedule, setWorkSchedule] = useState(currentProfile.workSchedule || 'Segunda a Sexta-feira, das 08:00 às 17:48 (com 1h de intervalo)');
   const [workMode, setWorkMode] = useState(currentProfile.workMode || 'Presencial (Base Operacional)');
+  const [googleCalendarEmail, setGoogleCalendarEmail] = useState(role.googleCalendarEmail || '');
   const [mission, setMission] = useState(currentProfile.mission || '');
 
   // Responsibilities
@@ -142,7 +143,10 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
       const res = await fetch(`/api/roles/${role.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: updatedProfile })
+        body: JSON.stringify({ 
+          profile: updatedProfile,
+          googleCalendarEmail: googleCalendarEmail.trim() || null
+        })
       });
 
       if (!res.ok) {
@@ -150,7 +154,11 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
       }
 
       const updatedRole = await res.json();
-      onProfileSaved({ ...updatedRole, profile: updatedProfile });
+      onProfileSaved({ 
+        ...updatedRole, 
+        profile: updatedProfile,
+        googleCalendarEmail: googleCalendarEmail.trim() || undefined
+      });
       onClose();
     } catch (err) {
       console.error('Error saving role profile:', err);
@@ -252,6 +260,24 @@ export const EditRoleProfileModal: React.FC<EditRoleProfileModalProps> = ({
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
                   placeholder="Ex: CCT SIEMACO Paraná (Asseio e Conservação)"
                 />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Google Agenda do Operador / Colaborador</span>
+                  <span className="text-[10px] text-slate-400 font-normal ml-auto">(Convite Automático)</span>
+                </label>
+                <input
+                  type="email"
+                  value={googleCalendarEmail}
+                  onChange={(e) => setGoogleCalendarEmail(e.target.value)}
+                  placeholder="exemplo: colaborador.ponta@gmail.com"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Ao sincronizar, o RGR convida este e-mail para que as rotinas e ritos apareçam no app Google Agenda do smartphone.
+                </p>
               </div>
 
               <div>

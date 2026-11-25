@@ -185,6 +185,7 @@ export async function getRoles(): Promise<OperationalRole[]> {
           title: r.title,
           department: r.department,
           description: r.description,
+          googleCalendarEmail: (r as any).googleCalendarEmail || undefined,
           createdAt: r.createdAt.toISOString()
         }));
       }
@@ -207,6 +208,7 @@ export async function getRoleById(id: string): Promise<OperationalRole | null> {
           title: r.title,
           department: r.department,
           description: r.description,
+          googleCalendarEmail: (r as any).googleCalendarEmail || undefined,
           createdAt: r.createdAt.toISOString()
         };
       }
@@ -229,7 +231,8 @@ export async function createRole(data: Omit<OperationalRole, 'id' | 'createdAt'>
           title: data.title,
           department: data.department,
           description: data.description,
-        }
+          googleCalendarEmail: data.googleCalendarEmail || null
+        } as any
       });
       return {
         id: created.id,
@@ -237,6 +240,7 @@ export async function createRole(data: Omit<OperationalRole, 'id' | 'createdAt'>
         title: created.title,
         department: created.department,
         description: created.description,
+        googleCalendarEmail: (created as any).googleCalendarEmail || undefined,
         createdAt: created.createdAt.toISOString()
       };
     } catch (e) {
@@ -262,14 +266,19 @@ export async function createRole(data: Omit<OperationalRole, 'id' | 'createdAt'>
 export async function updateRole(id: string, data: Partial<OperationalRole>): Promise<OperationalRole | null> {
   if (isDbConfigured) {
     try {
+      const updatePayload: any = {
+        code: data.code,
+        title: data.title,
+        department: data.department,
+        description: data.description
+      };
+      if (data.googleCalendarEmail !== undefined) {
+        updatePayload.googleCalendarEmail = data.googleCalendarEmail || null;
+      }
+
       const updated = await prisma.operationalRole.update({
         where: { id },
-        data: {
-          code: data.code,
-          title: data.title,
-          department: data.department,
-          description: data.description
-        }
+        data: updatePayload
       });
       return {
         id: updated.id,
@@ -277,6 +286,7 @@ export async function updateRole(id: string, data: Partial<OperationalRole>): Pr
         title: updated.title,
         department: updated.department,
         description: updated.description,
+        googleCalendarEmail: (updated as any).googleCalendarEmail || undefined,
         createdAt: updated.createdAt.toISOString()
       };
     } catch (e) {

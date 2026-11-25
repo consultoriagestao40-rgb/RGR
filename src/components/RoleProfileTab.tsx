@@ -672,10 +672,23 @@ ${(profile.nonNegotiableSlas || []).map(sla => `[SLA] ${sla}`).join('\n')}
 
         {/* Title & Description */}
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            {activeRole.title} ({activeRole.code || 'CAD'})
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {activeRole.title} ({activeRole.code || 'CAD'})
+            </h1>
+            {activeRole.googleCalendarEmail ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-mono text-emerald-800 dark:text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-sans font-semibold">Google Agenda:</span>
+                <span>{activeRole.googleCalendarEmail}</span>
+              </div>
+            ) : (
+              <span className="text-[11px] text-slate-400 italic">
+                Nenhuma conta Google Agenda configurada para convites desta cadeira
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Departamento: <strong className="text-slate-700 dark:text-slate-300">{activeRole.department}</strong> • Configure abaixo o perfil da função, as atividades com janelas de horários e os ritos de despacho desta cadeira.
           </p>
         </div>

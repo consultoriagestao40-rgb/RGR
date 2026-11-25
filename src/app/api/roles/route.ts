@@ -17,9 +17,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Title and department are required' }, { status: 400 });
     }
     const role = await createRole({
+      code: body.code,
       title: body.title,
       department: body.department,
-      description: body.description || ''
+      description: body.description || '',
+      googleCalendarEmail: body.googleCalendarEmail || undefined
     });
     return NextResponse.json(role, { status: 201 });
   } catch (error) {
