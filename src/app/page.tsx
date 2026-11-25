@@ -595,6 +595,7 @@ export default function HomePage() {
                 setIsAddAgendaModalOpen(true);
               }}
               onGoToDispatchRoom={() => setActiveTab('dispatch')}
+              currentUser={currentUser}
             />
           )}
 

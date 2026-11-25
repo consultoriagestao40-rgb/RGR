@@ -48,6 +48,7 @@ interface TimelineTabProps {
   onOpenAddAgendaModal?: (targetRitual?: DailyRitual) => void;
   onGoToDispatchRoom?: () => void;
   onSelectDate?: (date: string) => void;
+  currentUser?: any;
 }
 
 export const TimelineTab: React.FC<TimelineTabProps> = ({
@@ -60,8 +61,37 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   onOpenObservationModal,
   onOpenAddAgendaModal,
   onGoToDispatchRoom,
-  onSelectDate
+  onSelectDate,
+  currentUser
 }) => {
+  // Estado para carregar eventos externos do Google Calendar
+  const [googleEvents, setGoogleEvents] = React.useState<any[]>([]);
+  const [isLoadingGoogle, setIsLoadingGoogle] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!currentUser || !currentUser.googleConnectedEmail) {
+      setGoogleEvents([]);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingGoogle(true);
+    fetch(`/api/calendar/google-events?userId=${currentUser.id}&date=${selectedDate}`)
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && data.success && Array.isArray(data.events)) {
+          // Filtra apenas eventos que NÃO são rotinas geradas pelo RGR (ou seja, compromissos pessoais, reuniões externas)
+          const externalOnly = data.events.filter((e: any) => !e.isRgrEvent);
+          setGoogleEvents(externalOnly);
+        }
+      })
+      .catch(err => console.error('Erro ao buscar eventos do Google Calendar:', err))
+      .finally(() => {
+        if (isMounted) setIsLoadingGoogle(false);
+      });
+
+    return () => { isMounted = false; };
+  }, [currentUser, selectedDate]);
   if (!role) {
     return (
       <div className="text-center py-20 text-slate-500 font-medium">
@@ -296,6 +326,71 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* Compromissos e Reuniões Externas do Google Agenda */}
+      {googleEvents.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-[#111827] border border-blue-200/90 dark:border-blue-800/80 rounded-xl p-4 sm:p-5 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-blue-200/60 dark:border-blue-800/50 mb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-950 dark:text-blue-200 flex items-center gap-2">
+                <span>Compromissos & Reuniões Pessoais do Google Agenda</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+                  {googleEvents.length} {googleEvents.length === 1 ? 'evento externo' : 'eventos externos'}
+                </span>
+              </h4>
+            </div>
+            <span className="text-[11px] font-mono text-blue-700 dark:text-blue-300">
+              Sincronizado com: {currentUser?.googleConnectedEmail}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {googleEvents.map(evt => (
+              <div 
+                key={evt.id} 
+                className="bg-white/95 dark:bg-[#0f172a]/90 border border-blue-200/80 dark:border-blue-900/70 rounded-lg p-3 text-xs flex flex-col justify-between shadow-xs hover:border-blue-400 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="font-mono text-[11px] font-bold text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-800/60 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {evt.startTime} - {evt.endTime}
+                    </span>
+                    {evt.location && (
+                      <span className="text-[10px] text-slate-500 truncate max-w-[150px]">
+                        📍 {evt.location}
+                      </span>
+                    )}
+                  </div>
+                  <h5 className="font-bold text-slate-900 dark:text-white text-sm">
+                    {evt.summary}
+                  </h5>
+                  {evt.description && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                      {evt.description}
+                    </p>
+                  )}
+                </div>
+
+                {evt.htmlLink && (
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <a
+                      href={evt.htmlLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Abrir no Google Agenda</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Weekend Governance Notice Card (Exibido aos sábados e domingos quando não em modo consulta) */}
       {isCurrentWeekend && !showWeekendConsultation && (

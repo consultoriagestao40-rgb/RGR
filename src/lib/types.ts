@@ -39,6 +39,18 @@ export interface OperationalRole {
   profile?: RoleProfile;
 }
 
+export interface GoogleExternalEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  location?: string;
+  htmlLink?: string;
+  startTime: string; // "17:30"
+  endTime: string;   // "18:30"
+  isRgrEvent: boolean;
+  attendeesCount?: number;
+}
+
 export interface RoutineBlock {
   id: string;
   roleId: string;
