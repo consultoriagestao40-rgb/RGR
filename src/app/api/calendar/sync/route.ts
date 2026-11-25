@@ -98,11 +98,6 @@ export async function POST(request: NextRequest) {
       getAllRituals()
     ]);
 
-    // Blocos de rotina: apenas da cadeira do próprio usuário (ex: CEO)
-    const scheduledBlocks = allBlocks.filter((b: RoutineBlock) => 
-      userRoleIds.includes(b.roleId) && isBlockScheduledForDate(b, targetDate)
-    );
-
     // Ritos: da cadeira do usuário OU ritos de conselho/diretoria onde o CEO despacha
     const scheduledRituals = allRituals.filter((r: DailyRitual) => {
       const isMyRole = userRoleIds.includes(r.roleId);
@@ -114,6 +109,22 @@ export async function POST(request: NextRequest) {
         r.title.toLowerCase().includes('mesa de despacho')
       );
       return (isMyRole || isCeoDispatch) && isRitualScheduledForDate(r, targetDate);
+    });
+
+    // Blocos de rotina: apenas da cadeira do próprio usuário (ex: CEO)
+    // REGRA DE GOVERNANÇA: Se já existir um Rito agendado no mesmo horário ou com o mesmo objetivo,
+    // não duplicamos criando o bloco de rotina no Google Calendar!
+    const ritualTimes = new Set(scheduledRituals.map(r => r.timeSlot));
+    const scheduledBlocks = allBlocks.filter((b: RoutineBlock) => {
+      if (!userRoleIds.includes(b.roleId) || !isBlockScheduledForDate(b, targetDate)) {
+        return false;
+      }
+      const startTime = b.timeWindow ? b.timeWindow.split('-')[0].trim() : '';
+      // Se já tem um rito no mesmo horário (ex: 08:15 ou 14:30), o rito já representa o compromisso
+      if (ritualTimes.has(startTime)) {
+        return false;
+      }
+      return true;
     });
 
     // 3. Busca eventos existentes no Google Calendar para o dia alvo
