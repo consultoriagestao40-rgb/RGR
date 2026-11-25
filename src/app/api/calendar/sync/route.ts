@@ -119,8 +119,14 @@ export async function POST(request: NextRequest) {
       const summary = `🏛️ ${rolePrefix}${ritual.title}`;
       
       const timeSlot = ritual.timeSlot || '09:00';
-      const startDateTime = new Date(`${targetDate}T${timeSlot}:00`);
-      const endDateTime = new Date(startDateTime.getTime() + (ritual.durationMinutes || 30) * 60000);
+      const formattedTime = timeSlot.length === 5 ? `${timeSlot}:00` : timeSlot;
+      const startDateTimeStr = `${targetDate}T${formattedTime}-03:00`;
+      
+      const [rHour, rMin] = timeSlot.split(':').map(Number);
+      const totalMinutes = (rHour * 60 + rMin) + (ritual.durationMinutes || 30);
+      const endHour = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+      const endMin = String(totalMinutes % 60).padStart(2, '0');
+      const endDateTimeStr = `${targetDate}T${endHour}:${endMin}:00-03:00`;
 
       const description = [
         `Rito de Gestão / Governança RGR`,
@@ -145,11 +151,11 @@ export async function POST(request: NextRequest) {
         summary,
         description: `${description}\n\n[rgr_meta: ritual_id:${ritual.id} | date:${targetDate}]`,
         start: {
-          dateTime: startDateTime.toISOString(),
+          dateTime: startDateTimeStr,
           timeZone: 'America/Sao_Paulo'
         },
         end: {
-          dateTime: endDateTime.toISOString(),
+          dateTime: endDateTimeStr,
           timeZone: 'America/Sao_Paulo'
         },
         colorId: '9' // Bold Blue para governança
@@ -196,11 +202,10 @@ export async function POST(request: NextRequest) {
         if (parts[1]) endTime = parts[1];
       }
 
-      const startDateTime = new Date(`${targetDate}T${startTime}:00`);
-      let endDateTime = new Date(`${targetDate}T${endTime}:00`);
-      if (endDateTime <= startDateTime) {
-        endDateTime = new Date(startDateTime.getTime() + 60 * 60000);
-      }
+      const formattedStart = startTime.length === 5 ? `${startTime}:00` : startTime;
+      const formattedEnd = endTime.length === 5 ? `${endTime}:00` : endTime;
+      const startDateTimeStr = `${targetDate}T${formattedStart}-03:00`;
+      const endDateTimeStr = `${targetDate}T${formattedEnd}-03:00`;
 
       const description = [
         `Bloco Operacional de Rotina Falconi (RGR)`,
@@ -225,11 +230,11 @@ export async function POST(request: NextRequest) {
         summary,
         description: `${description}\n\n[rgr_meta: block_id:${block.id} | date:${targetDate}]`,
         start: {
-          dateTime: startDateTime.toISOString(),
+          dateTime: startDateTimeStr,
           timeZone: 'America/Sao_Paulo'
         },
         end: {
-          dateTime: endDateTime.toISOString(),
+          dateTime: endDateTimeStr,
           timeZone: 'America/Sao_Paulo'
         },
         colorId: '2' // Verde sálvia para rotina diária
