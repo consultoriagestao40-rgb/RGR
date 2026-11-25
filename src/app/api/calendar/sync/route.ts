@@ -3,8 +3,6 @@ import { getUsers, updateUser, getAllBlocks, getAllRituals, getRoles } from '@/l
 import { isBlockScheduledForDate, isRitualScheduledForDate } from '@/lib/frequency';
 import { OperationalRole, RoutineBlock, DailyRitual, SystemUser } from '@/lib/types';
 
-export const dynamic = 'force-dynamic';
-
 // Função auxiliar para renovar o access_token se estiver expirado
 async function getValidAccessToken(user: SystemUser): Promise<string | null> {
   let token = user.googleCalendarToken;
