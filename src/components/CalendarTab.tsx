@@ -460,6 +460,24 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     return result;
   }, [inspectedDate, rituals, blocks, roleFilter, frequencyFilter, searchQuery]);
 
+  // Formata eventos do Google Agenda como entregas normais integradas
+  const googleEventDeliverables = useMemo(() => {
+    return googleEvents.map((evt, idx) => ({
+      id: `google-cal-${evt.id || idx}`,
+      roleId: '',
+      title: evt.summary || 'Compromisso Externo',
+      macroprocess: 'Agenda & Reuniões',
+      deliverable: evt.description || (evt.location ? `Local: ${evt.location}` : 'Compromisso sincronizado do Google Agenda'),
+      timeWindow: `${evt.startTime} - ${evt.endTime}`,
+      criticality: 'medium',
+      frequency: 'daily' as const,
+      isCoreBlock: false,
+      code: 'G-CAL',
+      isGoogleCalendar: true,
+      htmlLink: evt.htmlLink
+    } as any));
+  }, [googleEvents]);
+
   // Data for the Inspected Date details
   const inspectedData = useMemo(() => {
     const isWeekendDay = isWeekend(inspectedDate);
@@ -468,10 +486,17 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       if (!matchesSearch(r.title, r.code)) return false;
       return isRitualScheduledForDate(r, inspectedDate);
     });
-    const dayBlocks = blocks.filter(b => {
+    const regularBlocks = blocks.filter(b => {
       if (roleFilter !== 'all' && b.roleId !== roleFilter) return false;
       if (!matchesSearch(b.title, b.code)) return false;
       return isBlockScheduledForDate(b, inspectedDate);
+    });
+
+    // Mescla os eventos do Google Agenda diretamente nas Entregas do dia em ordem cronológica
+    const dayBlocks = [...regularBlocks, ...googleEventDeliverables].sort((a, b) => {
+      const timeA = a.timeWindow?.split(' - ')[0] || '00:00';
+      const timeB = b.timeWindow?.split(' - ')[0] || '00:00';
+      return timeA.localeCompare(timeB);
     });
 
     const nextBusinessDayStr = isWeekendDay ? getNextBusinessDay(inspectedDate) : null;
@@ -490,7 +515,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       blocks: dayBlocks,
       totalTopics
     };
-  }, [inspectedDate, rituals, blocks, roleFilter, searchQuery]);
+  }, [inspectedDate, rituals, blocks, roleFilter, searchQuery, googleEventDeliverables]);
 
   // Overall counts for summary
   const summaryCounts = useMemo(() => {
@@ -1587,14 +1612,26 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
                     {inspectedData.blocks.length > 0 ? (
                       <div className="space-y-1.5">
-                        {inspectedData.blocks.slice(0, 6).map(b => (
+                        {inspectedData.blocks.slice(0, 10).map((b: any) => (
                           <div 
                             key={b.id} 
-                            onClick={() => setSelectedBlockForModal(b)}
-                            className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-xs shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
+                            onClick={() => {
+                              if (b.isGoogleCalendar && b.htmlLink) {
+                                window.open(b.htmlLink, '_blank');
+                              } else {
+                                setSelectedBlockForModal(b);
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-xs shadow-2xs transition-all cursor-pointer ${
+                              b.isGoogleCalendar 
+                                ? 'border-blue-300 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40 hover:border-blue-400' 
+                                : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
+                            }`}
                           >
                             <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-0.5">
-                              <span className="font-semibold text-slate-600 dark:text-slate-300">{b.code || 'POP'}</span>
+                              <span className={`font-semibold ${b.isGoogleCalendar ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                                {b.code || 'POP'}
+                              </span>
                               <span>{b.timeWindow}</span>
                             </div>
                             <p className="font-medium text-slate-800 dark:text-slate-200 truncate">
@@ -1602,9 +1639,9 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                             </p>
                           </div>
                         ))}
-                        {inspectedData.blocks.length > 6 && (
+                        {inspectedData.blocks.length > 10 && (
                           <p className="text-[11px] text-slate-400 font-mono text-center pt-1">
-                            +{inspectedData.blocks.length - 6} outras entregas cadastradas
+                            +{inspectedData.blocks.length - 10} outras entregas cadastradas
                           </p>
                         )}
                       </div>
