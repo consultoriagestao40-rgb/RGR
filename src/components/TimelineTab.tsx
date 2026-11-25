@@ -132,12 +132,39 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   const [viewMode, setViewMode] = React.useState<'today_scheduled' | 'all_matrix'>('today_scheduled');
   const [showCalendarDossier, setShowCalendarDossier] = React.useState(true);
 
-  // Filter scheduled blocks for selected date
-  const scheduledBlocks = React.useMemo(() => {
-    return blocks.filter(b => isBlockScheduledForDate(b, selectedDate));
-  }, [blocks, selectedDate]);
+  // Converte eventos pessoais do Google Agenda em blocos operacionais compatíveis com a timeline
+  const googleEventBlocks: RoutineBlockWithExecution[] = React.useMemo(() => {
+    return googleEvents.map((evt, idx) => ({
+      id: `google-evt-${evt.id || idx}`,
+      roleId: role?.id || '',
+      title: evt.summary || 'Compromisso Google Agenda',
+      macroprocess: 'Agenda Pessoal & Reuniões Externas',
+      deliverable: evt.description || (evt.location ? `Local: ${evt.location}` : 'Reunião / Compromisso sincronizado do Google Agenda'),
+      timeWindow: `${evt.startTime} - ${evt.endTime}`,
+      criticality: 'medium',
+      frequency: 'daily' as const,
+      isCoreBlock: false,
+      code: `G-CAL-${String(idx + 1).padStart(2, '0')}`,
+      execution: undefined, // não é cobrado com glosa/falta
+      // Campos customizados para renderização uniforme
+      isExternalGoogleEvent: true,
+      htmlLink: evt.htmlLink,
+      location: evt.location
+    } as any));
+  }, [googleEvents, role?.id]);
 
-  const displayBlocks = viewMode === 'today_scheduled' ? scheduledBlocks : blocks;
+  // Filter scheduled blocks for selected date e mescla os eventos externos na ordem cronológica de horários
+  const scheduledBlocks = React.useMemo(() => {
+    const list = [...blocks.filter(b => isBlockScheduledForDate(b, selectedDate)), ...googleEventBlocks];
+    // Ordenar por horário de início
+    return list.sort((a, b) => {
+      const timeA = a.timeWindow?.split(' - ')[0] || '00:00';
+      const timeB = b.timeWindow?.split(' - ')[0] || '00:00';
+      return timeA.localeCompare(timeB);
+    });
+  }, [blocks, selectedDate, googleEventBlocks]);
+
+  const displayBlocks = viewMode === 'today_scheduled' ? scheduledBlocks : [...blocks, ...googleEventBlocks];
 
   // Calculate chair performance metrics based on scheduled blocks for this date
   const stats = calculateRolePerformance(scheduledBlocks, isCurrentWeekend);
@@ -185,71 +212,6 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
       
-      {/* Compromissos e Reuniões Externas do Google Agenda (Destaque no TOPO) */}
-      {googleEvents.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50/95 via-indigo-50/70 to-white dark:from-blue-950/50 dark:via-indigo-950/30 dark:to-[#111827] border-2 border-blue-400 dark:border-blue-600 rounded-2xl p-4 sm:p-5 shadow-md">
-          <div className="flex items-center justify-between pb-3 border-b border-blue-200/80 dark:border-blue-800/60 mb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-blue-600 animate-pulse" />
-              <h4 className="text-sm font-black uppercase tracking-wider text-blue-950 dark:text-blue-200 flex items-center gap-2">
-                <span>Compromissos & Reuniões Pessoais do Google Agenda</span>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
-                  {googleEvents.length} {googleEvents.length === 1 ? 'evento externo' : 'eventos externos'}
-                </span>
-              </h4>
-            </div>
-            <span className="text-xs font-mono font-medium text-blue-700 dark:text-blue-300">
-              {currentUser?.googleConnectedEmail ? `Conectado: ${currentUser.googleConnectedEmail}` : 'Google Agenda Sincronizada'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {googleEvents.map(evt => (
-              <div 
-                key={evt.id} 
-                className="bg-white dark:bg-[#0f172a] border border-blue-200 dark:border-blue-800 rounded-xl p-3.5 text-xs flex flex-col justify-between shadow-xs hover:border-blue-500 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      {evt.startTime} - {evt.endTime}
-                    </span>
-                    {evt.location && (
-                      <span className="text-[11px] text-slate-500 truncate max-w-[150px]">
-                        📍 {evt.location}
-                      </span>
-                    )}
-                  </div>
-                  <h5 className="font-bold text-slate-900 dark:text-white text-sm">
-                    {evt.summary}
-                  </h5>
-                  {evt.description && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                      {evt.description}
-                    </p>
-                  )}
-                </div>
-
-                {evt.htmlLink && (
-                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                    <a
-                      href={evt.htmlLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <span>Abrir no Google Agenda</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Performance & Punctuality Scoreboard (Atlas Governance / RGR Score) */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-[#1f293d] rounded-xl p-5 shadow-xs transition-colors">
         
@@ -554,7 +516,8 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
               Nenhuma rotina operacional programada especificamente para esta data.
             </div>
           ) : (
-            displayBlocks.map((block, index) => {
+            displayBlocks.map((block: any, index) => {
+              const isGoogleEvent = Boolean(block.isExternalGoogleEvent);
               const status = block.execution?.status || 'pending';
               const isDone = status === 'completed';
               const isBlocked = status === 'blocked';
@@ -565,10 +528,10 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
               const isPast = selectedDate < todayStr;
               const isFuture = selectedDate > todayStr;
 
-              // Live delay state: STRICTLY only for today in real-time, NEVER on weekends
+              // Live delay state: STRICTLY only for today in real-time, NEVER on weekends (e não em eventos pessoais do Google)
               const delayCheck = evaluateDelay(block.timeWindow, selectedDate, now);
-              const isCurrentlyOverdue = !isCurrentWeekend && isToday && !isDone && !isBlocked && delayCheck.isDelayed;
-              const isPastUncompleted = !isCurrentWeekend && isPast && !isDone && !isBlocked;
+              const isCurrentlyOverdue = !isGoogleEvent && !isCurrentWeekend && isToday && !isDone && !isBlocked && delayCheck.isDelayed;
+              const isPastUncompleted = !isGoogleEvent && !isCurrentWeekend && isPast && !isDone && !isBlocked;
 
               // Periodicity and schedule check
               const freqInfo = formatBlockFrequency(block);
@@ -579,13 +542,14 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                 isRitualScheduledForDate(r, selectedDate) && (
                   block.title.toLowerCase().includes('rito') || 
                   block.title.toLowerCase().includes('despacho') ||
-                  r.timeSlot === block.timeWindow.split(' - ')[0]
+                  r.timeSlot === block.timeWindow?.split(' - ')[0]
                 )
               );
               const isRitualBlock = Boolean(matchedRitual);
 
               // Left-border status accent class
               const getBorderAccent = () => {
+                if (isGoogleEvent) return 'border-l-blue-500';
                 if (isDone && block.execution?.isDelayed) return 'border-l-amber-500';
                 if (isDone) return 'border-l-emerald-500';
                 if (isCurrentlyOverdue) return 'border-l-rose-500';
@@ -611,11 +575,17 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                         <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                           {block.code || `POP-00${index + 1}`}
                         </span>
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${freqInfo.badgeColor}`}>
-                          {freqInfo.label}
-                        </span>
+                        {isGoogleEvent ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                            Google Agenda
+                          </span>
+                        ) : (
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${freqInfo.badgeColor}`}>
+                            {freqInfo.label}
+                          </span>
+                        )}
 
-                        {!isScheduledForDate && viewMode === 'all_matrix' && (
+                        {!isScheduledForDate && viewMode === 'all_matrix' && !isGoogleEvent && (
                           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
                             Não agendado para hoje
                           </span>
@@ -639,14 +609,17 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
 
                     {/* Right: Formal Status Tag with Delay Information */}
                     <div>
-                      {isDone && block.execution?.isDelayed && (
+                      {isGoogleEvent ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          <span>Compromisso Externo</span>
+                        </span>
+                      ) : isDone && block.execution?.isDelayed ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                           <span>Concluído com Atraso (+{block.execution.delayMinutes} min)</span>
                         </span>
-                      )}
-
-                      {isDone && !block.execution?.isDelayed && (
+                      ) : isDone && !block.execution?.isDelayed ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           <span>Pontual / No Prazo</span>
@@ -656,49 +629,37 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                             </span>
                           )}
                         </span>
-                      )}
-
-                      {isCurrentWeekend && !isDone && (
+                      ) : isCurrentWeekend && !isDone ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           <Coffee className="w-3.5 h-3.5 text-slate-400" />
                           <span>Pausa Semanal (Modo Leitura)</span>
                         </span>
-                      )}
-
-                      {!isCurrentWeekend && isCurrentlyOverdue && (
+                      ) : !isCurrentWeekend && isCurrentlyOverdue ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                           <span>Janela Expirada (+{delayCheck.delayMinutes} min de atraso)</span>
                         </span>
-                      )}
-
-                      {!isCurrentWeekend && isPastUncompleted && (
+                      ) : !isCurrentWeekend && isPastUncompleted ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                           <span>Não Realizado no Prazo</span>
                         </span>
-                      )}
-
-                      {!isCurrentWeekend && isFuture && !isDone && (
+                      ) : !isCurrentWeekend && isFuture && !isDone ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           <Clock className="w-3 h-3 text-slate-400" />
                           <span>Programado</span>
                         </span>
-                      )}
-
-                      {!isCurrentWeekend && isToday && !isDone && !isCurrentlyOverdue && !isBlocked && (
+                      ) : !isCurrentWeekend && isToday && !isDone && !isCurrentlyOverdue && !isBlocked ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                           <Clock className="w-3 h-3 text-slate-500" />
                           <span>Dentro do Horário</span>
                         </span>
-                      )}
-
-                      {isBlocked && (
+                      ) : isBlocked ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                           <span>Bloqueado</span>
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
@@ -711,36 +672,50 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                   <div className="mt-3.5 p-3.5 rounded-lg bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 text-xs flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                        Entregável Obrigatório (Critério de Aceite)
+                        {isGoogleEvent ? 'Detalhes do Compromisso / Local' : 'Entregável Obrigatório (Critério de Aceite)'}
                       </span>
                       <p className="font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
                         {block.deliverable}
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => onRequestToggleStatus(block)}
-                      className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer ${
-                        isDone
-                          ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                          : isCurrentlyOverdue
-                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                          : isPastUncompleted
-                          ? 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
-                          : 'bg-atlas-600 hover:bg-atlas-700 text-white'
-                      }`}
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>
-                        {isDone 
-                          ? 'Concluído' 
-                          : isCurrentlyOverdue 
-                          ? 'Protocolar c/ Justificativa' 
-                          : isPastUncompleted 
-                          ? 'Registrar c/ Justificativa' 
-                          : 'Protocolar Entrega'}
-                      </span>
-                    </button>
+                    {isGoogleEvent ? (
+                      block.htmlLink ? (
+                        <a
+                          href={block.htmlLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        >
+                          <span>Abrir no Google</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </a>
+                      ) : null
+                    ) : (
+                      <button
+                        onClick={() => onRequestToggleStatus(block)}
+                        className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                          isDone
+                            ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                            : isCurrentlyOverdue
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                            : isPastUncompleted
+                            ? 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
+                            : 'bg-atlas-600 hover:bg-atlas-700 text-white'
+                        }`}
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>
+                          {isDone 
+                            ? 'Concluído' 
+                            : isCurrentlyOverdue 
+                            ? 'Protocolar c/ Justificativa' 
+                            : isPastUncompleted 
+                            ? 'Registrar c/ Justificativa' 
+                            : 'Protocolar Entrega'}
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Justification of Delay if present */}
@@ -774,13 +749,15 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                 {/* Action Bar */}
                 <div className="px-4 sm:px-5 py-2.5 bg-slate-50/60 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => onOpenObservationModal(block)}
-                      className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{block.execution?.observation ? 'Editar Nota de Auditoria' : 'Adicionar Evidência / Glosa'}</span>
-                    </button>
+                    {!isGoogleEvent && (
+                      <button
+                        onClick={() => onOpenObservationModal(block)}
+                        className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{block.execution?.observation ? 'Editar Nota de Auditoria' : 'Adicionar Evidência / Glosa'}</span>
+                      </button>
+                    )}
 
                     {isRitualBlock && onOpenAddAgendaModal && (
                       <button
@@ -794,14 +771,20 @@ export const TimelineTab: React.FC<TimelineTabProps> = ({
                     )}
                   </div>
 
-                  <button
-                    onClick={() => onOpenSop(block)}
-                    className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Manual de Instrução (POP)</span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </button>
+                  {!isGoogleEvent ? (
+                    <button
+                      onClick={() => onOpenSop(block)}
+                      className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Manual de Instrução (POP)</span>
+                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      Sincronizado via Google Calendar
+                    </span>
+                  )}
                 </div>
 
               </div>
