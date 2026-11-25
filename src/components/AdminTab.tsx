@@ -1273,16 +1273,6 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           </div>
         </div>
       )}
-                  type="submit"
-                  className="px-4 py-2 bg-atlas-600 hover:bg-atlas-700 rounded-lg text-white font-semibold text-xs shadow-xs cursor-pointer"
-                >
-                  Salvar Rito
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

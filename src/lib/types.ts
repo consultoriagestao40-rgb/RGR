@@ -203,6 +203,12 @@ export interface SystemUser {
   active: boolean;
   avatarColor?: string;
   createdAt?: string;
+  // Integração com Google Agenda (OAuth 2.0)
+  googleCalendarToken?: string;
+  googleRefreshToken?: string;
+  googleCalendarId?: string;
+  googleConnectedEmail?: string;
+  googleConnectedAt?: string;
 }
 
 // 5W2H • Central de Ações & Planos de Governança

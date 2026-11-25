@@ -129,6 +129,13 @@ model SystemUser {
   avatarColor        String?  @map("avatar_color")
   createdAt          DateTime @default(now()) @map("created_at")
 
+  // Integração com Google Agenda (OAuth 2.0)
+  googleCalendarToken   String?  @db.Text @map("google_calendar_token")
+  googleRefreshToken    String?  @db.Text @map("google_refresh_token")
+  googleCalendarId      String?  @map("google_calendar_id")
+  googleConnectedEmail  String?  @map("google_connected_email")
+  googleConnectedAt     DateTime? @map("google_connected_at")
+
   @@map("system_users")
 }
 

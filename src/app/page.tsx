@@ -148,6 +148,18 @@ export default function HomePage() {
     }
   }, []);
 
+  // Check URL parameters for OAuth Google feedback
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const calendarAuth = urlParams.get('calendar_auth');
+    if (calendarAuth) {
+      setActiveTab('calendar');
+      loadUsers();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [loadUsers]);
+
   // Login handler
   const handleLogin = (user: SystemUser) => {
     setCurrentUser(user);
@@ -615,6 +627,11 @@ export default function HomePage() {
               onSelectRole={setSelectedRoleId}
               onGoToDispatch={() => setActiveTab('dispatch')}
               onGoToTimeline={() => setActiveTab('timeline')}
+              currentUser={currentUser}
+              onUpdateUser={(updated) => {
+                setCurrentUser(updated);
+                setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+              }}
             />
           )}
 

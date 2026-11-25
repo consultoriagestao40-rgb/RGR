@@ -1159,7 +1159,12 @@ export async function getUsers(): Promise<SystemUser[]> {
           defaultRoleId: u.defaultRoleId || undefined,
           active: u.active,
           avatarColor: u.avatarColor || undefined,
-          createdAt: u.createdAt.toISOString()
+          createdAt: u.createdAt.toISOString(),
+          googleCalendarToken: (u as any).googleCalendarToken || undefined,
+          googleRefreshToken: (u as any).googleRefreshToken || undefined,
+          googleCalendarId: (u as any).googleCalendarId || undefined,
+          googleConnectedEmail: (u as any).googleConnectedEmail || undefined,
+          googleConnectedAt: (u as any).googleConnectedAt ? (u as any).googleConnectedAt.toISOString() : undefined
         }));
       }
     } catch (e) {
@@ -1239,6 +1244,11 @@ export async function updateUser(id: string, data: Partial<SystemUser>): Promise
       };
       if (data.password !== undefined) updatePayload.password = data.password;
       if (data.mustChangePassword !== undefined) updatePayload.mustChangePassword = data.mustChangePassword;
+      if (data.googleCalendarToken !== undefined) updatePayload.googleCalendarToken = data.googleCalendarToken;
+      if (data.googleRefreshToken !== undefined) updatePayload.googleRefreshToken = data.googleRefreshToken;
+      if (data.googleCalendarId !== undefined) updatePayload.googleCalendarId = data.googleCalendarId;
+      if (data.googleConnectedEmail !== undefined) updatePayload.googleConnectedEmail = data.googleConnectedEmail;
+      if (data.googleConnectedAt !== undefined) updatePayload.googleConnectedAt = data.googleConnectedAt ? new Date(data.googleConnectedAt) : null;
 
       const updated = await prisma.systemUser.update({
         where: { id },
@@ -1257,7 +1267,12 @@ export async function updateUser(id: string, data: Partial<SystemUser>): Promise
         defaultRoleId: updated.defaultRoleId || undefined,
         active: updated.active,
         avatarColor: updated.avatarColor || undefined,
-        createdAt: updated.createdAt.toISOString()
+        createdAt: updated.createdAt.toISOString(),
+        googleCalendarToken: (updated as any).googleCalendarToken || undefined,
+        googleRefreshToken: (updated as any).googleRefreshToken || undefined,
+        googleCalendarId: (updated as any).googleCalendarId || undefined,
+        googleConnectedEmail: (updated as any).googleConnectedEmail || undefined,
+        googleConnectedAt: (updated as any).googleConnectedAt ? (updated as any).googleConnectedAt.toISOString() : undefined
       };
     } catch (e) {
       console.warn('Prisma updateUser error, fallback:', e);
