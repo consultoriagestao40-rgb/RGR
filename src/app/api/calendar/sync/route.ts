@@ -72,12 +72,21 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Busca cadeiras atribuídas ao usuário
+    // REGRA DE GOVERNANÇA: Se for admin/CEO ou global, a agenda pessoal do Google recebe APENAS a cadeira da Diretoria Executiva (CEO)
+    // As outras cadeiras (DP, Financeiro, Operações) são delegadas e não devem poluir a agenda pessoal do CEO
     const allRoles: OperationalRole[] = await getRoles();
     const allowedRoleIds: string[] = targetUser.allowedRoleIds || [];
     const isGlobal = targetUser.roleType === 'admin' || allowedRoleIds.includes('*');
-    const userRoles: OperationalRole[] = isGlobal 
-      ? allRoles 
-      : allRoles.filter((r: OperationalRole) => allowedRoleIds.includes(r.id));
+    
+    let userRoles: OperationalRole[] = [];
+    if (isGlobal) {
+      // Para admin/CEO, filtra para a cadeira do CEO (ou role-ceo-01 / CAD-DIR-01)
+      const ceoRole = allRoles.find(r => r.code === 'CAD-DIR-01' || r.id === 'role-ceo-01');
+      userRoles = ceoRole ? [ceoRole] : allRoles.filter(r => r.code?.includes('DIR') || r.code?.includes('CEO'));
+      if (userRoles.length === 0) userRoles = allRoles; // fallback
+    } else {
+      userRoles = allRoles.filter((r: OperationalRole) => allowedRoleIds.includes(r.id));
+    }
 
     const userRoleIds: string[] = userRoles.map((r: OperationalRole) => r.id);
 
@@ -87,15 +96,25 @@ export async function POST(request: NextRequest) {
       getAllRituals()
     ]);
 
+    // Blocos de rotina: apenas da cadeira do próprio usuário (ex: CEO)
     const scheduledBlocks = allBlocks.filter((b: RoutineBlock) => 
       userRoleIds.includes(b.roleId) && isBlockScheduledForDate(b, targetDate)
     );
 
-    const scheduledRituals = allRituals.filter((r: DailyRitual) => 
-      userRoleIds.includes(r.roleId) && isRitualScheduledForDate(r, targetDate)
-    );
+    // Ritos: da cadeira do usuário OU ritos de conselho/diretoria onde o CEO despacha
+    const scheduledRituals = allRituals.filter((r: DailyRitual) => {
+      const isMyRole = userRoleIds.includes(r.roleId);
+      const isCeoDispatch = isGlobal && (
+        r.type === 'board_council' || 
+        r.title.toLowerCase().includes('ceo') || 
+        r.title.toLowerCase().includes('diretoria') || 
+        r.title.toLowerCase().includes('conselho') ||
+        r.title.toLowerCase().includes('mesa de despacho')
+      );
+      return (isMyRole || isCeoDispatch) && isRitualScheduledForDate(r, targetDate);
+    });
 
-    // 3. Busca eventos existentes no Google Calendar para o dia alvo (para evitar duplicatas)
+    // 3. Busca eventos existentes no Google Calendar para o dia alvo
     const timeMin = `${targetDate}T00:00:00Z`;
     const timeMax = `${targetDate}T23:59:59Z`;
     
@@ -108,6 +127,38 @@ export async function POST(request: NextRequest) {
 
     const existingEventsData = await existingEventsRes.json();
     const existingEvents = existingEventsData.items || [];
+
+    // LIMPEZA AUTOMÁTICA: Remove eventos do RGR que pertençam a outras cadeiras que não devem estar nesta agenda
+    const validBlockIds = new Set(scheduledBlocks.map(b => b.id));
+    const validRitualIds = new Set(scheduledRituals.map(r => r.id));
+
+    for (const evt of existingEvents) {
+      const desc = evt.description || '';
+      const isRgr = desc.includes('[rgr_meta:') || (evt.summary && (evt.summary.startsWith('📋') || evt.summary.startsWith('🏛️')));
+      if (isRgr) {
+        let isMine = false;
+        // Verifica se corresponde a um dos blocos válidos
+        for (const bid of validBlockIds) {
+          if (desc.includes(`block_id:${bid}`)) { isMine = true; break; }
+        }
+        // Verifica se corresponde a um dos ritos válidos
+        for (const rid of validRitualIds) {
+          if (desc.includes(`ritual_id:${rid}`)) { isMine = true; break; }
+        }
+
+        // Se for um evento RGR de outra cadeira (ex: CAD-DP, CAD-FIN, CAD-OPS), deleta da agenda do CEO!
+        if (!isMine) {
+          try {
+            await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${evt.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+          } catch (e) {
+            console.error('Erro ao limpar evento obsoleto:', e);
+          }
+        }
+      }
+    }
 
     let createdCount = 0;
     let updatedCount = 0;
