@@ -13,6 +13,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { SystemUser } from '@/lib/types';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   isFirstAccess = false,
   onSuccess
 }) => {
+  useEscKey(Boolean(isOpen && !isFirstAccess && onClose), () => onClose?.());
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

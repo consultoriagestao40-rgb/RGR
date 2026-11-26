@@ -52,6 +52,7 @@ import {
   formatRitualFrequency,
   getNextBusinessDay
 } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface CalendarTabProps {
   roles: OperationalRole[];
@@ -202,6 +203,10 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   // Interactive Detail Modals
   const [selectedRitualForModal, setSelectedRitualForModal] = useState<DailyRitual | null>(null);
   const [selectedBlockForModal, setSelectedBlockForModal] = useState<RoutineBlock | null>(null);
+
+  // Esc key listeners to close interactive modals
+  useEscKey(Boolean(selectedRitualForModal), () => setSelectedRitualForModal(null));
+  useEscKey(Boolean(selectedBlockForModal), () => setSelectedBlockForModal(null));
 
   // Interactive checklist state for ritual pautas
   const [checkedPautaItems, setCheckedPautaItems] = useState<{ [ritualId: string]: { [index: number]: boolean } }>({});

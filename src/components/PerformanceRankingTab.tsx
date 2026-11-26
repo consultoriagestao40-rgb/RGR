@@ -48,6 +48,7 @@ import {
   computeAnnualEvolution 
 } from '@/lib/performance-service';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface PerformanceRankingTabProps {
   roles: OperationalRole[];
@@ -82,6 +83,9 @@ export const PerformanceRankingTab: React.FC<PerformanceRankingTabProps> = ({
   const [activeSubView, setActiveSubView] = useState<'ranking' | 'weekly' | 'monthly' | 'annual'>('ranking');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [selectedInspectRole, setSelectedInspectRole] = useState<RoleLeaderboardItem | null>(null);
+
+  // Close inspection modal on ESC
+  useEscKey(Boolean(selectedInspectRole), () => setSelectedInspectRole(null));
 
   // Compute all metrics reactively based on active state
   const leaderboard = useMemo(() => {

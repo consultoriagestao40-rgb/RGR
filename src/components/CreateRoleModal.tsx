@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Users, Check, Building, Plus, Pencil, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { OperationalRole } from '@/lib/types';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface CreateRoleModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   existingCount,
   roleToEdit
 }) => {
+  useEscKey(isOpen, onClose);
+
   const isEditing = Boolean(roleToEdit);
 
   const [code, setCode] = useState('');

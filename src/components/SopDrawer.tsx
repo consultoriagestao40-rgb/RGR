@@ -12,6 +12,7 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import { RoutineBlockWithExecution } from '@/lib/types';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface SopDrawerProps {
   block: RoutineBlockWithExecution | null;
@@ -28,6 +29,8 @@ export const SopDrawer: React.FC<SopDrawerProps> = ({
   onToggleStatus,
   onOpenObservationModal,
 }) => {
+  useEscKey(isOpen, onClose);
+
   if (!isOpen || !block) return null;
 
   const isCompleted = block.execution?.status === 'completed';

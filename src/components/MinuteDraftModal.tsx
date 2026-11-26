@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, FileCheck2, ShieldCheck, Check } from 'lucide-react';
 import { DailyRitual, OperationalRole } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface MinuteDraftModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export const MinuteDraftModal: React.FC<MinuteDraftModalProps> = ({
   selectedDate,
   onSuccess
 }) => {
+  useEscKey(isOpen, onClose);
+
   const [selectedRitualId, setSelectedRitualId] = useState('');
   const [title, setTitle] = useState('');
   const [deliberations, setDeliberations] = useState('');

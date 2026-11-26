@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, Clock, AlertTriangle, Check, ShieldAlert } from 'lucide-react';
 import { RoutineBlockWithExecution } from '@/lib/types';
 import { DELAY_CATEGORIES } from '@/lib/timeline-utils';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface DelayJustificationModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export const DelayJustificationModal: React.FC<DelayJustificationModalProps> = (
   deadlineStr,
   onConfirm
 }) => {
+  useEscKey(isOpen, onClose);
+
   const [category, setCategory] = useState(DELAY_CATEGORIES[0].id);
   const [reason, setReason] = useState('');
 

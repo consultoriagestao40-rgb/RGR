@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { DailyRitual, OperationalRole } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface AddAgendaModalProps {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export const AddAgendaModal: React.FC<AddAgendaModalProps> = ({
   onRemoveAgendaItem,
   onNavigateToDispatch
 }) => {
+  useEscKey(isOpen, onClose);
+
   const [selectedRitualId, setSelectedRitualId] = useState<string>(() => {
     return rituals.length > 0 ? rituals[0].id : '';
   });

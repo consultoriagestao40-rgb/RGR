@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, CheckCircle, Ban, MessageSquare } from 'lucide-react';
 import { RoutineBlockWithExecution, ExecutionStatus } from '@/lib/types';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface ObservationModalProps {
   block: RoutineBlockWithExecution | null;
@@ -17,6 +18,8 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
   onClose,
   onSave
 }) => {
+  useEscKey(isOpen, onClose);
+
   const [status, setStatus] = useState<ExecutionStatus>('pending');
   const [observation, setObservation] = useState('');
 

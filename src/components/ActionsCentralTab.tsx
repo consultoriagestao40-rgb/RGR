@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { GovernanceAction, ActionStatus, ActionPriority, OperationalRole } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface ActionsCentralTabProps {
   roles: OperationalRole[];
@@ -71,6 +72,10 @@ export const ActionsCentralTab: React.FC<ActionsCentralTabProps> = ({
     priority: 'medium' as ActionPriority,
     notes: ''
   });
+
+  // ESC key listeners
+  useEscKey(Boolean(activeActionForNotes), () => setActiveActionForNotes(null));
+  useEscKey(isCreateActionModalOpen, () => setIsCreateActionModalOpen(false));
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 

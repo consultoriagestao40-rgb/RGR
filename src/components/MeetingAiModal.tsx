@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { OperationalRole, GovernanceAction, DailyRitual } from '@/lib/types';
 import { formatDateBR } from '@/lib/frequency';
+import { useEscKey } from '@/lib/use-esc-key';
 
 interface MeetingAiModalProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ export const MeetingAiModal: React.FC<MeetingAiModalProps> = ({
   onActionsGenerated,
   onMinuteSaved
 }) => {
+  useEscKey(isOpen, onClose);
+
   const [mode, setMode] = useState<'record' | 'paste'>('record');
   const [isRecording, setIsRecording] = useState(false);
   const isRecordingRef = useRef(false);
